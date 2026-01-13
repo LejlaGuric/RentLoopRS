@@ -1,0 +1,29 @@
+# ---- OS / IDE ----
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
+
+# ---- .NET ----
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+
+# ---- Flutter / Dart ----
+**/.dart_tool/
+**/build/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+
+# ---- platform ephemeral ----
+**/windows/flutter/ephemeral/
+**/linux/flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+**/android/.gradle/
+**/ios/Pods/
+**/ios/.symlinks/
+
+# ---- Secrets (po potrebi) ----
+appsettings.Development.json

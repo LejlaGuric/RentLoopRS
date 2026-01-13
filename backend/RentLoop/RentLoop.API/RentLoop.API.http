@@ -1,0 +1,6 @@
+@RentLoop.API_HostAddress = http://localhost:5068
+
+GET {{RentLoop.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
