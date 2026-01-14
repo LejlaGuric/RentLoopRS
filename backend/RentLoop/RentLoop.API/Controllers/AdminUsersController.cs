@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
@@ -19,6 +20,7 @@ namespace RentLoop.API.Controllers
         {
             _db = db;
         }
+
 
         // GET: api/admin/users
         [HttpGet]

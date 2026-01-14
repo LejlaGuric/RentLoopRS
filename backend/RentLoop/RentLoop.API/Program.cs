@@ -6,6 +6,8 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using RentLoop.API.Services.PayPal;
+using RentLoop.API.Services;
+using RentLoop.API.Hubs; // ✅ DODANO: da može MapHub<ChatHub>
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,15 +22,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSignalR();
 
 builder.Services.Configure<PayPalSettings>(builder.Configuration.GetSection("PayPal"));
 builder.Services.AddHttpClient();
 
 builder.Services.AddHttpClient<PayPalService>();
+builder.Services.AddScoped<ChatService>();
 
 builder.Services.AddSingleton<RentLoop.API.Messaging.RabbitMqPublisher>();
 Console.WriteLine("DB = " + builder.Configuration.GetConnectionString("DefaultConnection"));
-
 
 // ✅ CORS mora biti OVDJE (prije Build)
 builder.Services.AddCors(options =>
@@ -93,11 +96,41 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             RoleClaimType = ClaimTypes.Role,
             NameClaimType = ClaimTypes.NameIdentifier
         };
+
+        // ✅ DODANO: SignalR šalje token kao ?access_token=...
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/chat"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// ✅ Migracije + seed (Admin/Demo) pri startu
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    // opcionalno: automatski primijeni migracije
+    db.Database.Migrate();
+
+    // seed usera sa pravim hashom (Admin123!, Demo123!)
+    await DbSeeder.SeedAsync(db);
+}
+
 
 // Swagger
 if (app.Environment.IsDevelopment())
@@ -115,6 +148,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
+
 app.MapControllers();
+
+// ✅ DODANO: mapiranje SignalR Hub-a
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

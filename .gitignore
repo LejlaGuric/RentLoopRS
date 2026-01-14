@@ -3,6 +3,7 @@ Thumbs.db
 .DS_Store
 .idea/
 .vscode/
+.vs/
 
 # ---- .NET ----
 **/bin/
@@ -16,6 +17,7 @@ Thumbs.db
 **/.flutter-plugins
 **/.flutter-plugins-dependencies
 **/.packages
+.flutter-version
 
 # ---- platform ephemeral ----
 **/windows/flutter/ephemeral/
@@ -25,5 +27,21 @@ Thumbs.db
 **/ios/Pods/
 **/ios/.symlinks/
 
-# ---- Secrets (po potrebi) ----
+# ---- Docker ----
+**/docker-data/
+**/docker-volume/
+**/.docker/
+docker-compose.override.yml
+
+# ---- Logs ----
+**/*.log
+logs/
+
+# ---- Database ----
+**/*.mdf
+**/*.ldf
+
+# ---- Secrets ----
 appsettings.Development.json
+.env
+**/*.secret*

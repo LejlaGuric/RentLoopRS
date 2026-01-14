@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_links/app_links.dart';
 
@@ -200,24 +199,6 @@ class _ProfilePageState extends State<ProfilePage> {
       final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('PayPal greška: $msg')),
-      );
-    }
-  }
-
-  Future<void> _devPayReservation(MyReservationDto r) async {
-    try {
-      await _payments.devForcePaid(r.id);
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('DEMO: Rezervacija označena kao plaćena ✅')),
-      );
-      await _load();
-    } catch (e) {
-      if (!mounted) return;
-      final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
       );
     }
   }
@@ -422,22 +403,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     label: const Text('Plati (PayPal)'),
                   ),
                 ),
-
-                if (kDebugMode) ...[
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _devPayReservation(r);
-                      },
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('DEMO: Označi kao plaćeno'),
-                    ),
-                  ),
-                ],
               ] else ...[
                 Container(
                   width: double.infinity,

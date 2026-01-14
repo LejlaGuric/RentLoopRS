@@ -33,6 +33,8 @@ wwwroot\uploads\listings\5\3a860a10-965c-44af-beae-34dd3362c41a.jpg
 wwwroot\uploads\listings\5\9d18dab1-7158-4e66-8a26-61daf23543cb.jpg
 wwwroot\uploads\listings\6\29fa64be-3515-41a3-8752-dfcdba45a76a.png
 wwwroot\uploads\listings\7\4f02ece4-c789-44b7-b344-9920ecf9a2df.jpg
+wwwroot\uploads\listings\7\6ac842e0-1248-429f-96e1-8b378a8cb73b.jpg
+wwwroot\uploads\listings\7\7f1a7909-351b-4113-afa3-51ac8071f751.jpg
 wwwroot\uploads\listings\8\1c0ffbd7-1779-4fa3-b539-ac370c009ef4.jpg
 wwwroot\uploads\listings\8\8e42c0af-fbf2-4e62-907d-c43dd07c6c05.jpg
 wwwroot\uploads\listings\9\a74cef91-42fd-4e03-980b-9ad40a788e42.png

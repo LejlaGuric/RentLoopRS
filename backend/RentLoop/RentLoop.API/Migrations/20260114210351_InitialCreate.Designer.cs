@@ -12,8 +12,8 @@ using RentLoop.API.Data;
 namespace RentLoop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260114123534_PayPall")]
-    partial class PayPall
+    [Migration("20260114210351_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,6 +40,38 @@ namespace RentLoop.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Amenities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Wi-Fi"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Parking"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Klima"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Lift"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Balkon"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Pogled"
+                        });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.City", b =>
@@ -57,6 +89,28 @@ namespace RentLoop.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Cities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Mostar"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Sarajevo"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Tuzla"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Banja Luka"
+                        });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.Conversation", b =>
@@ -174,6 +228,116 @@ namespace RentLoop.API.Migrations
                     b.HasIndex("RentTypeId");
 
                     b.ToTable("Listings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Address = "Kneza Domagoja 12",
+                            CityId = 1,
+                            CreatedAt = new DateTime(2025, 1, 10, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Moderan studio blizu Starog mosta. Idealan za parove i kratki boravak.",
+                            DistanceToCenterKm = 0.60m,
+                            HasAirConditioning = true,
+                            HasWifi = true,
+                            IsActive = true,
+                            MaxGuests = 2,
+                            Name = "Sunset Studio – Centar Mostara",
+                            PetsAllowed = false,
+                            PricePerNight = 85.00m,
+                            RentTypeId = 1,
+                            RoomsCount = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Address = "Maršala Tita 44",
+                            CityId = 1,
+                            CreatedAt = new DateTime(2025, 1, 12, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Svijetao apartman s pogledom, mirna zgrada, odlična lokacija.",
+                            DistanceToCenterKm = 1.20m,
+                            HasAirConditioning = false,
+                            HasWifi = true,
+                            IsActive = true,
+                            MaxGuests = 4,
+                            Name = "Neretva View Apartment",
+                            PetsAllowed = true,
+                            PricePerNight = 110.00m,
+                            RentTypeId = 1,
+                            RoomsCount = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Address = "Zelenih beretki 7",
+                            CityId = 2,
+                            CreatedAt = new DateTime(2025, 1, 15, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "U srcu starog grada – sve je na pješačkoj udaljenosti. Toplo i udobno.",
+                            DistanceToCenterKm = 0.30m,
+                            HasAirConditioning = true,
+                            HasWifi = true,
+                            IsActive = true,
+                            MaxGuests = 3,
+                            Name = "Baščaršija Cozy Stay",
+                            PetsAllowed = false,
+                            PricePerNight = 95.00m,
+                            RentTypeId = 1,
+                            RoomsCount = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Address = "Hamdije Kreševljakovića 18",
+                            CityId = 2,
+                            CreatedAt = new DateTime(2025, 1, 18, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Praktičan stan za duži boravak, dobar prevoz i mirna lokacija.",
+                            DistanceToCenterKm = 1.00m,
+                            HasAirConditioning = false,
+                            HasWifi = true,
+                            IsActive = true,
+                            MaxGuests = 4,
+                            Name = "Business Flat – Sarajevo Center",
+                            PetsAllowed = true,
+                            PricePerNight = 60.00m,
+                            RentTypeId = 2,
+                            RoomsCount = 2
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Address = "Slatina 21",
+                            CityId = 3,
+                            CreatedAt = new DateTime(2025, 1, 20, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Prostran stan za porodice, mirno naselje, blizina prodavnica i parka.",
+                            DistanceToCenterKm = 1.80m,
+                            HasAirConditioning = true,
+                            HasWifi = true,
+                            IsActive = true,
+                            MaxGuests = 6,
+                            Name = "Tuzla Family Comfort",
+                            PetsAllowed = true,
+                            PricePerNight = 75.00m,
+                            RentTypeId = 1,
+                            RoomsCount = 3
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Address = "Kralja Petra I 9",
+                            CityId = 4,
+                            CreatedAt = new DateTime(2025, 1, 22, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Minimalistički loft, čist dizajn, idealan za city break.",
+                            DistanceToCenterKm = 0.90m,
+                            HasAirConditioning = true,
+                            HasWifi = true,
+                            IsActive = true,
+                            MaxGuests = 2,
+                            Name = "Banja Luka Minimal Loft",
+                            PetsAllowed = false,
+                            PricePerNight = 88.00m,
+                            RentTypeId = 1,
+                            RoomsCount = 1
+                        });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.ListingView", b =>
@@ -387,6 +551,93 @@ namespace RentLoop.API.Migrations
                     b.HasIndex("AmenityId");
 
                     b.ToTable("PropertyAmenities");
+
+                    b.HasData(
+                        new
+                        {
+                            PropertyId = 1,
+                            AmenityId = 1
+                        },
+                        new
+                        {
+                            PropertyId = 1,
+                            AmenityId = 3
+                        },
+                        new
+                        {
+                            PropertyId = 1,
+                            AmenityId = 5
+                        },
+                        new
+                        {
+                            PropertyId = 2,
+                            AmenityId = 1
+                        },
+                        new
+                        {
+                            PropertyId = 2,
+                            AmenityId = 2
+                        },
+                        new
+                        {
+                            PropertyId = 2,
+                            AmenityId = 6
+                        },
+                        new
+                        {
+                            PropertyId = 3,
+                            AmenityId = 1
+                        },
+                        new
+                        {
+                            PropertyId = 3,
+                            AmenityId = 4
+                        },
+                        new
+                        {
+                            PropertyId = 3,
+                            AmenityId = 6
+                        },
+                        new
+                        {
+                            PropertyId = 4,
+                            AmenityId = 1
+                        },
+                        new
+                        {
+                            PropertyId = 4,
+                            AmenityId = 2
+                        },
+                        new
+                        {
+                            PropertyId = 5,
+                            AmenityId = 1
+                        },
+                        new
+                        {
+                            PropertyId = 5,
+                            AmenityId = 2
+                        },
+                        new
+                        {
+                            PropertyId = 5,
+                            AmenityId = 5
+                        },
+                        new
+                        {
+                            PropertyId = 6,
+                            AmenityId = 1
+                        },
+                        new
+                        {
+                            PropertyId = 6,
+                            AmenityId = 3
+                        },
+                        new
+                        {
+                            PropertyId = 6,
+                            AmenityId = 6
+                        });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.PropertyAvailability", b =>
@@ -445,6 +696,152 @@ namespace RentLoop.API.Migrations
                     b.HasIndex("PropertyId");
 
                     b.ToTable("PropertyImages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsCover = true,
+                            PropertyId = 1,
+                            SortOrder = 0,
+                            Url = "https://dupqmgrdwnev6.cloudfront.net/wp-content/uploads/2018/04/Pinterest-sadf-930x697.jpg?x60971"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsCover = false,
+                            PropertyId = 1,
+                            SortOrder = 1,
+                            Url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwFAeh2TrHWJ__9LhnRz4cYa5xWmJc_7GQEw&s"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsCover = false,
+                            PropertyId = 1,
+                            SortOrder = 2,
+                            Url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7hkXlEgH4y-vRg38k0I6XjZoWZmI5z813Dw&s"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            IsCover = true,
+                            PropertyId = 2,
+                            SortOrder = 0,
+                            Url = "https://www.mojstan.net/wp-content/uploads/2014/11/simpatican-stan-povrsine-40-kvadrata-2.jpg"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            IsCover = false,
+                            PropertyId = 2,
+                            SortOrder = 1,
+                            Url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7hkXlEgH4y-vRg38k0I6XjZoWZmI5z813Dw&s"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            IsCover = false,
+                            PropertyId = 2,
+                            SortOrder = 2,
+                            Url = "https://dupqmgrdwnev6.cloudfront.net/wp-content/uploads/2018/12/Mali-stan-Moskva-15-e1544544438756-930x615.jpg?x60971"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            IsCover = true,
+                            PropertyId = 3,
+                            SortOrder = 0,
+                            Url = "https://dupqmgrdwnev6.cloudfront.net/wp-content/uploads/2018/12/Mali-stan-Moskva-15-e1544544438756-930x615.jpg?x60971"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            IsCover = false,
+                            PropertyId = 3,
+                            SortOrder = 1,
+                            Url = "https://dupqmgrdwnev6.cloudfront.net/wp-content/uploads/2021/06/Divan-mali-stan-za-najam.jpg-11-930x697.jpg?x60971"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            IsCover = false,
+                            PropertyId = 3,
+                            SortOrder = 2,
+                            Url = "https://dupqmgrdwnev6.cloudfront.net/wp-content/uploads/2021/06/Divan-mali-stan-za-najam.jpg-11-930x697.jpg?x60971"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            IsCover = true,
+                            PropertyId = 4,
+                            SortOrder = 0,
+                            Url = "https://www.kucastil.rs/uploads/ck_editor/images/clanci/ENTERIJER/Sjajna%20re%C5%A1enja%20za%20stanove%20do%2040%20m%C2%B2%20DETALJAN%20PLAN/Sjajna%20re%C5%A1enja%20za%20stanove%20do%2040%20m%C2%B2%20ll%20(6).jpg"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            IsCover = false,
+                            PropertyId = 4,
+                            SortOrder = 1,
+                            Url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgcC_TwoxChv1vFapfVryyw7qT009JC-oLtw&s"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            IsCover = false,
+                            PropertyId = 4,
+                            SortOrder = 2,
+                            Url = "https://dupqmgrdwnev6.cloudfront.net/wp-content/uploads/2021/06/Divan-mali-stan-za-najam.jpg-11-930x697.jpg?x60971"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            IsCover = true,
+                            PropertyId = 5,
+                            SortOrder = 0,
+                            Url = "https://www.mojstan.net/wp-content/uploads/2013/12/kreativni-stan-od-40-m2-2.jpg"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            IsCover = false,
+                            PropertyId = 5,
+                            SortOrder = 1,
+                            Url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgcC_TwoxChv1vFapfVryyw7qT009JC-oLtw&s"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            IsCover = false,
+                            PropertyId = 5,
+                            SortOrder = 2,
+                            Url = "https://dupqmgrdwnev6.cloudfront.net/wp-content/uploads/2021/06/Divan-mali-stan-za-najam.jpg-11-930x697.jpg?x60971"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            IsCover = true,
+                            PropertyId = 6,
+                            SortOrder = 0,
+                            Url = "https://www.mojstan.net/wp-content/uploads/2013/12/kreativni-stan-od-40-m2-2.jpg"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            IsCover = false,
+                            PropertyId = 6,
+                            SortOrder = 1,
+                            Url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgcC_TwoxChv1vFapfVryyw7qT009JC-oLtw&s"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            IsCover = false,
+                            PropertyId = 6,
+                            SortOrder = 2,
+                            Url = "https://dupqmgrdwnev6.cloudfront.net/wp-content/uploads/2021/06/Divan-mali-stan-za-najam.jpg-11-930x697.jpg?x60971"
+                        });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.RentType", b =>
@@ -568,11 +965,6 @@ namespace RentLoop.API.Migrations
                         {
                             Id = 3,
                             Name = "Rejected"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Cancelled"
                         });
                 });
 
@@ -723,24 +1115,37 @@ namespace RentLoop.API.Migrations
                             FirstName = "Admin",
                             IsActive = true,
                             LastName = "RentLoop",
-                            PasswordHash = "admin",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMRw5vgxTMvW08zOCvCTMu4hHp1VPdxSFwkFUDbdOiwMo/GAwIDM/EKFwr7tHuGfQQ==",
                             Phone = "000-000",
                             Role = 1,
                             Username = "admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Address = "Sarajevo",
+                            Email = "demo@rentloop.com",
+                            FirstName = "Demo",
+                            IsActive = true,
+                            LastName = "User",
+                            PasswordHash = "AQAAAAIAAYagAAAAEM3ETeA/RYamGNigPexLLY0+LFq45A7YNMIh3Z33DDbie/i4U5DyIsN9QYL+G+aycA==",
+                            Phone = "061-111-222",
+                            Role = 0,
+                            Username = "demo"
                         });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.Conversation", b =>
                 {
                     b.HasOne("RentLoop.API.Models.User", "Admin")
-                        .WithMany()
+                        .WithMany("AdminConversations")
                         .HasForeignKey("AdminId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("RentLoop.API.Models.User", "User")
-                        .WithMany("Conversations")
+                        .WithMany("ClientConversations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Admin");
@@ -1059,7 +1464,9 @@ namespace RentLoop.API.Migrations
 
             modelBuilder.Entity("RentLoop.API.Models.User", b =>
                 {
-                    b.Navigation("Conversations");
+                    b.Navigation("AdminConversations");
+
+                    b.Navigation("ClientConversations");
 
                     b.Navigation("Favorites");
 

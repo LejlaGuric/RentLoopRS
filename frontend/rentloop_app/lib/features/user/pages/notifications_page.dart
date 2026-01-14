@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../models/notification_item.dart';
 import '../services/notifications_service.dart';
+// ✅ CHAT: dodaj ovo (ChatPage u istom folderu)
+import '../../chat/pages/chat_page.dart';
+
 // ako želiš kasnije navigaciju na oglas:
 // import 'listing_details_page.dart';
 
@@ -129,6 +132,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ],
         ),
         actions: [
+          // ✅ CHAT: dugme za chat
+          IconButton(
+            tooltip: 'Chat',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ChatPage()),
+              );
+            },
+            icon: const Icon(Icons.chat_bubble_rounded),
+          ),
+
           IconButton(
             tooltip: 'Osvježi',
             onPressed: _load,

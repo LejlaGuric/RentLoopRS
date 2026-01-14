@@ -60,10 +60,10 @@ namespace RentLoop.API.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Payment>()
-       .HasOne(p => p.User)
-       .WithMany() // ako User nema kolekciju Payments
-       .HasForeignKey(p => p.UserId)
-       .OnDelete(DeleteBehavior.Restrict); // ✅ NO ACTION
+                .HasOne(p => p.User)
+                .WithMany() // ako User nema kolekciju Payments
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict); // ✅ NO ACTION
 
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.Reservation)
@@ -71,12 +71,25 @@ namespace RentLoop.API.Data
                 .HasForeignKey(p => p.ReservationId)
                 .OnDelete(DeleteBehavior.Cascade); // ovo može ostati CASCADE
 
-            // Conversation -> Admin (self ref)
+            // Conversation -> User (klijent)
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.ClientConversations)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Conversation -> Admin (dodijeljeni admin)
             modelBuilder.Entity<Conversation>()
                 .HasOne(c => c.Admin)
-                .WithMany()
+                .WithMany(u => u.AdminConversations)
                 .HasForeignKey(c => c.AdminId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Message -> SenderUser (self ref)
             modelBuilder.Entity<Message>()
@@ -134,8 +147,11 @@ namespace RentLoop.API.Data
                 .HasIndex(f => new { f.UserId, f.PropertyId })
                 .IsUnique();
 
-
+            // ============================
             // SEED DATA (početni podaci)
+            // ============================
+
+            // Lookups
             modelBuilder.Entity<RentType>().HasData(
                 new RentType { Id = 1, Name = "ShortTerm" },
                 new RentType { Id = 2, Name = "LongTerm" }
@@ -144,8 +160,7 @@ namespace RentLoop.API.Data
             modelBuilder.Entity<ReservationStatus>().HasData(
                 new ReservationStatus { Id = 1, Name = "Pending" },
                 new ReservationStatus { Id = 2, Name = "Approved" },
-                new ReservationStatus { Id = 3, Name = "Rejected" },
-                new ReservationStatus { Id = 4, Name = "Cancelled" }
+                new ReservationStatus { Id = 3, Name = "Rejected" }
             );
 
             modelBuilder.Entity<NotificationType>().HasData(
@@ -156,24 +171,57 @@ namespace RentLoop.API.Data
                 new NotificationType { Id = 5, Name = "General" }
             );
 
-            // Admin user (Role=1)
+            // Cities
+            modelBuilder.Entity<City>().HasData(
+                new City { Id = 1, Name = "Mostar" },
+                new City { Id = 2, Name = "Sarajevo" },
+                new City { Id = 3, Name = "Tuzla" },
+                new City { Id = 4, Name = "Banja Luka" }
+            );
+
+            // Users
+            // Users
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
                     Id = 1,
                     Username = "admin",
                     Email = "admin@rentloop.com",
-                    PasswordHash = "admin", // privremeno; kasnije hash/JWT
+                    PasswordHash = "AQAAAAIAAYagAAAAEMRw5vgxTMvW08zOCvCTMu4hHp1VPdxSFwkFUDbdOiwMo/GAwIDM/EKFwr7tHuGfQQ==",
                     FirstName = "Admin",
                     LastName = "RentLoop",
                     Address = "Mostar",
                     Phone = "000-000",
                     Role = 1,
                     IsActive = true
+                },
+                new User
+                {
+                    Id = 2,
+                    Username = "demo",
+                    Email = "demo@rentloop.com",
+                    PasswordHash = "AQAAAAIAAYagAAAAEM3ETeA/RYamGNigPexLLY0+LFq45A7YNMIh3Z33DDbie/i4U5DyIsN9QYL+G+aycA==",
+                    FirstName = "Demo",
+                    LastName = "User",
+                    Address = "Sarajevo",
+                    Phone = "061-111-222",
+                    Role = 2,
+                    IsActive = true
                 }
             );
 
 
+            // Amenities
+            modelBuilder.Entity<Amenity>().HasData(
+                new Amenity { Id = 1, Name = "Wi-Fi" },
+                new Amenity { Id = 2, Name = "Parking" },
+                new Amenity { Id = 3, Name = "Klima" },
+                new Amenity { Id = 4, Name = "Lift" },
+                new Amenity { Id = 5, Name = "Balkon" },
+                new Amenity { Id = 6, Name = "Pogled" }
+            );
+
+       
         }
     }
 }

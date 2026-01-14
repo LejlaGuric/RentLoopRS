@@ -85,16 +85,26 @@
   },
   {
     "ContainingType": "RentLoop.API.Controllers.AuthController",
-    "Method": "DevHash",
-    "RelativePath": "api/Auth/dev-hash",
+    "Method": "DevDb",
+    "RelativePath": "api/Auth/dev/db",
     "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RentLoop.API.Controllers.AuthController",
+    "Method": "DevSetPassword",
+    "RelativePath": "api/Auth/dev/set-password",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "pass",
-        "Type": "System.String",
-        "IsRequired": false
+        "Name": "req",
+        "Type": "RentLoop.API.Controllers.AuthController\u002BDevSetPasswordReq",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -155,6 +165,109 @@
         "IsRequired": false
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RentLoop.API.Controllers.ChatController",
+    "Method": "AdminConversations",
+    "RelativePath": "api/chat/admin/conversations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[RentLoop.API.DTOs.Chat.ChatConversationDto, RentLoop.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "RentLoop.API.Controllers.ChatController",
+    "Method": "GetMessages",
+    "RelativePath": "api/chat/conversations/{conversationId}/messages",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "conversationId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[RentLoop.API.DTOs.Chat.ChatMessageDto, RentLoop.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "RentLoop.API.Controllers.ChatController",
+    "Method": "SendMessage",
+    "RelativePath": "api/chat/conversations/{conversationId}/messages",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "conversationId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "req",
+        "Type": "RentLoop.API.DTOs.Chat.SendMessageRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "RentLoop.API.DTOs.Chat.ChatMessageDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "RentLoop.API.Controllers.ChatController",
+    "Method": "MarkRead",
+    "RelativePath": "api/chat/conversations/{conversationId}/read",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "conversationId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RentLoop.API.Controllers.ChatController",
+    "Method": "GetMyConversation",
+    "RelativePath": "api/chat/my-conversation",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

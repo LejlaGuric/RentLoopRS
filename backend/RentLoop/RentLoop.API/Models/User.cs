@@ -28,7 +28,12 @@ namespace RentLoop.API.Models
         public ICollection<SearchHistory> Searches { get; set; } = new List<SearchHistory>();
 
         // Chat
-        public ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
+        // Chat: razgovori gdje je user klijent
+        public ICollection<Conversation> ClientConversations { get; set; } = new List<Conversation>();
+
+        // Chat: razgovori gdje je user admin (dodijeljeni razgovori)
+        public ICollection<Conversation> AdminConversations { get; set; } = new List<Conversation>();
+
         public ICollection<Message> SentMessages { get; set; } = new List<Message>();
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public ICollection<ListingView> ListingViews { get; set; } = new List<ListingView>();

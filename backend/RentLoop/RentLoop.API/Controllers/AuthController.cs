@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RentLoop.API.Data;
@@ -8,7 +10,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
 
 namespace RentLoop.API.Controllers
 {
@@ -25,32 +26,76 @@ namespace RentLoop.API.Controllers
             _config = config;
         }
 
-        // POST: api/auth/register
+
+ 
+        public class DevSetPasswordReq
+        {
+            public string Value { get; set; } = "";     // username ili email
+            public string NewPassword { get; set; } = "";
+        }
+
+        // ✅ Postavi password u PBKDF2 formatu (salt.hash) - preporučeno da sve bude jedno
+        [HttpPost("dev/set-password")]
+        public async Task<IActionResult> DevSetPassword([FromBody] DevSetPasswordReq req)
+        {
+            var value = (req.Value ?? "").Trim();
+            var newPass = (req.NewPassword ?? "").Trim();
+
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == value || u.Email == value);
+            if (user == null) return NotFound("User not found");
+
+            user.PasswordHash = HashPasswordPbkdf2(newPass);
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                user.Username,
+                user.Email,
+                format = DetectHashFormat(user.PasswordHash),
+                hashPrefix = user.PasswordHash.Substring(0, Math.Min(12, user.PasswordHash.Length)),
+                hashLen = user.PasswordHash.Length
+            });
+        }
+
+        // ✅ Samo info da vidiš da API gleda pravu bazu
+        [HttpGet("dev/db")]
+        public async Task<IActionResult> DevDb()
+        {
+            var dbName = await _db.Database.SqlQueryRaw<string>("SELECT DB_NAME() AS Value").FirstAsync();
+            var server = await _db.Database.SqlQueryRaw<string>("SELECT @@SERVERNAME AS Value").FirstAsync();
+            var users = await _db.Users.CountAsync();
+            var admins = await _db.Users.CountAsync(u => u.Username == "admin" || u.Email == "admin@rentloop.com");
+
+            return Ok(new { dbName, server, users, admins });
+        }
+
+        // =========================
+        // REGISTER
+        // =========================
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             request.Username = (request.Username ?? "").Trim();
             request.Email = (request.Email ?? "").Trim().ToLowerInvariant();
 
-            // basic validation
             if (string.IsNullOrWhiteSpace(request.Username)) return BadRequest("Username is required.");
             if (string.IsNullOrWhiteSpace(request.Email)) return BadRequest("Email is required.");
             if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
                 return BadRequest("Password must be at least 6 characters.");
 
-            // unique checks (case-insensitive)
             var usernameTaken = await _db.Users.AnyAsync(u => u.Username.ToLower() == request.Username.ToLower());
             if (usernameTaken) return BadRequest("Username already exists.");
 
             var emailTaken = await _db.Users.AnyAsync(u => u.Email.ToLower() == request.Email.ToLower());
             if (emailTaken) return BadRequest("Email already exists.");
 
-            // create user (Role=2 client)
             var user = new User
             {
                 Username = request.Username,
                 Email = request.Email,
-                PasswordHash = HashPassword(request.Password),
+                // ✅ koristimo PBKDF2 "salt.hash"
+                PasswordHash = HashPasswordPbkdf2(request.Password),
                 FirstName = request.FirstName ?? "",
                 LastName = request.LastName ?? "",
                 Address = request.Address ?? "",
@@ -65,7 +110,10 @@ namespace RentLoop.API.Controllers
             return Ok(new { message = "Registered successfully." });
         }
 
-        // POST: api/auth/change-password
+        // =========================
+        // CHANGE PASSWORD
+        // =========================
+
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -76,7 +124,6 @@ namespace RentLoop.API.Controllers
             if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 6)
                 return BadRequest("NewPassword must be at least 6 characters.");
 
-            // ✅ uzmi userId iz tokena (nameidentifier ili sub)
             var rawId =
                 User.FindFirstValue(ClaimTypes.NameIdentifier)
                 ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
@@ -88,19 +135,21 @@ namespace RentLoop.API.Controllers
             if (user == null) return Unauthorized("User not found.");
             if (!user.IsActive) return Unauthorized("User is inactive.");
 
-            // provjeri staru lozinku
-            var ok = VerifyPassword(request.CurrentPassword, user.PasswordHash);
+            // ✅ radi i za AQAAAA... i za salt.hash
+            var ok = VerifyPasswordAny(user, request.CurrentPassword, user.PasswordHash);
             if (!ok) return BadRequest("Current password is not correct.");
 
-            // set nova lozinka
-            user.PasswordHash = HashPassword(request.NewPassword);
+            // ✅ nakon promjene prebacujemo u PBKDF2 (da ubuduće sve bude jedno)
+            user.PasswordHash = HashPasswordPbkdf2(request.NewPassword);
             await _db.SaveChangesAsync();
 
             return Ok(new { message = "Password changed successfully." });
         }
 
+        // =========================
+        // LOGIN
+        // =========================
 
-        // POST: api/auth/login
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -116,7 +165,8 @@ namespace RentLoop.API.Controllers
             if (user == null) return Unauthorized("Invalid credentials.");
             if (!user.IsActive) return Unauthorized("User is inactive.");
 
-            var passwordOk = VerifyPassword(request.Password, user.PasswordHash);
+            // ✅ KLJUČ: verifikacija radi za OBA hash formata
+            var passwordOk = VerifyPasswordAny(user, request.Password, user.PasswordHash);
             if (!passwordOk) return Unauthorized("Invalid credentials.");
 
             var token = CreateJwtToken(user);
@@ -135,6 +185,10 @@ namespace RentLoop.API.Controllers
                 }
             });
         }
+
+        // =========================
+        // JWT
+        // =========================
 
         private string CreateJwtToken(User user)
         {
@@ -167,8 +221,12 @@ namespace RentLoop.API.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        // Simple hash (PBKDF2). PasswordHash format: "base64Salt.base64Hash"
-        private static string HashPassword(string password)
+        // =========================
+        // PASSWORD HELPERS (FIX)
+        // =========================
+
+        // PBKDF2 format: "base64Salt.base64Hash"
+        private static string HashPasswordPbkdf2(string password)
         {
             byte[] salt = RandomNumberGenerator.GetBytes(16);
             using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
@@ -177,7 +235,7 @@ namespace RentLoop.API.Controllers
             return $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(hash)}";
         }
 
-        private static bool VerifyPassword(string password, string passwordHash)
+        private static bool VerifyPasswordPbkdf2(string password, string passwordHash)
         {
             var parts = passwordHash.Split('.');
             if (parts.Length != 2) return false;
@@ -191,11 +249,40 @@ namespace RentLoop.API.Controllers
             return CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
         }
 
-        [HttpGet("dev-hash")]
-        public IActionResult DevHash([FromQuery] string pass)
+        // ✅ radi i za PBKDF2 i za Identity (AQAAAA...)
+        private static bool VerifyPasswordAny(User user, string password, string storedHash)
         {
-            return Ok(new { hash = HashPassword(pass) });
+            if (string.IsNullOrWhiteSpace(storedHash)) return false;
+
+            // PBKDF2: ima tačku
+            if (storedHash.Contains('.'))
+            {
+                try { return VerifyPasswordPbkdf2(password, storedHash); }
+                catch { return false; }
+            }
+
+            // Identity PasswordHasher: obično počinje sa AQAAAA...
+            if (storedHash.StartsWith("AQAAAA", StringComparison.Ordinal))
+            {
+                try
+                {
+                    var hasher = new PasswordHasher<User>();
+                    var res = hasher.VerifyHashedPassword(user, storedHash, password);
+                    return res == PasswordVerificationResult.Success;
+                }
+                catch { return false; }
+            }
+
+            // Ako je nešto treće - fail
+            return false;
         }
 
+        private static string DetectHashFormat(string hash)
+        {
+            if (string.IsNullOrWhiteSpace(hash)) return "Empty";
+            if (hash.Contains('.')) return "PBKDF2(salt.hash)";
+            if (hash.StartsWith("AQAAAA")) return "Identity(AQAAAA...)";
+            return "Unknown";
+        }
     }
 }

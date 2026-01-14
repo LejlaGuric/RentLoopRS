@@ -37,6 +37,38 @@ namespace RentLoop.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Amenities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Wi-Fi"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Parking"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Klima"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Lift"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Balkon"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Pogled"
+                        });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.City", b =>
@@ -54,6 +86,28 @@ namespace RentLoop.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Cities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Mostar"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Sarajevo"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Tuzla"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Banja Luka"
+                        });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.Conversation", b =>
@@ -565,11 +619,6 @@ namespace RentLoop.API.Migrations
                         {
                             Id = 3,
                             Name = "Rejected"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Cancelled"
                         });
                 });
 
@@ -720,24 +769,37 @@ namespace RentLoop.API.Migrations
                             FirstName = "Admin",
                             IsActive = true,
                             LastName = "RentLoop",
-                            PasswordHash = "admin",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMRw5vgxTMvW08zOCvCTMu4hHp1VPdxSFwkFUDbdOiwMo/GAwIDM/EKFwr7tHuGfQQ==",
                             Phone = "000-000",
                             Role = 1,
                             Username = "admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Address = "Sarajevo",
+                            Email = "demo@rentloop.com",
+                            FirstName = "Demo",
+                            IsActive = true,
+                            LastName = "User",
+                            PasswordHash = "AQAAAAIAAYagAAAAEM3ETeA/RYamGNigPexLLY0+LFq45A7YNMIh3Z33DDbie/i4U5DyIsN9QYL+G+aycA==",
+                            Phone = "061-111-222",
+                            Role = 2,
+                            Username = "demo"
                         });
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.Conversation", b =>
                 {
                     b.HasOne("RentLoop.API.Models.User", "Admin")
-                        .WithMany()
+                        .WithMany("AdminConversations")
                         .HasForeignKey("AdminId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("RentLoop.API.Models.User", "User")
-                        .WithMany("Conversations")
+                        .WithMany("ClientConversations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Admin");
@@ -1056,7 +1118,9 @@ namespace RentLoop.API.Migrations
 
             modelBuilder.Entity("RentLoop.API.Models.User", b =>
                 {
-                    b.Navigation("Conversations");
+                    b.Navigation("AdminConversations");
+
+                    b.Navigation("ClientConversations");
 
                     b.Navigation("Favorites");
 
