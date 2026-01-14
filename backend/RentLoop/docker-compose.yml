@@ -1,0 +1,56 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: rentloop-db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Your_strong_Passw0rd!
+      - MSSQL_MEMORY_LIMIT_MB=1024
+    ports:
+      - "14330:1433"
+    volumes:
+      - rentloop_sql_data:/var/opt/mssql
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rentloop-rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  api:
+    build:
+      context: .
+      dockerfile: RentLoop.API/Dockerfile
+    container_name: rentloop-api
+    ports:
+      - "7000:8080"
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=db;Database=220073;User Id=sa;Password=Your_strong_Passw0rd!;TrustServerCertificate=True;Encrypt=False;
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__User=guest
+      - RabbitMQ__Pass=guest
+
+  worker:
+    build:
+      context: .
+      dockerfile: RentLoop.Worker/Dockerfile
+    container_name: rentloop-worker
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__User=guest
+      - RabbitMQ__Pass=guest
+      - ConnectionStrings__DefaultConnection=Server=db;Database=220073;User Id=sa;Password=Your_strong_Passw0rd!;TrustServerCertificate=False; 
+
+volumes:
+  rentloop_sql_data:

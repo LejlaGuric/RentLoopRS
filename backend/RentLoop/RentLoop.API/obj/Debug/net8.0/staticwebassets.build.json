@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "kHL9j/SxDedZib6Sljzl+xB7a6QVGui2OX6qjWzevns=",
+  "Hash": "bo1Pc4khJk2NCQm64AviFd9c7QxK3WecQ0GFYxU4lXY=",
   "Source": "RentLoop.API",
   "BasePath": "_content/RentLoop.API",
   "Mode": "Default",
@@ -16,6 +16,27 @@
     }
   ],
   "Assets": [
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\1\\8a52b7fb-c10c-4e5f-b025-0d87486a896d.png",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/1/8a52b7fb-c10c-4e5f-b025-0d87486a896d#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "eka47ua262",
+      "Integrity": "fs0mDnY0+LcLesnterIo0sqAWkNfBsz6aTVYG4SyoAk=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\1\\8a52b7fb-c10c-4e5f-b025-0d87486a896d.png"
+    },
     {
       "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\10\\83351459-9977-4eab-8a6b-709ffe5b9c67.png",
       "SourceId": "RentLoop.API",
@@ -437,6 +458,216 @@
       "OriginalItemSpec": "wwwroot\\uploads\\listings\\15\\f63c5c7a-3a40-4306-aa3c-6616f291fb29.png"
     },
     {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\2875389c-376b-4b03-a27a-55cc493b8315.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/2/2875389c-376b-4b03-a27a-55cc493b8315#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "pt6770etbq",
+      "Integrity": "s1pELtkIPV6PrV/krjxUCBAGeBLIibfCM8CYgvY0KtU=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\2\\2875389c-376b-4b03-a27a-55cc493b8315.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\7349551b-0426-459f-9316-148c4ccc370a.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/2/7349551b-0426-459f-9316-148c4ccc370a#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "7cbm7wdzkf",
+      "Integrity": "51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\2\\7349551b-0426-459f-9316-148c4ccc370a.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\f7f0229c-5a81-4536-bf50-3879052028fb.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/2/f7f0229c-5a81-4536-bf50-3879052028fb#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "tt0ltspg6q",
+      "Integrity": "cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\2\\f7f0229c-5a81-4536-bf50-3879052028fb.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/3/195f5786-b0a1-4173-99ea-6c3b08bb2524#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "onkxv7tsz6",
+      "Integrity": "LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\3\\195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/3/41e775d1-85da-4ad8-b9bf-3fd20669411a#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "7cbm7wdzkf",
+      "Integrity": "51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\3\\41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/3/936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "nobufyj89v",
+      "Integrity": "p/2Ue115Athe643p3yn44eiFX4sQP6bzKNrxx/9Kkws=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\3\\936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\d5987b25-c94c-4f42-9564-3024a51845c4.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/3/d5987b25-c94c-4f42-9564-3024a51845c4#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "zecgz642i9",
+      "Integrity": "2z37UYvw3NlEHE3aHpASzh3P/CDNGbJYVvOx/U8WCME=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\3\\d5987b25-c94c-4f42-9564-3024a51845c4.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\9eb36b84-44fc-4cef-ae77-8a872d793099.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/4/9eb36b84-44fc-4cef-ae77-8a872d793099#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "akta9qnawf",
+      "Integrity": "KvU3EYjaqso+3sdFcgNSHWMD3gPPiVcig2VgaR+srT4=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\4\\9eb36b84-44fc-4cef-ae77-8a872d793099.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\bf23078b-5766-4225-816c-54a70eb729d3.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/4/bf23078b-5766-4225-816c-54a70eb729d3#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "p811n8oeum",
+      "Integrity": "iVMaPWwNKt8BpakA1uYtJKP0sgKtp2pe9dua26rGF1Q=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\4\\bf23078b-5766-4225-816c-54a70eb729d3.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\c7309ab2-584e-4327-85cc-2bd0fc583274.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/4/c7309ab2-584e-4327-85cc-2bd0fc583274#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "tt0ltspg6q",
+      "Integrity": "cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\4\\c7309ab2-584e-4327-85cc-2bd0fc583274.jpg"
+    },
+    {
       "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\5\\3a860a10-965c-44af-beae-34dd3362c41a.jpg",
       "SourceId": "RentLoop.API",
       "SourceType": "Discovered",
@@ -456,6 +687,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\listings\\5\\3a860a10-965c-44af-beae-34dd3362c41a.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\5\\9d18dab1-7158-4e66-8a26-61daf23543cb.jpg",
+      "SourceId": "RentLoop.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\",
+      "BasePath": "_content/RentLoop.API",
+      "RelativePath": "uploads/listings/5/9d18dab1-7158-4e66-8a26-61daf23543cb#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "onkxv7tsz6",
+      "Integrity": "LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\listings\\5\\9d18dab1-7158-4e66-8a26-61daf23543cb.jpg"
     },
     {
       "Identity": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\6\\29fa64be-3515-41a3-8752-dfcdba45a76a.png",
@@ -564,6 +816,88 @@
     }
   ],
   "Endpoints": [
+    {
+      "Route": "uploads/listings/1/8a52b7fb-c10c-4e5f-b025-0d87486a896d.eka47ua262.png",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\1\\8a52b7fb-c10c-4e5f-b025-0d87486a896d.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "77646"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"fs0mDnY0+LcLesnterIo0sqAWkNfBsz6aTVYG4SyoAk=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 13 Jan 2026 22:50:10 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "eka47ua262"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/1/8a52b7fb-c10c-4e5f-b025-0d87486a896d.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-fs0mDnY0+LcLesnterIo0sqAWkNfBsz6aTVYG4SyoAk="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/1/8a52b7fb-c10c-4e5f-b025-0d87486a896d.png",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\1\\8a52b7fb-c10c-4e5f-b025-0d87486a896d.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "77646"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"fs0mDnY0+LcLesnterIo0sqAWkNfBsz6aTVYG4SyoAk=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 13 Jan 2026 22:50:10 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-fs0mDnY0+LcLesnterIo0sqAWkNfBsz6aTVYG4SyoAk="
+        }
+      ]
+    },
     {
       "Route": "uploads/listings/10/83351459-9977-4eab-8a6b-709ffe5b9c67.45ychmf93m.png",
       "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\10\\83351459-9977-4eab-8a6b-709ffe5b9c67.png",
@@ -2205,6 +2539,826 @@
       ]
     },
     {
+      "Route": "uploads/listings/2/2875389c-376b-4b03-a27a-55cc493b8315.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\2875389c-376b-4b03-a27a-55cc493b8315.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "9575"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"s1pELtkIPV6PrV/krjxUCBAGeBLIibfCM8CYgvY0KtU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:25:08 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-s1pELtkIPV6PrV/krjxUCBAGeBLIibfCM8CYgvY0KtU="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/2/2875389c-376b-4b03-a27a-55cc493b8315.pt6770etbq.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\2875389c-376b-4b03-a27a-55cc493b8315.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "9575"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"s1pELtkIPV6PrV/krjxUCBAGeBLIibfCM8CYgvY0KtU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:25:08 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "pt6770etbq"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/2/2875389c-376b-4b03-a27a-55cc493b8315.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-s1pELtkIPV6PrV/krjxUCBAGeBLIibfCM8CYgvY0KtU="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/2/7349551b-0426-459f-9316-148c4ccc370a.7cbm7wdzkf.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\7349551b-0426-459f-9316-148c4ccc370a.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "10953"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:25:08 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "7cbm7wdzkf"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/2/7349551b-0426-459f-9316-148c4ccc370a.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/2/7349551b-0426-459f-9316-148c4ccc370a.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\7349551b-0426-459f-9316-148c4ccc370a.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "10953"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:25:08 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/2/f7f0229c-5a81-4536-bf50-3879052028fb.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\f7f0229c-5a81-4536-bf50-3879052028fb.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "6644"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:25:08 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/2/f7f0229c-5a81-4536-bf50-3879052028fb.tt0ltspg6q.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\2\\f7f0229c-5a81-4536-bf50-3879052028fb.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "6644"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:25:08 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "tt0ltspg6q"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/2/f7f0229c-5a81-4536-bf50-3879052028fb.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/3/195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "9873"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:26:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/3/195f5786-b0a1-4173-99ea-6c3b08bb2524.onkxv7tsz6.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "9873"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:26:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "onkxv7tsz6"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/3/195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/3/41e775d1-85da-4ad8-b9bf-3fd20669411a.7cbm7wdzkf.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "10953"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:26:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "7cbm7wdzkf"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/3/41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/3/41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "10953"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:26:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/3/936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "8958"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"p/2Ue115Athe643p3yn44eiFX4sQP6bzKNrxx/9Kkws=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:26:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-p/2Ue115Athe643p3yn44eiFX4sQP6bzKNrxx/9Kkws="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/3/936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.nobufyj89v.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "8958"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"p/2Ue115Athe643p3yn44eiFX4sQP6bzKNrxx/9Kkws=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:26:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "nobufyj89v"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/3/936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-p/2Ue115Athe643p3yn44eiFX4sQP6bzKNrxx/9Kkws="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/3/d5987b25-c94c-4f42-9564-3024a51845c4.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\d5987b25-c94c-4f42-9564-3024a51845c4.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "7716"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"2z37UYvw3NlEHE3aHpASzh3P/CDNGbJYVvOx/U8WCME=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:26:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-2z37UYvw3NlEHE3aHpASzh3P/CDNGbJYVvOx/U8WCME="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/3/d5987b25-c94c-4f42-9564-3024a51845c4.zecgz642i9.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\3\\d5987b25-c94c-4f42-9564-3024a51845c4.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "7716"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"2z37UYvw3NlEHE3aHpASzh3P/CDNGbJYVvOx/U8WCME=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:26:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "zecgz642i9"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/3/d5987b25-c94c-4f42-9564-3024a51845c4.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-2z37UYvw3NlEHE3aHpASzh3P/CDNGbJYVvOx/U8WCME="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/4/9eb36b84-44fc-4cef-ae77-8a872d793099.akta9qnawf.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\9eb36b84-44fc-4cef-ae77-8a872d793099.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "6247"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"KvU3EYjaqso+3sdFcgNSHWMD3gPPiVcig2VgaR+srT4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:27:44 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "akta9qnawf"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/4/9eb36b84-44fc-4cef-ae77-8a872d793099.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-KvU3EYjaqso+3sdFcgNSHWMD3gPPiVcig2VgaR+srT4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/4/9eb36b84-44fc-4cef-ae77-8a872d793099.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\9eb36b84-44fc-4cef-ae77-8a872d793099.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "6247"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"KvU3EYjaqso+3sdFcgNSHWMD3gPPiVcig2VgaR+srT4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:27:44 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-KvU3EYjaqso+3sdFcgNSHWMD3gPPiVcig2VgaR+srT4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/4/bf23078b-5766-4225-816c-54a70eb729d3.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\bf23078b-5766-4225-816c-54a70eb729d3.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "6874"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"iVMaPWwNKt8BpakA1uYtJKP0sgKtp2pe9dua26rGF1Q=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:27:44 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-iVMaPWwNKt8BpakA1uYtJKP0sgKtp2pe9dua26rGF1Q="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/4/bf23078b-5766-4225-816c-54a70eb729d3.p811n8oeum.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\bf23078b-5766-4225-816c-54a70eb729d3.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "6874"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"iVMaPWwNKt8BpakA1uYtJKP0sgKtp2pe9dua26rGF1Q=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:27:44 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "p811n8oeum"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/4/bf23078b-5766-4225-816c-54a70eb729d3.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-iVMaPWwNKt8BpakA1uYtJKP0sgKtp2pe9dua26rGF1Q="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/4/c7309ab2-584e-4327-85cc-2bd0fc583274.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\c7309ab2-584e-4327-85cc-2bd0fc583274.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "6644"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:27:44 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/4/c7309ab2-584e-4327-85cc-2bd0fc583274.tt0ltspg6q.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\4\\c7309ab2-584e-4327-85cc-2bd0fc583274.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "6644"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:27:44 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "tt0ltspg6q"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/4/c7309ab2-584e-4327-85cc-2bd0fc583274.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA="
+        }
+      ]
+    },
+    {
       "Route": "uploads/listings/5/3a860a10-965c-44af-beae-34dd3362c41a.c09e18984k.jpg",
       "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\5\\3a860a10-965c-44af-beae-34dd3362c41a.jpg",
       "Selectors": [],
@@ -2283,6 +3437,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-HHYGDk9rkxIO3a0fGU99Dr527fd1pCugqn5SkZHsqQ4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/5/9d18dab1-7158-4e66-8a26-61daf23543cb.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\5\\9d18dab1-7158-4e66-8a26-61daf23543cb.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "9873"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:28:41 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/listings/5/9d18dab1-7158-4e66-8a26-61daf23543cb.onkxv7tsz6.jpg",
+      "AssetFile": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\wwwroot\\uploads\\listings\\5\\9d18dab1-7158-4e66-8a26-61daf23543cb.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "9873"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 14 Jan 2026 15:28:41 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "onkxv7tsz6"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/listings/5/9d18dab1-7158-4e66-8a26-61daf23543cb.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA="
         }
       ]
     },

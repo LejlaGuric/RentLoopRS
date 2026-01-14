@@ -190,5 +190,12 @@ namespace RentLoop.API.Controllers
 
             return CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
         }
+
+        [HttpGet("dev-hash")]
+        public IActionResult DevHash([FromQuery] string pass)
+        {
+            return Ok(new { hash = HashPassword(pass) });
+        }
+
     }
 }

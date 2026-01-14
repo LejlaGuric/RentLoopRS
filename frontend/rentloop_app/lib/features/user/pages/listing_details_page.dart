@@ -3,7 +3,9 @@ import '../../../core/config/api_config.dart';
 
 import '../models/listing_details.dart';
 import '../services/listings_service.dart';
-import '../services/favorites_service.dart'; // ✅ NOVO
+import '../services/favorites_service.dart'; 
+import 'reservation_create_page.dart';
+
 
 class ListingDetailsPage extends StatefulWidget {
   final int listingId;
@@ -269,11 +271,31 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
         SizedBox(
           height: 52,
           child: ElevatedButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Rezervacija ide u sljedećem koraku 🙂')),
-              );
-            },
+            onPressed: () async {
+  final d = _data!;
+  final changed = await Navigator.of(context).push<bool>(
+    MaterialPageRoute(
+      builder: (_) => ReservationCreatePage(
+        listingId: d.id, // ili widget.listingId, oba su ok
+        listingName: d.name,
+        pricePerNight: d.pricePerNight.toDouble(),
+        maxGuests: d.maxGuests,
+      ),
+    ),
+  );
+
+  if (!mounted) return;
+
+  if (changed == true) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Rezervacija poslana (čeka odobrenje).')),
+    );
+
+    // opcionalno: refresh detalja (ne mora, ali može)
+    // await _load();
+  }
+},
+
             style: ElevatedButton.styleFrom(
               backgroundColor: blue,
               foregroundColor: Colors.white,

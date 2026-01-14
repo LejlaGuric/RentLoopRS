@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
+using RentLoop.API.Services.PayPal;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.Configure<PayPalSettings>(builder.Configuration.GetSection("PayPal"));
+builder.Services.AddHttpClient();
+
+builder.Services.AddHttpClient<PayPalService>();
+
+builder.Services.AddSingleton<RentLoop.API.Messaging.RabbitMqPublisher>();
+Console.WriteLine("DB = " + builder.Configuration.GetConnectionString("DefaultConnection"));
+
 
 // ✅ CORS mora biti OVDJE (prije Build)
 builder.Services.AddCors(options =>

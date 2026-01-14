@@ -5,6 +5,8 @@ using RentLoop.API.Data;
 using RentLoop.API.DTOs.Reservations;
 using RentLoop.API.Models;
 using System.Security.Claims;
+using RentLoop.API.Messaging;
+
 
 namespace RentLoop.API.Controllers
 {
@@ -14,11 +16,14 @@ namespace RentLoop.API.Controllers
     public class ReservationsController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
+        private readonly RabbitMqPublisher _mq;
 
-        public ReservationsController(ApplicationDbContext db)
+        public ReservationsController(ApplicationDbContext db, RabbitMqPublisher mq)
         {
             _db = db;
+            _mq = mq;
         }
+
 
         private int GetUserId()
         {
@@ -139,6 +144,7 @@ namespace RentLoop.API.Controllers
         }
 
         // ADMIN — approve
+        // ADMIN — approve
         [HttpPut("{id:int}/approve")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Approve(int id)
@@ -174,8 +180,22 @@ namespace RentLoop.API.Controllers
 
             await _db.SaveChangesAsync();
 
+            // ✅ RabbitMQ event (worker će primiti i napraviti notifikaciju / ispis)
+            _mq.PublishReservationApproved(new
+            {
+                ReservationId = r.Id,
+                UserId = r.UserId,
+                PropertyId = r.PropertyId,
+                CheckIn = r.CheckIn,
+                CheckOut = r.CheckOut,
+                TotalPrice = r.TotalPrice,
+                ApprovedByAdminId = adminId,
+                DecisionAt = r.DecisionAt
+            });
+
             return Ok(new { message = "Reservation approved and days booked." });
         }
+
 
         // ADMIN — all reservations (optional status)
         [HttpGet("admin")]
@@ -210,6 +230,8 @@ namespace RentLoop.API.Controllers
 
             return Ok(data);
         }
+
+
 
         // ADMIN — reject
         [HttpPut("{id:int}/reject")]

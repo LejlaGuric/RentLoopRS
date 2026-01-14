@@ -18,6 +18,10 @@ namespace RentLoop.API.Models
         public int Guests { get; set; }
         public decimal TotalPrice { get; set; }
 
+        public bool IsPaid { get; set; } = false;
+        public DateTime? PaidAt { get; set; }
+
+
         public int StatusId { get; set; }
         public ReservationStatus? Status { get; set; }
 

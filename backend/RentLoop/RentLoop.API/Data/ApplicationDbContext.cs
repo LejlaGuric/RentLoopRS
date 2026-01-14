@@ -23,6 +23,8 @@ namespace RentLoop.API.Data
         public DbSet<Review> Reviews => Set<Review>();
 
         public DbSet<Favorite> Favorites => Set<Favorite>();
+        public DbSet<Payment> Payments { get; set; }
+
         public DbSet<SearchHistory> SearchHistory => Set<SearchHistory>();
 
         public DbSet<ListingView> ListingViews { get; set; }
@@ -56,6 +58,18 @@ namespace RentLoop.API.Data
                 .WithMany()
                 .HasForeignKey(r => r.ApprovedByAdminId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Payment>()
+       .HasOne(p => p.User)
+       .WithMany() // ako User nema kolekciju Payments
+       .HasForeignKey(p => p.UserId)
+       .OnDelete(DeleteBehavior.Restrict); // ✅ NO ACTION
+
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Reservation)
+                .WithMany() // Reservation nema kolekciju Payments
+                .HasForeignKey(p => p.ReservationId)
+                .OnDelete(DeleteBehavior.Cascade); // ovo može ostati CASCADE
 
             // Conversation -> Admin (self ref)
             modelBuilder.Entity<Conversation>()

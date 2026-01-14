@@ -1,5 +1,23 @@
 ﻿<Project>
   <ItemGroup>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\1\8a52b7fb-c10c-4e5f-b025-0d87486a896d.png'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/1/8a52b7fb-c10c-4e5f-b025-0d87486a896d.png</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>eka47ua262</Fingerprint>
+      <Integrity>fs0mDnY0+LcLesnterIo0sqAWkNfBsz6aTVYG4SyoAk=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\1\8a52b7fb-c10c-4e5f-b025-0d87486a896d.png'))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\10\83351459-9977-4eab-8a6b-709ffe5b9c67.png'))">
       <SourceType>Package</SourceType>
       <SourceId>RentLoop.API</SourceId>
@@ -360,6 +378,186 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\15\f63c5c7a-3a40-4306-aa3c-6616f291fb29.png'))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\2\2875389c-376b-4b03-a27a-55cc493b8315.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/2/2875389c-376b-4b03-a27a-55cc493b8315.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>pt6770etbq</Fingerprint>
+      <Integrity>s1pELtkIPV6PrV/krjxUCBAGeBLIibfCM8CYgvY0KtU=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\2\2875389c-376b-4b03-a27a-55cc493b8315.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\2\7349551b-0426-459f-9316-148c4ccc370a.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/2/7349551b-0426-459f-9316-148c4ccc370a.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>7cbm7wdzkf</Fingerprint>
+      <Integrity>51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\2\7349551b-0426-459f-9316-148c4ccc370a.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\2\f7f0229c-5a81-4536-bf50-3879052028fb.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/2/f7f0229c-5a81-4536-bf50-3879052028fb.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>tt0ltspg6q</Fingerprint>
+      <Integrity>cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\2\f7f0229c-5a81-4536-bf50-3879052028fb.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\3\195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/3/195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>onkxv7tsz6</Fingerprint>
+      <Integrity>LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\3\195f5786-b0a1-4173-99ea-6c3b08bb2524.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\3\41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/3/41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>7cbm7wdzkf</Fingerprint>
+      <Integrity>51l+5tkoQqMP78kS3ZgrbpEJN1xWb0QMFnf1McXzTL0=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\3\41e775d1-85da-4ad8-b9bf-3fd20669411a.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\3\936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/3/936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>nobufyj89v</Fingerprint>
+      <Integrity>p/2Ue115Athe643p3yn44eiFX4sQP6bzKNrxx/9Kkws=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\3\936bdc7d-66df-4b3d-bb9c-5a0dc724c7e9.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\3\d5987b25-c94c-4f42-9564-3024a51845c4.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/3/d5987b25-c94c-4f42-9564-3024a51845c4.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>zecgz642i9</Fingerprint>
+      <Integrity>2z37UYvw3NlEHE3aHpASzh3P/CDNGbJYVvOx/U8WCME=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\3\d5987b25-c94c-4f42-9564-3024a51845c4.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\4\9eb36b84-44fc-4cef-ae77-8a872d793099.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/4/9eb36b84-44fc-4cef-ae77-8a872d793099.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>akta9qnawf</Fingerprint>
+      <Integrity>KvU3EYjaqso+3sdFcgNSHWMD3gPPiVcig2VgaR+srT4=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\4\9eb36b84-44fc-4cef-ae77-8a872d793099.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\4\bf23078b-5766-4225-816c-54a70eb729d3.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/4/bf23078b-5766-4225-816c-54a70eb729d3.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>p811n8oeum</Fingerprint>
+      <Integrity>iVMaPWwNKt8BpakA1uYtJKP0sgKtp2pe9dua26rGF1Q=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\4\bf23078b-5766-4225-816c-54a70eb729d3.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\4\c7309ab2-584e-4327-85cc-2bd0fc583274.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/4/c7309ab2-584e-4327-85cc-2bd0fc583274.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>tt0ltspg6q</Fingerprint>
+      <Integrity>cbS69IbpfDB+Jg9qlWRO0EVcDBshYdsZ3RRa6jdQ/XA=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\4\c7309ab2-584e-4327-85cc-2bd0fc583274.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\5\3a860a10-965c-44af-beae-34dd3362c41a.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>RentLoop.API</SourceId>
@@ -377,6 +575,24 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\5\3a860a10-965c-44af-beae-34dd3362c41a.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\5\9d18dab1-7158-4e66-8a26-61daf23543cb.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>RentLoop.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/RentLoop.API</BasePath>
+      <RelativePath>uploads/listings/5/9d18dab1-7158-4e66-8a26-61daf23543cb.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>onkxv7tsz6</Fingerprint>
+      <Integrity>LE7kvCrQNPavsLhHnPN44EoJ4S6Zq03DjSAw2fewFnA=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\5\9d18dab1-7158-4e66-8a26-61daf23543cb.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\listings\6\29fa64be-3515-41a3-8752-dfcdba45a76a.png'))">
       <SourceType>Package</SourceType>
