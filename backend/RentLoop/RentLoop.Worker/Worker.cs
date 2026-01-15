@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RentLoop.API.Data;
 using RentLoop.API.Models;
@@ -26,110 +25,139 @@ public class Worker : BackgroundService
         var user = Environment.GetEnvironmentVariable("RabbitMQ__User") ?? "guest";
         var pass = Environment.GetEnvironmentVariable("RabbitMQ__Pass") ?? "guest";
 
-        // retry konekcije na RabbitMQ
-        for (var i = 1; i <= 30 && !stoppingToken.IsCancellationRequested; i++)
+        while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                var factory = new ConnectionFactory
+                // 1) CONNECT (ako već nije)
+                if (_connection == null || !_connection.IsOpen || _channel == null || !_channel.IsOpen)
                 {
-                    HostName = host,
-                    UserName = user,
-                    Password = pass
-                };
+                    CleanupRabbit();
 
-                _connection = factory.CreateConnection();
-                _channel = _connection.CreateModel();
+                    Console.WriteLine("⏳ Connecting to RabbitMQ...");
 
-                Console.WriteLine("✅ Connected to RabbitMQ");
-                break;
-            }
-            catch
-            {
-                Console.WriteLine($"⏳ Waiting for RabbitMQ... ({i}/30)");
-                await Task.Delay(1000, stoppingToken);
-            }
-        }
+                    var factory = new ConnectionFactory
+                    {
+                        HostName = host,
+                        Port = 5672,
+                        UserName = user,
+                        Password = pass,
+                        DispatchConsumersAsync = true
+                    };
 
-        if (_channel == null) return;
+                    _connection = factory.CreateConnection();
 
-        _channel.QueueDeclare(
-            queue: "reservation.approved",
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null
-        );
+                    _connection.ConnectionShutdown += (_, e) =>
+                        Console.WriteLine($"❌ Rabbit connection shutdown: {e.ReplyText}");
 
-        var consumer = new EventingBasicConsumer(_channel);
-        consumer.Received += async (model, ea) =>
-        {
-            Console.WriteLine("✅ Received handler START");
+                    _channel = _connection.CreateModel();
 
-            try
-            {
-                var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-                Console.WriteLine("✅ JSON OK: " + json);
+                    _channel.ModelShutdown += (_, e) =>
+                        Console.WriteLine($"❌ Rabbit channel shutdown: {e.ReplyText}");
 
-                var data = JsonSerializer.Deserialize<ReservationApprovedMessage>(json);
-                Console.WriteLine("✅ DESERIALIZE OK");
+                    // 2) DECLARE QUEUE
+                    _channel.QueueDeclare(
+                        queue: "reservation.approved",
+                        durable: true,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null
+                    );
 
-                if (data == null)
-                {
-                    Console.WriteLine("⚠️ data is null");
-                    _channel.BasicAck(ea.DeliveryTag, false);
-                    return;
+                    // 3) CONSUME
+                    var consumer = new AsyncEventingBasicConsumer(_channel);
+
+                    consumer.Received += async (model, ea) =>
+                    {
+                        Console.WriteLine("✅ Received handler START");
+
+                        try
+                        {
+                            var json = Encoding.UTF8.GetString(ea.Body.ToArray());
+                            Console.WriteLine("✅ JSON OK: " + json);
+
+                            var data = JsonSerializer.Deserialize<ReservationApprovedMessage>(json);
+
+                            if (data == null)
+                            {
+                                Console.WriteLine("⚠️ data is null");
+                                _channel.BasicAck(ea.DeliveryTag, false);
+                                return;
+                            }
+
+                            using var scope = _scopeFactory.CreateScope();
+                            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                            var notification = new Notification
+                            {
+                                UserId = data.UserId,
+                                TypeId = 1,
+                                Title = "Rezervacija odobrena",
+                                Body = "Vaša rezervacija je odobrena.",
+                                RelatedPropertyId = data.PropertyId,
+                                RelatedReservationId = data.ReservationId,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            db.Notifications.Add(notification);
+                            await db.SaveChangesAsync(stoppingToken);
+
+                            _channel.BasicAck(ea.DeliveryTag, false);
+                            Console.WriteLine("✅ SAVE + ACK OK");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("❌ PROCESS FAILED: " + ex);
+
+                            // vrati poruku nazad u queue da se pokuša opet
+                            try { _channel.BasicNack(ea.DeliveryTag, false, true); } catch { /* ignore */ }
+                        }
+                    };
+
+                    _channel.BasicConsume(
+                        queue: "reservation.approved",
+                        autoAck: false,
+                        consumer: consumer
+                    );
+
+                    Console.WriteLine("✅ CONSUMING reservation.approved");
                 }
 
-                using var scope = _scopeFactory.CreateScope();
-                Console.WriteLine("✅ SCOPE OK");
-
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                Console.WriteLine("✅ DB CONTEXT OK");
-
-                var notification = new Notification
-                {
-                    UserId = data.UserId,
-                    TypeId = 1,
-                    Title = "Rezervacija odobrena",
-                    Body = "Vaša rezervacija je odobrena.",
-                    RelatedPropertyId = data.PropertyId,
-                    RelatedReservationId = data.ReservationId,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                db.Notifications.Add(notification);
-                Console.WriteLine("✅ ADD OK");
-
-                await db.SaveChangesAsync();
-                Console.WriteLine("✅ SAVE OK");
-
-                _channel.BasicAck(ea.DeliveryTag, false);
-                Console.WriteLine("✅ ACK OK");
+                // drži service živ
+                await Task.Delay(1000, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // gašenje
+                break;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("❌ SAVE FAILED: " + ex.ToString());
-                _channel.BasicNack(ea.DeliveryTag, false, true); // vrati poruku nazad
+                Console.WriteLine("❌ Worker loop error: " + ex);
+                CleanupRabbit();
+
+                // malo sačekaj prije ponovnog pokušaja
+                await Task.Delay(2000, stoppingToken);
             }
-        };
+        }
 
+        CleanupRabbit();
+    }
 
+    private void CleanupRabbit()
+    {
+        try { _channel?.Close(); } catch { }
+        try { _channel?.Dispose(); } catch { }
+        _channel = null;
 
-        _channel.BasicConsume(
-            queue: "reservation.approved",
-            autoAck: false,
-            consumer: consumer
-        );
-
-        while (!stoppingToken.IsCancellationRequested)
-            await Task.Delay(1000, stoppingToken);
+        try { _connection?.Close(); } catch { }
+        try { _connection?.Dispose(); } catch { }
+        _connection = null;
     }
 
     public override void Dispose()
     {
-        _channel?.Close();
-        _connection?.Close();
+        CleanupRabbit();
         base.Dispose();
     }
 }

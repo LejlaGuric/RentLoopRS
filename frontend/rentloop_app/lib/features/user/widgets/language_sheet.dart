@@ -1,45 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class LanguageSheet extends StatelessWidget {
+import '../../../main.dart'; // ili tačna putanja do main.dart (pazi na relative)
+
+
+cclass LanguageSheet extends StatelessWidget {
   const LanguageSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Odaberi jezik',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 12),
+    final t = AppLocalizations.of(context)!;
 
-          ListTile(
-            leading: const Text('🇧🇦', style: TextStyle(fontSize: 18)),
-            title: const Text('Bosanski'),
-            onTap: () {
-              // TODO: ovdje ćeš kasnije pozvati tvoj localization change
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Jezik: Bosanski')),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Text('🇬🇧', style: TextStyle(fontSize: 18)),
-            title: const Text('English'),
-            onTap: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Language: English')),
-              );
-            },
-          ),
-        ],
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(t.language, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+
+            ListTile(
+              title: const Text('Bosanski'),
+              trailing: localeController.locale.languageCode == 'bs'
+                  ? const Icon(Icons.check)
+                  : null,
+              onTap: () {
+                localeController.setLocale(const Locale('bs'));
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('English'),
+              trailing: localeController.locale.languageCode == 'en'
+                  ? const Icon(Icons.check)
+                  : null,
+              onTap: () {
+                localeController.setLocale(const Locale('en'));
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+

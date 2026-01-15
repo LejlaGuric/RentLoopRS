@@ -30,8 +30,7 @@ namespace RentLoop.API.Controllers
             return null;
         }
 
-        // -------------------- GET: api/listings --------------------
-        // -------------------- GET: api/listings --------------------
+       
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] int? cityId,
@@ -501,7 +500,7 @@ namespace RentLoop.API.Controllers
                 Address = req.Address ?? "",
                 CityId = req.CityId,
                 RentTypeId = req.RentTypeId,
-                PricePerNight = req.PricePerNight,
+                PricePerNight = req.PricePerNight / 10,
                 RoomsCount = req.RoomsCount,
                 MaxGuests = req.MaxGuests,
                 DistanceToCenterKm = req.DistanceToCenterKm,

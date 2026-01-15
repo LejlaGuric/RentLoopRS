@@ -1,7 +1,20 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2C358D8A-6959-49E0-A337-CCA0C23BF6B8}|RentLoop.Worker\\RentLoop.Worker.csproj|c:\\users\\pc\\desktop\\rentloop\\backend\\rentloop\\rentloop.worker\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2C358D8A-6959-49E0-A337-CCA0C23BF6B8}|RentLoop.Worker\\RentLoop.Worker.csproj|solutionrelative:rentloop.worker\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop\\backend\\rentloop\\rentloop.api\\controllers\\listingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\controllers\\listingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop\\backend\\rentloop\\rentloop.api\\dtos\\listing\\listingcreateformdatarequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\dtos\\listing\\listingcreateformdatarequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,8 +22,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 0,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Worker.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.Worker\\Worker.cs",
+              "RelativeDocumentMoniker": "RentLoop.Worker\\Worker.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.Worker\\Worker.cs",
+              "RelativeToolTip": "RentLoop.Worker\\Worker.cs",
+              "ViewState": "AgIAAJIAAAAAAAAAAAAuwKIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-15T14:43:54.87Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
@@ -22,6 +48,32 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ListingsController.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\Controllers\\ListingsController.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Controllers\\ListingsController.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\Controllers\\ListingsController.cs",
+              "RelativeToolTip": "RentLoop.API\\Controllers\\ListingsController.cs",
+              "ViewState": "AgIAAOsBAAAAAAAAAAAAAPYBAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-15T14:28:50.471Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ListingCreateFormDataRequest.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\DTOs\\Listing\\ListingCreateFormDataRequest.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\DTOs\\Listing\\ListingCreateFormDataRequest.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\DTOs\\Listing\\ListingCreateFormDataRequest.cs",
+              "RelativeToolTip": "RentLoop.API\\DTOs\\Listing\\ListingCreateFormDataRequest.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAA2wB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-15T14:28:37.172Z",
+              "EditorCaption": ""
             }
           ]
         }

@@ -50,7 +50,7 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__User=guest
       - RabbitMQ__Pass=guest
-      - ConnectionStrings__DefaultConnection=Server=db;Database=220073;User Id=sa;Password=Your_strong_Passw0rd!;TrustServerCertificate=False; 
+      - ConnectionStrings__DefaultConnection=Server=db;Database=220073;User Id=sa;Password=Your_strong_Passw0rd!;TrustServerCertificate=True; 
 
 volumes:
   rentloop_sql_data:

@@ -172,7 +172,7 @@ class _FiltersSheetState extends State<FiltersSheet> {
             DropdownButtonFormField<int?>(
               value: _rentTypeId,
               decoration: const InputDecoration(
-                labelText: 'Tip rentanja',
+                labelText: 'Tip izdavanja',
                 border: OutlineInputBorder(),
               ),
               items: [

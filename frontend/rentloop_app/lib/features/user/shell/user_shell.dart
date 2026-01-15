@@ -4,7 +4,6 @@ import '../pages/home_page.dart';
 import '../pages/notifications_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/favorites_page.dart';
-import '../widgets/language_sheet.dart';
 
 class UserShell extends StatefulWidget {
   const UserShell({super.key});
@@ -25,15 +24,6 @@ class _UserShellState extends State<UserShell> {
   void _openFavorites() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const FavoritesPage()),
-    );
-  }
-
-  void _openLanguagePicker() {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: Colors.white,
-      builder: (_) => const LanguageSheet(),
     );
   }
 
@@ -79,12 +69,6 @@ class _UserShellState extends State<UserShell> {
         ),
 
         actions: [
-          IconButton(
-            tooltip: 'Jezik',
-            icon: const Icon(Icons.language, size: 34),
-            color: blue,
-            onPressed: _openLanguagePicker,
-          ),
           IconButton(
             tooltip: 'Favoriti',
             icon: const Icon(Icons.favorite_border, size: 34),
@@ -163,9 +147,7 @@ class _NavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected
-        ? Colors.white
-        : Colors.white.withOpacity(0.7);
+    final color = selected ? Colors.white : Colors.white.withOpacity(0.7);
 
     return InkWell(
       onTap: onTap,

@@ -239,19 +239,16 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
 
         const SizedBox(height: 12),
 
-        _section(
-          title: 'Opcije',
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _chip(d.hasWifi ? 'WiFi' : 'Bez WiFi', icon: Icons.wifi),
-              _chip(d.hasAirConditioning ? 'Klima' : 'Bez klime', icon: Icons.ac_unit),
-              _chip(d.petsAllowed ? 'Pets allowed' : 'No pets', icon: Icons.pets),
-              _chip('Udaljenost: ${d.distanceToCenterKm.toStringAsFixed(1)} km', icon: Icons.map_outlined),
-            ],
-          ),
-        ),
+  _section(
+  title: 'Udaljenost',
+  child: Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      _chip('Udaljenost: ${d.distanceToCenterKm.toStringAsFixed(1)} km', icon: Icons.map_outlined),
+    ],
+  ),
+),    
 
         if (d.selectedAmenities.isNotEmpty) ...[
           const SizedBox(height: 12),
