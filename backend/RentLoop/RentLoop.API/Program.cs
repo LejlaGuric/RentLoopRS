@@ -142,7 +142,7 @@ if (app.Environment.IsDevelopment())
 // ✅ CORS middleware ide ovdje (poslije Build, prije Auth)
 app.UseCors("SpaCors");
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
