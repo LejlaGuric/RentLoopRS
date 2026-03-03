@@ -1,142 +1,168 @@
-# RentLoop_RS2
+# RentLoop – Property Rental Platform
 
-Seminarski rad iz predmeta **Razvoj softvera 2**  
-Fakultet informacijskih tehnologija, Mostar
+RentLoop is a property rental platform developed as a seminar project for the course **Razvoj softvera 2** at the Faculty of Information Technologies, Mostar.
 
----
+The system enables users to browse and reserve properties, communicate with administrators in real time, make online payments, and receive automated notifications.
 
-## 📖 O projektu
+The solution consists of:
 
-**RentLoop** je platforma za iznajmljivanje nekretnina koja omogućava korisnicima:
-- pregled i pretragu nekretnina
-- pravljenje rezervacija
-- upravljanje favoritima
-- ostavljanje recenzija
-- primanje notifikacija
-- online plaćanje putem PayPal-a
-- real-time komunikaciju između korisnika i administratora
-
-Projekat se sastoji od **backend API-ja**, **desktop admin aplikacije** i
-**mobilne aplikacije**.
+- .NET 8 Web API backend  
+- Flutter Desktop application (Windows)  
+- Flutter Mobile application (Android)  
+- SQL Server database  
+- RabbitMQ message broker  
 
 ---
 
-## 🚀 Upute za pokretanje
+# How to Run the Project
 
-### Backend / infrastruktura (Docker)
+## Environment Setup
 
-#### Preduslovi
-- Docker Desktop
-- .NET SDK
-- Flutter
+Make sure the following tools are installed:
 
-#### Pokretanje
+- Docker Desktop  
+- .NET SDK 8  
+- Flutter SDK  
 
-1. Klonirati repozitorij:
+Docker Desktop must be running before starting the project.
 
-```bash
-git clone <LINK_REPOZITORIJA>
-cd <IME_PROJEKTA>
-```
+---
 
-Pokrenuti Docker
-(Docker Desktop mora biti aktivan)
+## Start Backend Services
 
-U root folderu projekta pokrenuti:
+In the root project folder (where `docker-compose.yml` is located), run:
 
 ```bash
-docker compose up -d
+docker compose up --build
+```
+Wait until all containers are fully initialized.
+
+---
+
+# Desktop and Mobile Applications
+
+## Windows Desktop Application
+
+Location:
+
+```
+frontend/rentloop_app/deliverables/windows/Release
 ```
 
-Ovom komandom se pokreću:
-
-SQL Server baza podataka
-
-RabbitMQ
-
-Backend API
-
-Sačekati da se svi servisi uspješno pokrenu.
-
-## 🌐 Swagger / API
-Swagger dokumentacija backend API-ja dostupna je na:
+Run:
 
 ```bash
-https://localhost:7000/swagger/index.html
-```
-ili
-
-```bash
-http://localhost:5068/swagger/index.html
+rentloop_app.exe
 ```
 
-## 🗄️ Migracije i baza podataka
-Ako se baza pokreće prvi put, potrebno je izvršiti migracije.
+---
 
-```bash
-dotnet ef database update --project RentLoop.API
+## Android Mobile Application
+
+Location:
+
 ```
+frontend/rentloop_app/deliverables/android
 ```
-Update-Database
+
+Install on Android device:
+
 ```
-Ako migracije već postoje u projektu, nije potrebno dodavati nove.
-
-## 📱 Desktop i mobilna aplikacija
-### Mobilna aplikacija
-Za pokretanje mobilne aplikacije potrebno je imati aktivan emulator
-```bash
-flutter pub get
-flutter run
+app-release.apk
 ```
-### Desktop aplikacija
-```bash
 
-flutter pub get
-flutter run -d windows
+(Enable installation from unknown sources if required.)
+
+---
+
+# Login Credentials (Seed Data)
+
+## Administrator (Desktop & Mobile)
+
 ```
-### ⚠️ Bitne napomene
-Mobilna i desktop aplikacija ne rade na istom localhostu
-
-Obje aplikacije koriste isti backend API
-
-Docker Desktop mora biti aktivan da bi backend API, baza i RabbitMQ radili ispravno.
-
-## 💳 Online plaćanje (PayPal)
-Aplikacija podržava online plaćanje putem PayPal Sandbox testnog okruženja.
-
-Plaćanje je testirano korištenjem PayPal sandbox naloga (buyer/seller) koji su
-konfigurisani unutar PayPal Developer okruženja.
-
-## 🔐 Kredencijali za prijavu (seed podaci)
-### Administrator
-
 Email: admin
-
 Password: admin
+```
 
-### Korisnik
+## Regular User
 
+```
 Email: demo
-
 Password: demo
+```
 
-## 🔧 Mikroservisi i real-time funkcionalnosti
-Aplikacija koristi RabbitMQ za asinhrone procese i notifikacije, te
-SignalR za real-time komunikaciju (chat između administratora i korisnika).
+---
 
-## 🛠️ Tehnologije
-Backend: ASP.NET Core
+# Online Payment (PayPal Sandbox)
 
-ORM: Entity Framework Core
+The system supports online payments using the PayPal Sandbox environment.
 
-Frontend: Flutter (desktop i mobilna aplikacija)
+## PayPal Sandbox Test Credentials
 
-Baza podataka: SQL Server
+```
+Email: sb-2vl2448691010@personal.example.com
+Password: m)lO,Yi6
+```
 
-Real-time komunikacija: SignalR
+These credentials are intended strictly for testing purposes within the PayPal Sandbox environment.
 
-Message broker: RabbitMQ
+---
 
-Online plaćanje: PayPal
+# RabbitMQ & Notification System
 
-Containerization: Docker
+RabbitMQ is used for asynchronous communication and background processing.
+
+The system handles:
+
+- Reservation confirmations  
+- Notification events  
+- Background processing tasks  
+
+This architecture ensures scalable and non-blocking API operations.
+
+---
+
+# Real-Time Communication
+
+RentLoop uses SignalR for real-time chat between administrators and users.
+
+Messages are delivered instantly without manual refresh.
+
+---
+
+# Technologies Used
+
+**Backend**
+- .NET 8 Web API  
+- Entity Framework Core  
+- SQL Server  
+
+**Frontend**
+- Flutter (Windows Desktop & Android Mobile)
+
+**Real-time Communication**
+- SignalR  
+
+**Message Broker**
+- RabbitMQ  
+
+**Online Payment**
+- PayPal (Sandbox)
+
+**Containerization**
+- Docker & Docker Compose  
+
+---
+
+# Key Features
+
+- Property browsing and advanced filtering  
+- Reservation system  
+- Online payments via PayPal  
+- Real-time chat system  
+- User authentication & authorization  
+- Favorites functionality  
+- Review and rating system  
+- Personalized recommendations  
+- Admin management dashboard  
+- Asynchronous notification processing  
