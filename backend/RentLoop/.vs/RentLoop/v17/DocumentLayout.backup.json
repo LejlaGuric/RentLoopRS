@@ -1,7 +1,16 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{12CDA649-12BE-4433-B62C-680AC8924851}|Solution Items{12CDA649-12BE-4433-B62C-680AC8924851}|C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{12CDA649-12BE-4433-B62C-680AC8924851}|Solution Items{12CDA649-12BE-4433-B62C-680AC8924851}|solutionrelative:docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -22,6 +31,32 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "docker-compose.yml",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\docker-compose.yml",
+              "RelativeDocumentMoniker": "docker-compose.yml",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\docker-compose.yml",
+              "RelativeToolTip": "docker-compose.yml",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
+              "WhenOpened": "2026-03-03T15:18:05.608Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Program.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Program.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Program.cs",
+              "RelativeToolTip": "RentLoop.API\\Program.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAACcAAABfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T14:18:29.973Z",
+              "EditorCaption": ""
             }
           ]
         }

@@ -42,10 +42,37 @@ public class Worker : BackgroundService
                         Port = 5672,
                         UserName = user,
                         Password = pass,
-                        DispatchConsumersAsync = true
+                        DispatchConsumersAsync = true,
+
+                        AutomaticRecoveryEnabled = true,
+                        TopologyRecoveryEnabled = true,
+                        NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
                     };
 
-                    _connection = factory.CreateConnection();
+                    IConnection? conn = null;
+
+                    for (var attempt = 1; attempt <= 30; attempt++)
+                    {
+                        try
+                        {
+                            Console.WriteLine($"⏳ Connecting to RabbitMQ ({host})... attempt {attempt}/30");
+                            conn = factory.CreateConnection();
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"❌ RabbitMQ connect failed: {ex.Message}");
+                            await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
+                        }
+                    }
+
+                    if (conn == null)
+                    {
+                        Console.WriteLine("❌ RabbitMQ not reachable after retries. Worker will stop.");
+                        return;
+                    }
+
+                    _connection = conn; ;
 
                     _connection.ConnectionShutdown += (_, e) =>
                         Console.WriteLine($"❌ Rabbit connection shutdown: {e.ReplyText}");

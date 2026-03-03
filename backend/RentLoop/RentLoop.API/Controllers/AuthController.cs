@@ -26,8 +26,6 @@ namespace RentLoop.API.Controllers
             _config = config;
         }
 
-
- 
         public class DevSetPasswordReq
         {
             public string Value { get; set; } = "";     // username ili email
@@ -196,7 +194,10 @@ namespace RentLoop.API.Controllers
             var key = jwt["Key"]!;
             var issuer = jwt["Issuer"]!;
             var audience = jwt["Audience"]!;
-            var expiresMinutes = int.Parse(jwt["ExpiresMinutes"]!);
+
+            // ✅ FIX: ne smije pucati ako ExpiresMinutes nije postavljen (npr. u Dockeru)
+            var expiresStr = jwt["ExpiresMinutes"];
+            var expiresMinutes = int.TryParse(expiresStr, out var m) ? m : 60; // default 60 min
 
             var claims = new List<Claim>
             {

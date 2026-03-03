@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Connections;
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
-using RentLoop.API.Messaging;
-
 
 namespace RentLoop.API.Messaging;
 
@@ -24,12 +21,12 @@ public class RabbitMqPublisher
     {
         var factory = new ConnectionFactory
         {
-            HostName = "localhost",
+            HostName = _host,     // ✅ koristi docker host
             Port = 5672,
-            UserName = "guest",
-            Password = "guest"
+            UserName = _user,
+            Password = _pass,
+            DispatchConsumersAsync = true
         };
-
 
         using var conn = factory.CreateConnection();
         using var ch = conn.CreateModel();

@@ -37,7 +37,7 @@ Console.WriteLine("DB = " + builder.Configuration.GetConnectionString("DefaultCo
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("SpaCors", p => p
-        .WithOrigins("http://localhost:4200", "https://localhost:4200")
+        .WithOrigins("http://localhost:4200", "https://localhost:4200", "http://localhost:5068")
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials()
@@ -133,11 +133,10 @@ using (var scope = app.Services.CreateScope())
 
 
 // Swagger
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 // ✅ CORS middleware ide ovdje (poslije Build, prije Auth)
 app.UseCors("SpaCors");
