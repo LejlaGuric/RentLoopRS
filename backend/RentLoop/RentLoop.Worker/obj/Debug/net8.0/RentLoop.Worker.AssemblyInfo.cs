@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RentLoop.Worker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9622b18edcda3b521775fe734d16b2fe104553cc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a0f7b5f615cfa865c2526ffba4abc9f88398a8ff")]
 [assembly: System.Reflection.AssemblyProductAttribute("RentLoop.Worker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RentLoop.Worker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

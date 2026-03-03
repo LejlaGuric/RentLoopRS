@@ -29,6 +29,8 @@ class _AdminConversationPageState extends State<AdminConversationPage> {
   String _error = '';
   List<ChatMessageDto> _messages = [];
 
+  bool _rtConnected = false;
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +45,47 @@ class _AdminConversationPageState extends State<AdminConversationPage> {
     super.dispose();
   }
 
+  /// ✅ Samo osvježi poruke (bez reconnecta)
+  Future<void> _reloadMessagesOnly() async {
+    try {
+      final msgs = await _svc.getMessages(widget.conversationId);
+      if (!mounted) return;
+
+      setState(() => _messages = msgs);
+      _scrollToBottom();
+
+      // nije obavezno, ali fino je
+      await _svc.markRead(widget.conversationId);
+    } catch (_) {
+      // namjerno ignorisemo da ne "puca" chat UI
+    }
+  }
+
+  /// ✅ Osiguraj realtime konekciju samo jednom
+  Future<void> _ensureRealtimeConnected() async {
+    if (_rtConnected) return;
+
+    await _rt.connect(
+      conversationId: widget.conversationId,
+      onNewMessage: (raw) async {
+        final msg = ChatMessageDto.fromJson(raw);
+        if (!mounted) return;
+
+        // 1) odmah dodaj da se vidi instant
+        setState(() {
+          final exists = _messages.any((x) => x.id == msg.id);
+          if (!exists) _messages.add(msg);
+        });
+        _scrollToBottom();
+
+        // 2) onda povuci "pravu verziju" poruka (kao refresh) da isMine odmah bude tačan
+        await _reloadMessagesOnly();
+      },
+    );
+
+    _rtConnected = true;
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -50,30 +93,22 @@ class _AdminConversationPageState extends State<AdminConversationPage> {
     });
 
     try {
-      final msgs = await _svc.getMessages(widget.conversationId);
+      // ✅ ako refreshas vise puta, da ne ostanu duple konekcije
+      if (_rtConnected) {
+        _rt.disconnect(widget.conversationId);
+        _rtConnected = false;
+      }
 
+      final msgs = await _svc.getMessages(widget.conversationId);
       if (!mounted) return;
+
       setState(() => _messages = msgs);
 
-      await _rt.connect(
-        conversationId: widget.conversationId,
-        onNewMessage: (raw) {
-          final msg = ChatMessageDto.fromJson(raw);
-          if (!mounted) return;
-
-          setState(() {
-            final exists = _messages.any((x) => x.id == msg.id);
-            if (!exists) _messages.add(msg);
-          });
-
-          _scrollToBottom();
-          _svc.markRead(widget.conversationId);
-        },
-      );
-
       await _svc.markRead(widget.conversationId);
-
       _scrollToBottom();
+
+      // ✅ connect realtime (samo jednom)
+      await _ensureRealtimeConnected();
 
       if (mounted) setState(() => _loading = false);
     } catch (e) {
@@ -104,13 +139,16 @@ class _AdminConversationPageState extends State<AdminConversationPage> {
 
     try {
       await _rt.sendMessage(widget.conversationId, text);
+
+      // ✅ AUTO-REFRESH: isto kao da si kliknula refresh
+      await _reloadMessagesOnly();
     } catch (e) {
       // fallback REST
       try {
-        final sent = await _svc.sendMessageRest(widget.conversationId, text);
-        if (!mounted) return;
-        setState(() => _messages.add(sent));
-        _scrollToBottom();
+        await _svc.sendMessageRest(widget.conversationId, text);
+
+        // ✅ AUTO-REFRESH i u fallbacku
+        await _reloadMessagesOnly();
       } catch (e2) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -180,6 +218,8 @@ class _AdminConversationPageState extends State<AdminConversationPage> {
                   itemCount: _messages.length,
                   itemBuilder: (_, i) {
                     final m = _messages[i];
+
+                    // ✅ ostavljamo kako je sad (auto-refresh rješava pogrešno poravnanje odmah)
                     final isMine = m.isMine;
 
                     return Padding(

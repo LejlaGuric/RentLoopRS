@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../models/chat_message_dto.dart';
 import '../services/chat_realtime_service.dart';
 import '../services/chat_service.dart';
-import '../services/chat_realtime_service.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -25,6 +24,8 @@ class _ChatPageState extends State<ChatPage> {
   int? _conversationId;
   List<ChatMessageDto> _messages = [];
 
+  bool _rtConnected = false;
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +43,49 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
+  /// ✅ Samo osvježi poruke (bez reconnecta)
+  Future<void> _reloadMessagesOnly() async {
+    final convId = _conversationId;
+    if (convId == null) return;
+
+    try {
+      final msgs = await _svc.getMessages(convId);
+      if (!mounted) return;
+
+      setState(() => _messages = msgs);
+      _scrollToBottom();
+
+      await _svc.markRead(convId);
+    } catch (_) {
+      // ignorisi
+    }
+  }
+
+  /// ✅ Osiguraj realtime konekciju samo jednom
+  Future<void> _ensureRealtimeConnected(int convId) async {
+    if (_rtConnected) return;
+
+    await _rt.connect(
+      conversationId: convId,
+      onNewMessage: (raw) async {
+        final msg = ChatMessageDto.fromJson(raw);
+        if (!mounted) return;
+
+        // 1) odmah dodaj (instant)
+        setState(() {
+          final exists = _messages.any((x) => x.id == msg.id);
+          if (!exists) _messages.add(msg);
+        });
+        _scrollToBottom();
+
+        // 2) onda povuci pravu verziju poruka (kao refresh) da isMine bude odmah tačan
+        await _reloadMessagesOnly();
+      },
+    );
+
+    _rtConnected = true;
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -49,6 +93,12 @@ class _ChatPageState extends State<ChatPage> {
     });
 
     try {
+      // ✅ ako refreshas vise puta, prekini staru konekciju
+      if (_rtConnected && _conversationId != null) {
+        _rt.disconnect(_conversationId!);
+        _rtConnected = false;
+      }
+
       final convId = await _svc.getMyConversationId();
       final msgs = await _svc.getMessages(convId);
 
@@ -58,30 +108,11 @@ class _ChatPageState extends State<ChatPage> {
         _messages = msgs;
       });
 
-      // Connect SignalR
-      await _rt.connect(
-        conversationId: convId,
-        onNewMessage: (raw) {
-          final msg = ChatMessageDto.fromJson(raw);
-
-          if (!mounted) return;
-          setState(() {
-            // izbjegni duplikate
-            final exists = _messages.any((x) => x.id == msg.id);
-            if (!exists) _messages.add(msg);
-          });
-
-          _scrollToBottom();
-
-          // opcionalno: čim stigne poruka, mark read
-          _svc.markRead(convId);
-        },
-      );
-
-      // mark read kad otvori chat
       await _svc.markRead(convId);
-
       _scrollToBottom();
+
+      // ✅ connect realtime (samo jednom)
+      await _ensureRealtimeConnected(convId);
 
       if (mounted) setState(() => _loading = false);
     } catch (e) {
@@ -116,14 +147,16 @@ class _ChatPageState extends State<ChatPage> {
     try {
       // Primarno: SignalR
       await _rt.sendMessage(convId, text);
-      // Server će poslati NewMessage event pa će se poruka dodati u listu.
+
+      // ✅ AUTO-REFRESH: isto kao da si kliknula refresh
+      await _reloadMessagesOnly();
     } catch (e) {
-      // Fallback: REST (da ne “propadne” poruka)
+      // Fallback: REST
       try {
-        final sent = await _svc.sendMessageRest(convId, text);
-        if (!mounted) return;
-        setState(() => _messages.add(sent));
-        _scrollToBottom();
+        await _svc.sendMessageRest(convId, text);
+
+        // ✅ AUTO-REFRESH i u fallbacku
+        await _reloadMessagesOnly();
       } catch (e2) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -193,6 +226,8 @@ class _ChatPageState extends State<ChatPage> {
                   itemCount: _messages.length,
                   itemBuilder: (_, i) {
                     final m = _messages[i];
+
+                    // ✅ ostavljamo kako je sad (auto-refresh rješava poravnanje odmah)
                     final isMine = m.isMine;
 
                     return Padding(
@@ -210,13 +245,9 @@ class _ChatPageState extends State<ChatPage> {
                             ),
                           ),
                           child: Column(
-                            crossAxisAlignment:
-                                isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                            crossAxisAlignment: isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                m.text,
-                                style: const TextStyle(fontWeight: FontWeight.w700),
-                              ),
+                              Text(m.text, style: const TextStyle(fontWeight: FontWeight.w700)),
                               const SizedBox(height: 6),
                               Text(
                                 _fmtTime(m.sentAt),
@@ -236,8 +267,6 @@ class _ChatPageState extends State<ChatPage> {
               },
             ),
           ),
-
-          // Input bar
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
@@ -283,3 +312,4 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 }
+

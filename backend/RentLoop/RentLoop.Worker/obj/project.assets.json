@@ -4104,11 +4104,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.Worker\\RentLoop.Worker.csproj",
+      "projectUniqueName": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.Worker\\RentLoop.Worker.csproj",
       "projectName": "RentLoop.Worker",
-      "projectPath": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.Worker\\RentLoop.Worker.csproj",
+      "projectPath": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.Worker\\RentLoop.Worker.csproj",
       "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.Worker\\obj\\",
+      "outputPath": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.Worker\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4129,8 +4129,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\RentLoop.API.csproj": {
-              "projectPath": "C:\\Users\\PC\\Desktop\\RentLoop\\backend\\RentLoop\\RentLoop.API\\RentLoop.API.csproj"
+            "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\RentLoop.API.csproj": {
+              "projectPath": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\RentLoop.API.csproj"
             }
           }
         }

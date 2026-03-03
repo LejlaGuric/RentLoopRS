@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RentLoop.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ea004c69f23003cb56c533c1969bc5ad3169f1d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a0f7b5f615cfa865c2526ffba4abc9f88398a8ff")]
 [assembly: System.Reflection.AssemblyProductAttribute("RentLoop.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RentLoop.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
