@@ -1,7 +1,28 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\controllers\\listingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\controllers\\listingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\models\\listing.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\models\\listing.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\models\\reservation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\models\\reservation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\models\\listingview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\models\\listingview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\models\\searchhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\models\\searchhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,8 +30,73 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 4,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Listing.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Models\\Listing.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Models\\Listing.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Models\\Listing.cs",
+              "RelativeToolTip": "RentLoop.API\\Models\\Listing.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T04:51:02.708Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Reservation.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Models\\Reservation.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Models\\Reservation.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Models\\Reservation.cs",
+              "RelativeToolTip": "RentLoop.API\\Models\\Reservation.cs",
+              "ViewState": "AgIAABcAAAAAAAAAAAAiwCgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T04:50:52.602Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ListingView.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Models\\ListingView.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Models\\ListingView.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Models\\ListingView.cs",
+              "RelativeToolTip": "RentLoop.API\\Models\\ListingView.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T04:50:40.4Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "SearchHistory.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Models\\SearchHistory.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Models\\SearchHistory.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Models\\SearchHistory.cs",
+              "RelativeToolTip": "RentLoop.API\\Models\\SearchHistory.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAiwBsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T04:50:25.067Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ListingsController.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Controllers\\ListingsController.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Controllers\\ListingsController.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Controllers\\ListingsController.cs",
+              "RelativeToolTip": "RentLoop.API\\Controllers\\ListingsController.cs",
+              "ViewState": "AgIAALgAAAAAAAAAAAAAANgAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T04:49:03.482Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
