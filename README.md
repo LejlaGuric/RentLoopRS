@@ -33,9 +33,19 @@ Docker Desktop must be running before starting the project.
 In the root project folder (where `docker-compose.yml` is located), run:
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 Wait until all containers are fully initialized.
+
+After starting the application with Docker, the API documentation is available at:
+
+http://localhost:5068/swagger
+
+You can also access it directly via:
+
+http://localhost:5068/swagger/index.html
+
+Swagger allows you to test all available API endpoints, including authentication, reservations, payments, and messaging.
 
 ---
 
