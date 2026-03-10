@@ -11,12 +11,24 @@ import '../models/admin_listing_list_item.dart';
 class AdminListingsService {
   final ApiClient _api = ApiClient();
 
-  Future<List<AdminListingListItem>> getAll() async {
-    final res = await _api.get('/api/listings');
+  Future<List<AdminListingListItem>> getAll({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final res = await _api.get(
+      '/api/listings',
+      query: {
+        'page': page,
+        'pageSize': pageSize,
+      },
+    );
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      final list = jsonDecode(res.body) as List<dynamic>;
-      return list.map((e) => AdminListingListItem.fromJson(e as Map<String, dynamic>)).toList();
+      final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+      final list = decoded['items'] as List<dynamic>;
+      return list
+          .map((e) => AdminListingListItem.fromJson(e as Map<String, dynamic>))
+          .toList();
     }
 
     throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri učitavanju stanova.');

@@ -45,3 +45,7 @@ logs/
 appsettings.Development.json
 .env
 **/*.secret*
+
+
+.env
+**/.env

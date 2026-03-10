@@ -27,14 +27,14 @@ class NotificationsService {
   }
 
   Future<void> markAsRead(int id) async {
-    // ✅ ApiClient.post očekuje (path, body, {auth})
-    final res = await _api.post(
+    final res = await _api.put(
       '/api/notifications/$id/read',
       {},
       auth: true,
     );
 
-    // ako endpoint još ne postoji, samo ignoriši
-    if (res.statusCode < 200 || res.statusCode >= 300) return;
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri označavanju notifikacije kao pročitane.');
+    }
   }
 }

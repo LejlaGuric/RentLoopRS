@@ -28,14 +28,18 @@ namespace RentLoop.API.Controllers
         private int GetUserId()
         {
             var raw = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+
             if (string.IsNullOrWhiteSpace(raw))
-                throw new Exception("Invalid token: missing user id.");
-            return int.Parse(raw);
+                return 0;
+
+            if (!int.TryParse(raw, out var userId))
+                return 0;
+
+            return userId;
         }
 
         private static bool IsApproved(Reservation r) => r.StatusId == 2;
 
-        // DTOs (unutra radi copy/paste, možeš kasnije izvući u poseban fajl)
         public record CreatePayPalOrderRequest(int ReservationId);
         public record CreatePayPalOrderResponse(string OrderId, string ApproveUrl);
 
@@ -44,11 +48,12 @@ namespace RentLoop.API.Controllers
 
         public record DevPaidRequest(int ReservationId);
 
-        // 1) Create PayPal order (samo ako je rezervacija APPROVED i nije plaćena)
         [HttpPost("paypal/create-order")]
         public async Task<ActionResult<CreatePayPalOrderResponse>> CreatePayPalOrder([FromBody] CreatePayPalOrderRequest req)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var r = await _db.Reservations.FirstOrDefaultAsync(x => x.Id == req.ReservationId);
             if (r == null) return NotFound("Reservation not found.");
@@ -60,19 +65,24 @@ namespace RentLoop.API.Controllers
             if (r.IsPaid)
                 return BadRequest("Reservation already paid.");
 
-            // dodatna zaštita: ako već ima CAPTURED payment
             var alreadyCaptured = await _db.Payments.AnyAsync(p =>
                 p.ReservationId == r.Id && p.Provider == "PayPal" && p.Status == "CAPTURED");
 
             if (alreadyCaptured)
                 return BadRequest("Reservation already paid (CAPTURED payment exists).");
 
+            var openPaymentExists = await _db.Payments.AnyAsync(p =>
+                p.ReservationId == r.Id && p.Provider == "PayPal" &&
+                (p.Status == "CREATED" || p.Status == "APPROVED" || p.Status == "PAYER_ACTION_REQUIRED"));
+
+            if (openPaymentExists)
+                return BadRequest("Already exists open PayPal payment for this reservation.");
+
             var amount = r.TotalPrice;
             var currency = "EUR";
 
             var (orderId, approveUrl) = await _pp.CreateOrder(amount, currency, $"reservation-{r.Id}");
 
-            // upiši payment CREATED
             _db.Payments.Add(new Payment
             {
                 UserId = userId,
@@ -88,11 +98,12 @@ namespace RentLoop.API.Controllers
             return Ok(new CreatePayPalOrderResponse(orderId, approveUrl));
         }
 
-        // 2) Capture PayPal order (tek nakon approve)
         [HttpPost("paypal/capture")]
         public async Task<ActionResult<CapturePayPalResponse>> CapturePayPal([FromBody] CapturePayPalRequest req)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var payment = await _db.Payments
                 .Include(p => p.Reservation)
@@ -114,7 +125,6 @@ namespace RentLoop.API.Controllers
                 payment.Status = "CAPTURED";
                 payment.CapturedAt = DateTime.UtcNow;
 
-                // Reservation: označi kao plaćenu
                 if (payment.Reservation != null)
                 {
                     payment.Reservation.IsPaid = true;
@@ -130,14 +140,15 @@ namespace RentLoop.API.Controllers
             return Ok(new CapturePayPalResponse(status));
         }
 
-        // 3) DEV ONLY: simuliraj uspješno plaćanje (kad PayPal sandbox UI puca)
         [HttpPost("paypal/dev-force-paid")]
         public async Task<IActionResult> DevForcePaid([FromBody] DevPaidRequest req)
         {
             if (!_env.IsDevelopment())
-                return NotFound(); // sakrij u production
+                return NotFound();
 
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var r = await _db.Reservations.FirstOrDefaultAsync(x => x.Id == req.ReservationId);
             if (r == null) return NotFound("Reservation not found.");
@@ -149,11 +160,9 @@ namespace RentLoop.API.Controllers
             if (r.IsPaid)
                 return BadRequest("Reservation already paid.");
 
-            // označi reservation kao plaćenu
             r.IsPaid = true;
             r.PaidAt = DateTime.UtcNow;
 
-            // upiši payment kao CAPTURED
             _db.Payments.Add(new Payment
             {
                 UserId = userId,

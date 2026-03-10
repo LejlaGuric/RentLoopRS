@@ -5,12 +5,27 @@ class CreateOrderResult {
   final String orderId;
   final String approveUrl;
 
-  CreateOrderResult({required this.orderId, required this.approveUrl});
+  CreateOrderResult({
+    required this.orderId,
+    required this.approveUrl,
+  });
 
   factory CreateOrderResult.fromJson(Map<String, dynamic> json) {
     return CreateOrderResult(
       orderId: json['orderId'] as String,
       approveUrl: json['approveUrl'] as String,
+    );
+  }
+}
+
+class CapturePayPalResult {
+  final String status;
+
+  CapturePayPalResult({required this.status});
+
+  factory CapturePayPalResult.fromJson(Map<String, dynamic> json) {
+    return CapturePayPalResult(
+      status: (json['status'] as String?) ?? 'UNKNOWN',
     );
   }
 }
@@ -31,12 +46,18 @@ class PaymentsService {
 
     final json = jsonDecode(res.body) as Map<String, dynamic>;
     return CreateOrderResult.fromJson(json);
-    }
+  }
 
-  Future<String> capturePayPal(int reservationId, String orderId) async {
+  Future<CapturePayPalResult> capturePayPalOrder({
+    required int reservationId,
+    required String orderId,
+  }) async {
     final res = await _api.post(
       '/api/payments/paypal/capture',
-      {'reservationId': reservationId, 'orderId': orderId},
+      {
+        'reservationId': reservationId,
+        'orderId': orderId,
+      },
       auth: true,
     );
 
@@ -45,7 +66,15 @@ class PaymentsService {
     }
 
     final json = jsonDecode(res.body) as Map<String, dynamic>;
-    return (json['status'] as String?) ?? 'UNKNOWN';
+    return CapturePayPalResult.fromJson(json);
+  }
+
+  Future<String> capturePayPal(int reservationId, String orderId) async {
+    final result = await capturePayPalOrder(
+      reservationId: reservationId,
+      orderId: orderId,
+    );
+    return result.status;
   }
 
   Future<void> devForcePaid(int reservationId) async {

@@ -62,4 +62,12 @@ class AdminUsersService {
 
     throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri aktivaciji korisnika.');
   }
+
+  Future<void> delete(int id) async {
+  final res = await _api.deleteEmpty('/api/admin/users/$id', auth: true);
+
+  if (res.statusCode >= 200 && res.statusCode < 300) return;
+
+  throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri brisanju korisnika.');
+}
 }

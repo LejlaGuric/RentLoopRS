@@ -3,14 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
 using RentLoop.API.Models;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace RentLoop.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // mora biti ulogovan korisnik
+    [Authorize]
     public class FavoritesController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -20,32 +19,34 @@ namespace RentLoop.API.Controllers
             _db = db;
         }
 
-        // helper: uzmi userId iz JWT tokena (sub claim)
         private int GetUserId()
         {
-            var id =
-                User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? User.FindFirstValue("sub");
+            var id = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                     ?? User.FindFirstValue("sub");
 
             if (string.IsNullOrWhiteSpace(id))
-                throw new Exception("Invalid token: missing user id claim.");
+                return 0;
 
-            return int.Parse(id);
+            if (!int.TryParse(id, out var userId))
+                return 0;
+
+            return userId;
         }
 
-
-        // POST: api/favorites/{listingId}
-        // Dodaj listing u favorite
         [HttpPost("{listingId:int}")]
         public async Task<IActionResult> Add(int listingId)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var listingExists = await _db.Listings.AnyAsync(l => l.Id == listingId && l.IsActive);
-            if (!listingExists) return NotFound("Listing not found.");
+            if (!listingExists)
+                return NotFound("Listing not found.");
 
             var already = await _db.Favorites.AnyAsync(f => f.UserId == userId && f.PropertyId == listingId);
-            if (already) return Ok(new { message = "Already in favorites." });
+            if (already)
+                return Ok(new { message = "Already in favorites." });
 
             var fav = new Favorite
             {
@@ -60,17 +61,18 @@ namespace RentLoop.API.Controllers
             return Ok(new { message = "Added to favorites." });
         }
 
-        // DELETE: api/favorites/{listingId}
-        // Ukloni listing iz favorita
         [HttpDelete("{listingId:int}")]
         public async Task<IActionResult> Remove(int listingId)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var fav = await _db.Favorites
                 .FirstOrDefaultAsync(f => f.UserId == userId && f.PropertyId == listingId);
 
-            if (fav == null) return NotFound("Favorite not found.");
+            if (fav == null)
+                return NotFound("Favorite not found.");
 
             _db.Favorites.Remove(fav);
             await _db.SaveChangesAsync();
@@ -78,12 +80,12 @@ namespace RentLoop.API.Controllers
             return Ok(new { message = "Removed from favorites." });
         }
 
-        // GET: api/favorites
-        // Lista mojih favorita (za profile/favorites screen)
         [HttpGet]
         public async Task<IActionResult> MyFavorites()
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var data = await _db.Favorites
                 .AsNoTracking()
@@ -119,12 +121,12 @@ namespace RentLoop.API.Controllers
             return Ok(data);
         }
 
-        // GET: api/favorites/check/{listingId}
-        // Da li je ovaj listing u mojim favoritima?
         [HttpGet("check/{listingId:int}")]
         public async Task<IActionResult> IsFavorite(int listingId)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var isFav = await _db.Favorites
                 .AsNoTracking()

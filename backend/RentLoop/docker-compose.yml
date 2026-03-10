@@ -4,7 +4,7 @@
     container_name: rentloop-db
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=Your_strong_Passw0rd!
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
       - MSSQL_MEMORY_LIMIT_MB=1024
     ports:
       - "14330:1433"
@@ -28,8 +28,8 @@
       - "5672:5672"
       - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -52,17 +52,17 @@
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=db;Database=220073;User Id=sa;Password=Your_strong_Passw0rd!;TrustServerCertificate=True;Encrypt=False;
-      - RabbitMQ__Host=rabbitmq
-      - RabbitMQ__User=guest
-      - RabbitMQ__Pass=guest
-      - Jwt__Key=RentLoopSuperSecretKey_1234567890_ABCDEF
-      - Jwt__Issuer=RentLoop
-      - Jwt__Audience=RentLoop
-      - Jwt__ExpiresMinutes=60
-      - PayPal__Mode=sandbox
-      - PayPal__ClientId=AVEbddT2dPQCBQ6jYeRwHs8OnXDC9Tire9aaKUXgOCMaxN9rpNRO_wen1-_xROJwGP4pA9TcRZlu-w2K
-      - PayPal__ClientSecret=EOudUv7tEquT2p9gR_OcZhbb3Gxk2-KAP0zXZSX8uT8Se_q4FEeYcg63ddadgxFowZfdRy6mp3OClMT_
+      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
+      - RabbitMQ__Host=${RabbitMQ__Host}
+      - RabbitMQ__User=${RabbitMQ__User}
+      - RabbitMQ__Pass=${RabbitMQ__Pass}
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+      - Jwt__Audience=${Jwt__Audience}
+      - Jwt__ExpiresMinutes=${Jwt__ExpiresMinutes}
+      - PayPal__Mode=${PayPal__Mode}
+      - PayPal__ClientId=${PayPal__ClientId}
+      - PayPal__Secret=${PayPal__Secret}
     restart: on-failure
 
   worker:
@@ -77,10 +77,10 @@
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - RabbitMQ__Host=rabbitmq
-      - RabbitMQ__User=guest
-      - RabbitMQ__Pass=guest
-      - ConnectionStrings__DefaultConnection=Server=db;Database=220073;User Id=sa;Password=Your_strong_Passw0rd!;TrustServerCertificate=True;Encrypt=False;
+      - RabbitMQ__Host=${RabbitMQ__Host}
+      - RabbitMQ__User=${RabbitMQ__User}
+      - RabbitMQ__Pass=${RabbitMQ__Pass}
+      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
     restart: on-failure
 
 volumes:

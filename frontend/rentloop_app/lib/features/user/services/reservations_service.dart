@@ -10,6 +10,8 @@ class MyReservationDto {
   final int statusId;
   final String statusName;
   final double totalPrice;
+  final bool isPaid;
+  final DateTime? paidAt;
 
   MyReservationDto({
     required this.id,
@@ -20,6 +22,8 @@ class MyReservationDto {
     required this.statusId,
     required this.statusName,
     required this.totalPrice,
+    required this.isPaid,
+    required this.paidAt,
   });
 
   static DateTime? _tryParseDate(dynamic v) {
@@ -89,6 +93,8 @@ class MyReservationDto {
       statusId: statusId,
       statusName: statusName,
       totalPrice: totalPrice,
+      isPaid: (j['isPaid'] ?? false) == true,
+      paidAt: _tryParseDate(j['paidAt']),
     );
   }
 }
@@ -131,6 +137,14 @@ class ReservationsService {
     final list = jsonDecode(res.body) as List<dynamic>;
     return list.map((e) => MyReservationDto.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  Future<void> cancelReservation(int id) async {
+  final res = await _api.putEmpty('/api/reservations/$id/cancel', auth: true);
+
+  if (res.statusCode < 200 || res.statusCode >= 300) {
+    throw Exception(res.body.isEmpty ? 'Greška pri otkazivanju rezervacije.' : res.body);
+  }
+}
 
   /// Kreira rezervaciju (PENDING)
   /// POST /api/reservations

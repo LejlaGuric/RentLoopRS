@@ -8,7 +8,15 @@ class ListingsService {
   final ApiClient _api = ApiClient();
 
   List<ListingCard> _parseCards(String body) {
-    final list = jsonDecode(body) as List<dynamic>;
+    final decoded = jsonDecode(body);
+
+    if (decoded is List) {
+      return decoded
+          .map((e) => ListingCard.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    final list = decoded['items'] as List<dynamic>;
     return list
         .map((e) => ListingCard.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -22,7 +30,9 @@ class ListingsService {
     int? rooms,
     int? guests,
     String? sort,
-    String? q, // ✅ SEARCH PO NAZIVU
+    String? q,
+    int page = 1,
+    int pageSize = 20,
   }) async {
     final query = <String, dynamic>{
       'cityId': cityId,
@@ -32,9 +42,10 @@ class ListingsService {
       'rooms': rooms,
       'guests': guests,
       'sort': sort,
+      'page': page,
+      'pageSize': pageSize,
     };
 
-    // ✅ dodaj q samo ako nije prazno
     final term = q?.trim();
     if (term != null && term.isNotEmpty) {
       query['q'] = term;
@@ -43,7 +54,7 @@ class ListingsService {
     final res = await _api.get(
       '/api/listings',
       query: query,
-      auth: false, // ✅ listings ti je public endpoint
+      auth: false,
     );
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -78,7 +89,6 @@ class ListingsService {
   }
 
   Future<void> logView(int listingId) async {
-    // Ako nemaš endpoint, ne ruši app
     try {
       await _api.postEmpty('/api/listings/$listingId/view', auth: true);
     } catch (_) {}

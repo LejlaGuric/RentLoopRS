@@ -160,7 +160,8 @@ namespace RentLoop.API.Data
             modelBuilder.Entity<ReservationStatus>().HasData(
                 new ReservationStatus { Id = 1, Name = "Pending" },
                 new ReservationStatus { Id = 2, Name = "Approved" },
-                new ReservationStatus { Id = 3, Name = "Rejected" }
+                new ReservationStatus { Id = 3, Name = "Rejected" },
+                new ReservationStatus { Id = 4, Name = "Cancelled" }
             );
 
             modelBuilder.Entity<NotificationType>().HasData(

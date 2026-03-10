@@ -1,12 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/notification_item.dart';
 import '../services/notifications_service.dart';
-// ✅ CHAT: dodaj ovo (ChatPage u istom folderu)
 import '../../chat/pages/chat_page.dart';
-
-// ako želiš kasnije navigaciju na oglas:
-// import 'listing_details_page.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -19,13 +16,30 @@ class _NotificationsPageState extends State<NotificationsPage> {
   final _svc = NotificationsService();
 
   bool _loading = true;
+  bool _refreshingSilently = false;
   String _error = '';
   List<NotificationItem> _items = [];
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _startAutoRefresh();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoRefresh() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
+      if (!mounted) return;
+      await _loadSilently();
+    });
   }
 
   Future<void> _load() async {
@@ -37,7 +51,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     try {
       final items = await _svc.myNotifications();
 
-      // sort: newest first
       items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       if (!mounted) return;
@@ -52,6 +65,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
+  Future<void> _loadSilently() async {
+    if (_refreshingSilently) return;
+
+    _refreshingSilently = true;
+    try {
+      final items = await _svc.myNotifications();
+      items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      if (!mounted) return;
+      setState(() {
+        _items = items;
+      });
+    } catch (_) {
+      // namjerno bez error poruke kod silent refresh
+    } finally {
+      _refreshingSilently = false;
+    }
+  }
+
   String _fmt(DateTime d) {
     final dd = d.day.toString().padLeft(2, '0');
     final mm = d.month.toString().padLeft(2, '0');
@@ -61,17 +93,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   IconData _iconFor(NotificationItem n) {
-    // možeš proširiti po typeId
-    if (n.typeId == 1) return Icons.check_circle_rounded; // approved
-    if (n.typeId == 2) return Icons.close_rounded; // rejected
+    if (n.typeId == 2) return Icons.check_circle_rounded;
+    if (n.typeId == 1) return Icons.close_rounded;
     return Icons.notifications_rounded;
   }
 
   Future<void> _open(NotificationItem n) async {
-    // opcionalno označi kao pročitano
     if (!n.isRead) {
-      await _svc.markAsRead(n.id);
-      // lokalno osvježi state da odmah izgleda pročitano
+      try {
+        await _svc.markAsRead(n.id);
+      } catch (_) {}
+
       if (!mounted) return;
       setState(() {
         _items = _items
@@ -90,13 +122,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
             .toList();
       });
     }
-
-    // kasnije možeš navigaciju:
-    // if (n.relatedPropertyId != null) {
-    //   Navigator.of(context).push(
-    //     MaterialPageRoute(builder: (_) => ListingDetailsPage(listingId: n.relatedPropertyId!)),
-    //   );
-    // }
   }
 
   @override
@@ -132,7 +157,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ],
         ),
         actions: [
-          // ✅ CHAT: dugme za chat
           IconButton(
             tooltip: 'Chat',
             onPressed: () {
@@ -142,7 +166,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
             },
             icon: const Icon(Icons.chat_bubble_rounded),
           ),
-
           IconButton(
             tooltip: 'Osvježi',
             onPressed: _load,
@@ -161,12 +184,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
               const Center(child: CircularProgressIndicator()),
               const SizedBox(height: 60),
             ] else if (_error.isNotEmpty) ...[
-              Text(_error, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+              Text(
+                _error,
+                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700),
+              ),
             ] else if (_items.isEmpty) ...[
               const SizedBox(height: 40),
               Text(
                 'Trenutno nemaš obavijesti.',
-                style: TextStyle(color: Colors.black.withOpacity(0.6), fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.black.withOpacity(0.6),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ] else ...[
               ..._items.map((n) {

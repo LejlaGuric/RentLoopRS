@@ -6,6 +6,7 @@ import 'pages/admin_users_page.dart';
 import 'pages/admin_listings_page.dart';
 import 'pages/admin_reservations_page.dart';
 import 'pages/admin_chat_page.dart';
+import 'pages/admin_lookups_page.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -21,18 +22,20 @@ class _AdminShellState extends State<AdminShell> {
   AdminDashboardPage(),
   AdminListingsPage(),
   AdminUsersPage(),
+  AdminLookupsPage(),
   AdminChatPage(),
   AdminReservationsPage(),
 ];
 
 
-  final _titles = const [
-    'Dashboard',
-    'Stanovi',
-    'Korisnici',
-    'Chat',
-    'Rezervacije',
-  ];
+ final _titles = const [
+  'Dashboard',
+  'Stanovi',
+  'Korisnici',
+  'Lookups',
+  'Chat',
+  'Rezervacije',
+];
 
   Future<void> _logout() async {
     await AuthService().logout();
@@ -84,16 +87,22 @@ class _AdminShellState extends State<AdminShell> {
                   onTap: () => setState(() => _index = 2),
                 ),
                 _SideItem(
-                  icon: Icons.chat,
-                  title: 'Chat',
+                  icon: Icons.category,
+                  title: 'Lookups',
                   selected: _index == 3,
                   onTap: () => setState(() => _index = 3),
                 ),
                 _SideItem(
-                  icon: Icons.event_available,
-                  title: 'Rezervacije',
+                  icon: Icons.chat,
+                  title: 'Chat',
                   selected: _index == 4,
                   onTap: () => setState(() => _index = 4),
+                ),
+                _SideItem(
+                  icon: Icons.event_available,
+                  title: 'Rezervacije',
+                  selected: _index == 5,
+                  onTap: () => setState(() => _index = 5),
                 ),
 
                 const Spacer(),

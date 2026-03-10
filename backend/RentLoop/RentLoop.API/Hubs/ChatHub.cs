@@ -21,14 +21,16 @@ namespace RentLoop.API.Hubs
 
         private int GetUserId()
         {
-            var raw =
-                Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? Context.User?.FindFirstValue("sub");
+            var id = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? Context.User?.FindFirst("sub")?.Value;
 
-            if (string.IsNullOrWhiteSpace(raw))
-                throw new HubException("Invalid token: missing userId");
+            if (string.IsNullOrWhiteSpace(id))
+                return 0;
 
-            return int.Parse(raw);
+            if (!int.TryParse(id, out var userId))
+                return 0;
+
+            return userId;
         }
 
         private async Task<bool> IsAdminAsync(int userId)
@@ -43,10 +45,12 @@ namespace RentLoop.API.Hubs
 
         private static string GroupName(int conversationId) => $"conv-{conversationId}";
 
-        // ✅ klijent/admin se "priključi" razgovoru
         public async Task JoinConversation(int conversationId)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                throw new HubException("Unauthorized.");
+
             var isAdmin = await IsAdminAsync(userId);
 
             await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
@@ -59,25 +63,28 @@ namespace RentLoop.API.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, GroupName(conversationId));
         }
 
-        // ✅ slanje poruke real-time + snimanje u bazu
         public async Task SendMessage(int conversationId, string text)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                throw new HubException("Unauthorized.");
+
             var isAdmin = await IsAdminAsync(userId);
 
             await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
 
             var msgDto = await _chat.SendMessageAsync(conversationId, userId, text);
 
-            // broadcast svima u group
             await Clients.Group(GroupName(conversationId))
                 .SendAsync("NewMessage", msgDto);
         }
 
-        // ✅ read receipts (najosnovnije)
         public async Task MarkRead(int conversationId)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                throw new HubException("Unauthorized.");
+
             var isAdmin = await IsAdminAsync(userId);
 
             await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);

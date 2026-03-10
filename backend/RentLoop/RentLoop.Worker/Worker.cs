@@ -118,7 +118,7 @@ public class Worker : BackgroundService
                             var notification = new Notification
                             {
                                 UserId = data.UserId,
-                                TypeId = 1,
+                                TypeId = 2,
                                 Title = "Rezervacija odobrena",
                                 Body = "Vaša rezervacija je odobrena.",
                                 RelatedPropertyId = data.PropertyId,

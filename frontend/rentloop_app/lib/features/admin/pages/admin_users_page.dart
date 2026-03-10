@@ -101,8 +101,14 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
         title: const Text('Deaktivacija korisnika'),
         content: Text('Deaktivirati korisnika "${user.username}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Odustani')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Deaktiviraj')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Odustani'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Deaktiviraj'),
+          ),
         ],
       ),
     );
@@ -117,7 +123,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
         const SnackBar(content: Text('Korisnik deaktiviran.')),
       );
 
-      await _load(); // refresh liste
+      await _load();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -126,7 +132,53 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     }
   }
 
-  // ✅ NOVO: Add User modal
+  Future<void> _confirmDelete(AdminUser user) async {
+    if (user.role == 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Admin se ne može obrisati ovdje.')),
+      );
+      return;
+    }
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Brisanje korisnika'),
+        content: Text(
+          'Da li sigurno želiš obrisati korisnika "${user.username}"?\n\nOva akcija se ne može vratiti.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Odustani'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Obriši'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok != true) return;
+
+    try {
+      await _service.delete(user.id);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Korisnik obrisan.')),
+      );
+
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
   Future<void> _openCreateUserDialog() async {
     final created = await showDialog<bool>(
       context: context,
@@ -164,7 +216,6 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Header: Search + Add + Refresh
           Row(
             children: [
               Expanded(
@@ -178,16 +229,12 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                 ),
               ),
               const SizedBox(width: 12),
-
-              // ✅ NOVO: Add user
               ElevatedButton.icon(
                 onPressed: _openCreateUserDialog,
                 icon: const Icon(Icons.person_add),
                 label: const Text('Add user'),
               ),
-
               const SizedBox(width: 12),
-
               OutlinedButton.icon(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh),
@@ -196,7 +243,6 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
             ],
           ),
           const SizedBox(height: 16),
-
           Expanded(
             child: Card(
               elevation: 1.5,
@@ -209,7 +255,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                     child: DataTable(
                       headingRowHeight: 56,
                       dataRowMinHeight: 56,
-                      dataRowMaxHeight: 64,
+                      dataRowMaxHeight: 72,
                       columns: const [
                         DataColumn(label: Text('ID')),
                         DataColumn(label: Text('Username')),
@@ -247,6 +293,17 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                                         : null,
                                     child: const Text('Deactivate'),
                                   ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    onPressed: u.role == 2
+                                        ? () => _confirmDelete(u)
+                                        : null,
+                                    child: const Text('Delete'),
+                                  ),
                                 ],
                               ),
                             ),
@@ -265,7 +322,6 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
   }
 }
 
-// ✅ DIALOG WIDGET: Create user forma
 class _CreateUserDialog extends StatefulWidget {
   final AdminUsersService service;
   const _CreateUserDialog({required this.service});
@@ -286,7 +342,7 @@ class _CreateUserDialogState extends State<_CreateUserDialog> {
   final _phoneCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
 
-  int _role = 2; // default Client
+  int _role = 2;
   bool _submitting = false;
   String _error = '';
 
@@ -355,14 +411,12 @@ class _CreateUserDialogState extends State<_CreateUserDialog> {
                   ),
                   const SizedBox(height: 10),
                 ],
-
                 TextFormField(
                   controller: _usernameCtrl,
                   decoration: const InputDecoration(labelText: 'Username'),
                   validator: (v) => (v == null || v.trim().isEmpty) ? 'Username je obavezan' : null,
                 ),
                 const SizedBox(height: 10),
-
                 TextFormField(
                   controller: _emailCtrl,
                   decoration: const InputDecoration(labelText: 'Email'),
@@ -373,7 +427,6 @@ class _CreateUserDialogState extends State<_CreateUserDialog> {
                   },
                 ),
                 const SizedBox(height: 10),
-
                 TextFormField(
                   controller: _passwordCtrl,
                   decoration: const InputDecoration(labelText: 'Password'),
@@ -385,7 +438,6 @@ class _CreateUserDialogState extends State<_CreateUserDialog> {
                   },
                 ),
                 const SizedBox(height: 10),
-
                 Row(
                   children: [
                     Expanded(
@@ -404,7 +456,6 @@ class _CreateUserDialogState extends State<_CreateUserDialog> {
                   ],
                 ),
                 const SizedBox(height: 10),
-
                 Row(
                   children: [
                     Expanded(
@@ -423,7 +474,6 @@ class _CreateUserDialogState extends State<_CreateUserDialog> {
                   ],
                 ),
                 const SizedBox(height: 12),
-
                 DropdownButtonFormField<int>(
                   value: _role,
                   items: const [
@@ -446,7 +496,11 @@ class _CreateUserDialogState extends State<_CreateUserDialog> {
         ElevatedButton(
           onPressed: _submitting ? null : _submit,
           child: _submitting
-              ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+              ? const SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : const Text('Sačuvaj'),
         ),
       ],

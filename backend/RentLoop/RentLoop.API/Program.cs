@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -7,7 +8,13 @@ using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using RentLoop.API.Services.PayPal;
 using RentLoop.API.Services;
-using RentLoop.API.Hubs; // ✅ DODANO: da može MapHub<ChatHub>
+using RentLoop.API.Hubs;
+
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+{
+    Env.Load(envPath);
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,9 +38,10 @@ builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddScoped<ChatService>();
 
 builder.Services.AddSingleton<RentLoop.API.Messaging.RabbitMqPublisher>();
+
 Console.WriteLine("DB = " + builder.Configuration.GetConnectionString("DefaultConnection"));
 
-// ✅ CORS mora biti OVDJE (prije Build)
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("SpaCors", p => p
@@ -92,12 +100,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             ClockSkew = TimeSpan.Zero,
 
-            // ✅ OVO OSIGURAVA da [Authorize(Roles="Admin")] radi uvijek
             RoleClaimType = ClaimTypes.Role,
             NameClaimType = ClaimTypes.NameIdentifier
         };
 
-        // ✅ DODANO: SignalR šalje token kao ?access_token=...
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -119,29 +125,21 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// ✅ Migracije + seed (Admin/Demo) pri startu
+// Migracije + seed
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-    // opcionalno: automatski primijeni migracije
     db.Database.Migrate();
-
-    // seed usera sa pravim hashom (Admin123!, Demo123!)
     await DbSeeder.SeedAsync(db);
 }
 
+app.UseSwagger();
+app.UseSwaggerUI();
 
-// Swagger
-
-    app.UseSwagger();
-    app.UseSwaggerUI();
-
-
-// ✅ CORS middleware ide ovdje (poslije Build, prije Auth)
 app.UseCors("SpaCors");
 
-//app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -149,8 +147,6 @@ app.UseAuthorization();
 app.UseStaticFiles();
 
 app.MapControllers();
-
-// ✅ DODANO: mapiranje SignalR Hub-a
 app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

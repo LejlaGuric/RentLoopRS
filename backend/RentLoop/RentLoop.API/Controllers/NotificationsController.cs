@@ -19,7 +19,6 @@ namespace RentLoop.API.Controllers
             _db = db;
         }
 
-        // helper: uzmi userId iz JWT-a
         private int GetUserId()
         {
             var raw =
@@ -27,15 +26,14 @@ namespace RentLoop.API.Controllers
                 ?? User.FindFirstValue("sub");
 
             if (string.IsNullOrWhiteSpace(raw))
-                throw new Exception("Invalid token: missing user id");
+                return 0;
 
             if (!int.TryParse(raw, out var userId))
-                throw new Exception("Invalid token: user id is not an int");
+                return 0;
 
             return userId;
         }
 
-        // GET: api/notifications/mine?unreadOnly=true&page=1&pageSize=20
         [HttpGet("mine")]
         public async Task<IActionResult> Mine(
             [FromQuery] bool unreadOnly = false,
@@ -47,6 +45,8 @@ namespace RentLoop.API.Controllers
             if (pageSize > 100) pageSize = 100;
 
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var q = _db.Notifications
                 .AsNoTracking()
@@ -66,7 +66,7 @@ namespace RentLoop.API.Controllers
                     n.Id,
                     n.UserId,
                     n.TypeId,
-                    TypeName = n.Type != null ? n.Type.Name : null, // ako ima Name
+                    TypeName = n.Type != null ? n.Type.Name : null,
                     n.Title,
                     n.Body,
                     n.IsRead,
@@ -85,11 +85,12 @@ namespace RentLoop.API.Controllers
             });
         }
 
-        // GET: api/notifications/unread-count
         [HttpGet("unread-count")]
         public async Task<IActionResult> UnreadCount()
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var count = await _db.Notifications
                 .AsNoTracking()
@@ -99,16 +100,18 @@ namespace RentLoop.API.Controllers
             return Ok(new { count });
         }
 
-        // PUT: api/notifications/5/read
         [HttpPut("{id:int}/read")]
         public async Task<IActionResult> MarkRead(int id)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var n = await _db.Notifications
                 .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
 
-            if (n == null) return NotFound();
+            if (n == null)
+                return NotFound();
 
             if (!n.IsRead)
             {
@@ -119,11 +122,12 @@ namespace RentLoop.API.Controllers
             return Ok(new { ok = true });
         }
 
-        // PUT: api/notifications/read-all
         [HttpPut("read-all")]
         public async Task<IActionResult> MarkAllRead()
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var list = await _db.Notifications
                 .Where(n => n.UserId == userId && !n.IsRead)
@@ -140,16 +144,18 @@ namespace RentLoop.API.Controllers
             return Ok(new { updated = list.Count });
         }
 
-        // DELETE: api/notifications/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var n = await _db.Notifications
                 .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
 
-            if (n == null) return NotFound();
+            if (n == null)
+                return NotFound();
 
             _db.Notifications.Remove(n);
             await _db.SaveChangesAsync();

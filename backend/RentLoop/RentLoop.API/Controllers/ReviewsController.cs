@@ -10,7 +10,7 @@ namespace RentLoop.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // ulogovan korisnik
+    [Authorize]
     public class ReviewsController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -23,36 +23,43 @@ namespace RentLoop.API.Controllers
         private int GetUserId()
         {
             var id = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-            if (string.IsNullOrWhiteSpace(id)) throw new Exception("Invalid token.");
-            return int.Parse(id);
+
+            if (string.IsNullOrWhiteSpace(id))
+                return 0;
+
+            if (!int.TryParse(id, out var userId))
+                return 0;
+
+            return userId;
         }
 
-        // POST: api/reviews  (Client ostavlja review)
+        // POST: api/reviews
         [HttpPost]
         [Authorize(Roles = "Client")]
         public async Task<IActionResult> Create([FromBody] ReviewCreateRequest request)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             if (request.Rating < 1 || request.Rating > 5)
                 return BadRequest("Rating must be between 1 and 5.");
 
-            // Učitaj rezervaciju
             var reservation = await _db.Reservations
                 .FirstOrDefaultAsync(r => r.Id == request.ReservationId);
 
             if (reservation == null)
                 return NotFound("Reservation not found.");
 
-            // Mora biti njegova rezervacija
             if (reservation.UserId != userId)
                 return Forbid("You can review only your reservation.");
 
-            // Mora biti approved (statusId=2 po tvojoj logici)
             if (reservation.StatusId != 2)
                 return BadRequest("You can review only approved reservations.");
 
-            // Provjeri da već ne postoji review za tu rezervaciju
+            if (reservation.CheckOut.Date > DateTime.UtcNow.Date)
+                return BadRequest("Review can be left only after the stay has ended.");
+
             var already = await _db.Reviews.AnyAsync(rv => rv.ReservationId == request.ReservationId);
             if (already)
                 return BadRequest("Review already exists for this reservation.");
@@ -73,7 +80,7 @@ namespace RentLoop.API.Controllers
             return Ok(new { message = "Review added." });
         }
 
-        // GET: api/reviews/listing/{listingId}  (svi review-i za stan)
+        // GET: api/reviews/listing/{listingId}
         [HttpGet("listing/{listingId:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> ForListing(int listingId)
@@ -88,7 +95,10 @@ namespace RentLoop.API.Controllers
                     r.Rating,
                     r.Comment,
                     r.CreatedAt,
-                    User = _db.Users.Where(u => u.Id == r.UserId).Select(u => u.Username).FirstOrDefault()
+                    User = _db.Users
+                        .Where(u => u.Id == r.UserId)
+                        .Select(u => u.Username)
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 

@@ -1,23 +1,16 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:app_links/app_links.dart';
 
 import '../services/user_service.dart';
 import '../services/reservations_service.dart';
-
-// ✅ AuthService za change password + logout
 import '../../../core/services/auth_service.dart';
-
-// ✅ LoginPage
+import '../../../core/storage/token_storage.dart';
 import '../../auth/login_page.dart';
-
-// ✅ Reviews
 import '../services/reviews_service.dart';
 import '../models/review_create_request.dart';
-
-// ✅ Payments
 import '../services/payments_service.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -27,19 +20,18 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
   final _users = UserService();
   final _resv = ReservationsService();
   final _auth = AuthService();
   final _reviews = ReviewsService();
   final _payments = PaymentsService();
 
-  // ✅ Deep link listener (PayPal return/cancel)
-  final _appLinks = AppLinks();
+  final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSub;
 
-  // ✅ zapamti koju rezervaciju plaćamo dok smo u PayPalu
-  int? _pendingReservationId;
+  bool _isHandlingPayPalReturn = false;
+  String? _lastHandledPayPalLink;
 
   bool _loading = true;
   String _error = '';
@@ -48,6 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
   List<MyReservationDto> _myReservations = [];
 
   bool _editing = false;
+  bool _creatingPayment = false;
 
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
@@ -57,61 +50,100 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _listenForPayPalReturn();
+    _handleInitialPayPalLink();
     _load();
-
-    _linkSub = _appLinks.uriLinkStream.listen((uri) async {
-      // očekujemo:
-      // rentloop://paypal-return?token=ORDER_ID
-      // rentloop://paypal-cancel
-      if (uri.scheme != 'rentloop') return;
-
-      if (uri.host == 'paypal-return') {
-        final orderId = uri.queryParameters['token'];
-        if (orderId == null || _pendingReservationId == null) return;
-
-        try {
-          final status = await _payments.capturePayPal(_pendingReservationId!, orderId);
-
-          if (!mounted) return;
-
-          if (status == 'COMPLETED') {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Plaćanje uspješno ✅')),
-            );
-            _pendingReservationId = null;
-            await _load();
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('PayPal status: $status')),
-            );
-          }
-        } catch (e) {
-          if (!mounted) return;
-          final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Capture greška: $msg')),
-          );
-        }
-      }
-
-      if (uri.host == 'paypal-cancel') {
-        if (!mounted) return;
-        _pendingReservationId = null;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Plaćanje otkazano.')),
-        );
-      }
-    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _linkSub?.cancel();
+
     _firstName.dispose();
     _lastName.dispose();
     _phone.dispose();
     _address.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _handleInitialPayPalLink();
+    }
+  }
+
+  void _listenForPayPalReturn() {
+    _linkSub = _appLinks.uriLinkStream.listen((Uri uri) async {
+      await _handlePayPalReturn(uri);
+    });
+  }
+
+  Future<void> _handleInitialPayPalLink() async {
+    try {
+      final Uri? uri = await _appLinks.getInitialLink();
+      if (uri != null) {
+        await _handlePayPalReturn(uri);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _handlePayPalReturn(Uri uri) async {
+    final uriString = uri.toString();
+
+    if (_isHandlingPayPalReturn) return;
+    if (_lastHandledPayPalLink == uriString) return;
+
+    if (uri.scheme != 'rentloop') return;
+    if (uri.host != 'paypal-return') return;
+
+    final orderId = uri.queryParameters['token'];
+    if (orderId == null || orderId.isEmpty) return;
+
+    final storage = TokenStorage();
+    final reservationIdRaw = await storage.read('pending_reservation_id');
+
+    if (reservationIdRaw == null || reservationIdRaw.isEmpty) return;
+
+    final reservationId = int.tryParse(reservationIdRaw);
+    if (reservationId == null) return;
+
+    _isHandlingPayPalReturn = true;
+    _lastHandledPayPalLink = uriString;
+
+    try {
+      final result = await _payments.capturePayPalOrder(
+        reservationId: reservationId,
+        orderId: orderId,
+      );
+
+      await storage.delete('pending_reservation_id');
+      await _load();
+
+      if (!mounted) return;
+
+      final status = result.status.toUpperCase();
+
+      if (status == 'COMPLETED' || status == 'ALREADY_CAPTURED') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Plaćanje uspješno završeno ✅')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('PayPal status: $status')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Greška pri završavanju plaćanja: $msg')),
+      );
+    } finally {
+      _isHandlingPayPalReturn = false;
+    }
   }
 
   Future<void> _load() async {
@@ -178,18 +210,22 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _payReservation(MyReservationDto r) async {
+    if (_creatingPayment) return;
+
+    setState(() => _creatingPayment = true);
+
     try {
       final created = await _payments.createPayPalOrder(r.id);
 
-      // zapamti rezervaciju dok smo u PayPalu
-      _pendingReservationId = r.id;
+      final storage = TokenStorage();
+      await storage.save('pending_reservation_id', r.id.toString());
 
       if (!mounted) return;
 
       final uri = Uri.parse(created.approveUrl);
       final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
 
-      if (!opened) {
+      if (!opened && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Ne mogu otvoriti PayPal link.')),
         );
@@ -200,10 +236,54 @@ class _ProfilePageState extends State<ProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('PayPal greška: $msg')),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _creatingPayment = false);
+      }
     }
   }
 
-  // ✅ Logout
+  Future<void> _cancelReservation(MyReservationDto r) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Otkaži rezervaciju'),
+        content: Text(
+          'Da li sigurno želiš otkazati rezervaciju "${r.listingTitle.isEmpty ? '#${r.id}' : r.listingTitle}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Odustani'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Otkaži rezervaciju'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok != true) return;
+
+    try {
+      await _resv.cancelReservation(r.id);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Rezervacija uspješno otkazana.')),
+      );
+
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    }
+  }
+
   Future<void> _logout() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -229,7 +309,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ✅ Change password dialog
   void _openChangePasswordDialog() {
     final currentCtrl = TextEditingController();
     final newCtrl = TextEditingController();
@@ -353,7 +432,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ✅ Rezervacije -> akcije
   void _openReservationActions(MyReservationDto r) {
     showModalBottomSheet(
       context: context,
@@ -376,31 +454,84 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 12),
 
-              if (r.statusId == 2) ...[
+              if (r.statusId == 1) ...[
                 SizedBox(
                   width: double.infinity,
                   height: 48,
                   child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
-                      _openReviewDialog(r);
+                      _cancelReservation(r);
                     },
-                    icon: const Icon(Icons.star_rate),
-                    label: const Text('Ocijeni boravak'),
+                    icon: const Icon(Icons.cancel),
+                    label: const Text('Otkaži rezervaciju'),
                   ),
                 ),
-                const SizedBox(height: 10),
-
+              ] else if (r.statusId == 2 && r.isPaid == false) ...[
                 SizedBox(
                   width: double.infinity,
                   height: 48,
                   child: FilledButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _payReservation(r);
-                    },
+                    onPressed: _creatingPayment
+                        ? null
+                        : () {
+                            Navigator.pop(context);
+                            _payReservation(r);
+                          },
                     icon: const Icon(Icons.payments),
-                    label: const Text('Plati (PayPal)'),
+                    label: Text(_creatingPayment ? 'Učitavanje...' : 'Plati (PayPal)'),
+                  ),
+                ),
+              ] else if (r.statusId == 2 && r.isPaid == true) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFFAF0),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFB7E4C7)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text(
+                            'Plaćeno',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (r.paidAt != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          'Vrijeme plaćanja: ${_fmtDate(r.paidAt)}',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _openReviewDialog(r);
+                          },
+                          icon: const Icon(Icons.star_rate),
+                          label: const Text('Ocijeni boravak'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ] else ...[
@@ -413,11 +544,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     border: Border.all(color: const Color(0xFFE8E8E8)),
                   ),
                   child: Text(
-                    r.statusId == 1
-                        ? 'Rezervacija je na čekanju (Pending).'
-                        : r.statusId == 3
-                            ? 'Rezervacija je odbijena (Rejected).'
-                            : 'Rezervacija nije odobrena.',
+                    r.statusId == 3
+                        ? 'Rezervacija je odbijena (Rejected).'
+                        : r.statusId == 4
+                            ? 'Rezervacija je otkazana (Cancelled).'
+                            : 'Rezervacija nije dostupna za akcije.',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -439,7 +570,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ✅ Dialog za ocjenu
   void _openReviewDialog(MyReservationDto r) {
     int rating = 5;
     final commentCtrl = TextEditingController();
@@ -484,7 +614,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
-                await _load(); // refresh
+                await _load();
               } catch (e) {
                 setStateDialog(() {
                   loading = false;
@@ -568,6 +698,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (statusId == 1) return 'Pending';
     if (statusId == 2) return 'Approved';
     if (statusId == 3) return 'Rejected';
+    if (statusId == 4) return 'Cancelled';
     return fallback.isNotEmpty ? fallback : 'Status $statusId';
   }
 
@@ -692,7 +823,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   (r) => _ReservationTile(
                                     title: r.listingTitle.isEmpty ? 'Rezervacija #${r.id}' : r.listingTitle,
                                     dateRange: '${_fmtDate(r.from)} → ${_fmtDate(r.to)}',
-                                    status: _statusLabel(r.statusId, r.statusName),
+                                    status: r.isPaid ? 'Plaćeno' : _statusLabel(r.statusId, r.statusName),
                                     price: r.totalPrice,
                                     onTap: () => _openReservationActions(r),
                                   ),
@@ -713,8 +844,6 @@ class _ProfilePageState extends State<ProfilePage> {
     return '${two(d.day)}.${two(d.month)}.${d.year}';
   }
 }
-
-// ---------------- UI widgets (isti kao što si imala) ----------------
 
 class _ErrorBox extends StatelessWidget {
   final String message;
@@ -974,4 +1103,4 @@ class _ReservationTile extends StatelessWidget {
       ),
     );
   }
-}
+}  

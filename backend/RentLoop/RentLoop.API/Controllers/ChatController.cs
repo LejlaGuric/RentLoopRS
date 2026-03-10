@@ -6,7 +6,6 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
 
-
 namespace RentLoop.API.Controllers
 {
     [ApiController]
@@ -17,24 +16,24 @@ namespace RentLoop.API.Controllers
         private readonly ChatService _chat;
         private readonly ApplicationDbContext _db;
 
-
         public ChatController(ChatService chat, ApplicationDbContext db)
         {
             _chat = chat;
             _db = db;
         }
 
-        // helper: userId iz JWT-a (isti stil kao kod tebe prije)
         private int GetUserId()
         {
-            var raw =
-                User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? User.FindFirstValue("sub");
+            var id = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                     ?? User.FindFirstValue("sub");
 
-            if (string.IsNullOrWhiteSpace(raw))
-                throw new Exception("Invalid token: missing userId");
+            if (string.IsNullOrWhiteSpace(id))
+                return 0;
 
-            return int.Parse(raw);
+            if (!int.TryParse(id, out var userId))
+                return 0;
+
+            return userId;
         }
 
         private async Task<bool> IsAdminAsync(int userId)
@@ -47,23 +46,24 @@ namespace RentLoop.API.Controllers
             return role == 1;
         }
 
-
-
-
-        // ✅ USER: dobije svoj razgovor (kreira ako ne postoji)
         [HttpGet("my-conversation")]
         public async Task<ActionResult<object>> GetMyConversation()
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
+
             var conv = await _chat.GetOrCreateConversationForUserAsync(userId);
             return Ok(new { conversationId = conv.Id });
         }
 
-        // ✅ ADMIN: lista svih razgovora
         [HttpGet("admin/conversations")]
         public async Task<ActionResult<List<ChatConversationDto>>> AdminConversations()
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
+
             if (!await IsAdminAsync(userId))
                 return Forbid();
 
@@ -71,12 +71,13 @@ namespace RentLoop.API.Controllers
             return Ok(list);
         }
 
-
-        // ✅ USER/ADMIN: poruke u razgovoru
         [HttpGet("conversations/{conversationId:int}/messages")]
         public async Task<ActionResult<List<ChatMessageDto>>> GetMessages(int conversationId)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
+
             var isAdmin = await IsAdminAsync(userId);
 
             await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
@@ -85,12 +86,13 @@ namespace RentLoop.API.Controllers
             return Ok(msgs);
         }
 
-
-        // ✅ USER/ADMIN: pošalji poruku (REST fallback)
         [HttpPost("conversations/{conversationId:int}/messages")]
         public async Task<ActionResult<ChatMessageDto>> SendMessage(int conversationId, [FromBody] SendMessageRequest req)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
+
             var isAdmin = await IsAdminAsync(userId);
 
             await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
@@ -99,12 +101,13 @@ namespace RentLoop.API.Controllers
             return Ok(msg);
         }
 
-
-        // ✅ USER/ADMIN: mark as read (najosnovnije)
         [HttpPost("conversations/{conversationId:int}/read")]
         public async Task<ActionResult> MarkRead(int conversationId)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
+
             var isAdmin = await IsAdminAsync(userId);
 
             await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
@@ -112,6 +115,5 @@ namespace RentLoop.API.Controllers
             await _chat.MarkAsReadAsync(conversationId, userId);
             return Ok();
         }
-
     }
 }

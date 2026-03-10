@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
@@ -20,7 +19,6 @@ namespace RentLoop.API.Controllers
         {
             _db = db;
         }
-
 
         // GET: api/admin/users
         [HttpGet]
@@ -116,7 +114,7 @@ namespace RentLoop.API.Controllers
             return Ok(new { message = "User deactivated." });
         }
 
-        // OPTIONAL: PUT: api/admin/users/{id}/activate
+        // PUT: api/admin/users/{id}/activate
         [HttpPut("{id:int}/activate")]
         public async Task<IActionResult> Activate(int id)
         {
@@ -127,6 +125,30 @@ namespace RentLoop.API.Controllers
             await _db.SaveChangesAsync();
 
             return Ok(new { message = "User activated." });
+        }
+
+        // DELETE: api/admin/users/{id}
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if (user == null) return NotFound("User not found.");
+
+            if (user.Role == 1)
+                return BadRequest("Cannot delete admin via this endpoint.");
+
+            _db.Users.Remove(user);
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict("User cannot be deleted because related records exist.");
+            }
+
+            return Ok(new { message = "User deleted." });
         }
 
         // Simple hash (PBKDF2). PasswordHash format: "base64Salt.base64Hash"

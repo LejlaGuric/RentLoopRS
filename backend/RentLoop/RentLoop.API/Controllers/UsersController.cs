@@ -8,7 +8,7 @@ namespace RentLoop.API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [Authorize] // svaki ulogovan korisnik
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -18,27 +18,26 @@ namespace RentLoop.API.Controllers
             _db = db;
         }
 
-        // helper: uzmi userId iz JWT-a
         private int GetUserId()
         {
-            var raw =
-                User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? User.FindFirstValue("sub");
+            var id = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                     ?? User.FindFirstValue("sub");
 
-            if (string.IsNullOrWhiteSpace(raw))
-                throw new Exception("Invalid token: missing user id claim.");
+            if (string.IsNullOrWhiteSpace(id))
+                return 0;
 
-            return int.Parse(raw);
+            if (!int.TryParse(id, out var userId))
+                return 0;
+
+            return userId;
         }
 
-        // --------------------
-        // GET: api/users/me
-        // Pregled mog profila
-        // --------------------
         [HttpGet("me")]
         public async Task<IActionResult> Me()
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var user = await _db.Users
                 .AsNoTracking()
@@ -47,7 +46,7 @@ namespace RentLoop.API.Controllers
                 {
                     u.Id,
                     u.Username,
-                    u.Email, // READ-ONLY
+                    u.Email,
                     u.FirstName,
                     u.LastName,
                     u.Phone,
@@ -66,7 +65,6 @@ namespace RentLoop.API.Controllers
             return Ok(user);
         }
 
-        // DTO za update profila (BEZ EMAILA)
         public class UpdateMeRequest
         {
             public string? FirstName { get; set; }
@@ -75,14 +73,12 @@ namespace RentLoop.API.Controllers
             public string? Address { get; set; }
         }
 
-        // --------------------
-        // PUT: api/users/me
-        // Edit mog profila
-        // --------------------
         [HttpPut("me")]
         public async Task<IActionResult> UpdateMe([FromBody] UpdateMeRequest req)
         {
             var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
 
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
@@ -91,7 +87,6 @@ namespace RentLoop.API.Controllers
             if (!user.IsActive)
                 return Forbid();
 
-            // Update dozvoljenih polja
             if (req.FirstName != null)
                 user.FirstName = req.FirstName.Trim();
 
@@ -110,7 +105,7 @@ namespace RentLoop.API.Controllers
             {
                 user.Id,
                 user.Username,
-                user.Email, // i dalje se vraća, ali se ne mijenja
+                user.Email,
                 user.FirstName,
                 user.LastName,
                 user.Phone,

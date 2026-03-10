@@ -30,7 +30,7 @@ namespace RentLoop.API.Controllers
             return null;
         }
 
-       
+
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] int? cityId,
@@ -40,9 +40,14 @@ namespace RentLoop.API.Controllers
             [FromQuery] int? rooms,
             [FromQuery] int? guests,
             [FromQuery] string? sort,
-            [FromQuery] string? q
-        )
+            [FromQuery] string? q,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20
+)
         {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 50);
+
             var query = _db.Listings
                 .AsNoTracking()
                 .Include(l => l.City)
@@ -58,14 +63,14 @@ namespace RentLoop.API.Controllers
             if (rooms.HasValue) query = query.Where(l => l.RoomsCount == rooms.Value);
             if (guests.HasValue) query = query.Where(l => l.MaxGuests >= guests.Value);
 
-            // ✅ SEARCH PO NAZIVU
+            // SEARCH
             if (!string.IsNullOrWhiteSpace(q))
             {
                 var term = q.Trim();
                 query = query.Where(l => EF.Functions.Like(l.Name, $"%{term}%"));
             }
 
-            // SORTIRANJE
+            // SORT
             sort = (sort ?? "newest").ToLower();
             query = sort switch
             {
@@ -75,7 +80,11 @@ namespace RentLoop.API.Controllers
                 _ => query.OrderByDescending(l => l.CreatedAt)
             };
 
+            var totalCount = await query.CountAsync();
+
             var data = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(l => new
                 {
                     l.Id,
@@ -111,7 +120,13 @@ namespace RentLoop.API.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(data);
+            return Ok(new
+            {
+                page,
+                pageSize,
+                totalCount,
+                items = data
+            });
         }
 
 
@@ -222,13 +237,7 @@ namespace RentLoop.API.Controllers
 
             var userId = GetUserIdOrNull();
             if (!userId.HasValue) return Unauthorized();
-
-            // 1) Zadnja pretraga
-            var lastSearch = await _db.SearchHistory
-                .AsNoTracking()
-                .Where(s => s.UserId == userId.Value)
-                .OrderByDescending(s => s.SearchedAt)
-                .FirstOrDefaultAsync();
+            
 
             // 2) Zadnjih 10 views
             var recentViewedIds = await _db.ListingViews
@@ -287,12 +296,7 @@ namespace RentLoop.API.Controllers
                 .Include(l => l.RentType)
                 .Where(l => l.IsActive && !exclude.Contains(l.Id));
 
-            // ako ima zadnja pretraga, favorizuj taj grad (ali i dalje uzmi newest limit)
-            if (lastSearch?.CityId != null)
-            {
-                // Ne filtriramo strogo samo taj grad da ne ispadne prazno, samo ostavljamo kandidatima šansu
-                // Kandidati su newest 250, scoring će pogurati grad
-            }
+            
 
             var candidates = await baseQuery
                 .OrderByDescending(l => l.CreatedAt)
@@ -334,27 +338,7 @@ namespace RentLoop.API.Controllers
             {
                 int score = 0;
 
-                // A) Pretraga korisnika
-                if (lastSearch != null)
-                {
-                    if (lastSearch.CityId.HasValue && c.CityId == lastSearch.CityId.Value) score += 40;
-                    if (lastSearch.RentTypeId.HasValue && c.RentTypeId == lastSearch.RentTypeId.Value) score += 25;
-
-                    if (lastSearch.MinPrice.HasValue && c.PricePerNight >= lastSearch.MinPrice.Value) score += 10;
-                    if (lastSearch.MaxPrice.HasValue && c.PricePerNight <= lastSearch.MaxPrice.Value) score += 10;
-
-                    if (lastSearch.RoomsCount.HasValue && c.RoomsCount == lastSearch.RoomsCount.Value) score += 10;
-                    if (lastSearch.Guests.HasValue && c.MaxGuests >= lastSearch.Guests.Value) score += 10;
-
-                    // Sort signal (mali boost)
-                    if (!string.IsNullOrWhiteSpace(lastSearch.Sort))
-                    {
-                        var s = lastSearch.Sort!.ToLower();
-                        if (s == "priceasc") score += 2;      // korisnik voli niže cijene
-                        if (s == "pricedesc") score += 1;     // korisnik voli premium
-                        if (s == "distanceasc" && c.DistanceToCenterKm <= 2) score += 2;
-                    }
-                }
+                
 
                 // B) Prethodne rezervacije / pregledi (sličnost)
                 foreach (var h in historyListings)
@@ -493,89 +477,119 @@ namespace RentLoop.API.Controllers
                 }
             }
 
-            var listing = new Listing
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
+            string? uploadsRoot = null;
+
+            try
             {
-                Name = req.Name.Trim(),
-                Description = req.Description ?? "",
-                Address = req.Address ?? "",
-                CityId = req.CityId,
-                RentTypeId = req.RentTypeId,
-                PricePerNight = req.PricePerNight / 10,
-                RoomsCount = req.RoomsCount,
-                MaxGuests = req.MaxGuests,
-                DistanceToCenterKm = req.DistanceToCenterKm,
-                HasWifi = req.HasWifi,
-                HasAirConditioning = req.HasAirConditioning,
-                PetsAllowed = req.PetsAllowed,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _db.Listings.Add(listing);
-            await _db.SaveChangesAsync();
-
-            var uploadsRoot = Path.Combine(_env.WebRootPath, "uploads", "listings", listing.Id.ToString());
-            Directory.CreateDirectory(uploadsRoot);
-
-            var allowedExt = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-
-            for (int i = 0; i < req.Images.Count; i++)
-            {
-                var file = req.Images[i];
-                if (file.Length == 0) continue;
-
-                var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (!allowedExt.Contains(ext))
-                    return BadRequest("Dozvoljeni formati slika su: jpg, jpeg, png, webp.");
-
-                var fileName = $"{Guid.NewGuid()}{ext}";
-                var filePath = Path.Combine(uploadsRoot, fileName);
-
-                using (var stream = System.IO.File.Create(filePath))
+                var listing = new Listing
                 {
-                    await file.CopyToAsync(stream);
-                }
+                    Name = req.Name.Trim(),
+                    Description = req.Description ?? "",
+                    Address = req.Address ?? "",
+                    CityId = req.CityId,
+                    RentTypeId = req.RentTypeId,
+                    PricePerNight = req.PricePerNight,
+                    RoomsCount = req.RoomsCount,
+                    MaxGuests = req.MaxGuests,
+                    DistanceToCenterKm = req.DistanceToCenterKm,
+                    HasWifi = req.HasWifi,
+                    HasAirConditioning = req.HasAirConditioning,
+                    PetsAllowed = req.PetsAllowed,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                var url = $"/uploads/listings/{listing.Id}/{fileName}";
+                _db.Listings.Add(listing);
+                await _db.SaveChangesAsync();
 
-                _db.PropertyImages.Add(new PropertyImage
+                uploadsRoot = Path.Combine(_env.WebRootPath, "uploads", "listings", listing.Id.ToString());
+                Directory.CreateDirectory(uploadsRoot);
+
+                var allowedExt = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+
+                for (int i = 0; i < req.Images.Count; i++)
                 {
-                    PropertyId = listing.Id,
-                    Url = url,
-                    IsCover = (i == req.CoverIndex),
-                    SortOrder = i
-                });
-            }
+                    var file = req.Images[i];
+                    if (file.Length == 0) continue;
 
-            await _db.SaveChangesAsync();
+                    var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+                    if (!allowedExt.Contains(ext))
+                        throw new Exception("Dozvoljeni formati slika su: jpg, jpeg, png, webp.");
 
-            if (amenityIds.Count > 0)
-            {
-                var distinct = amenityIds.Distinct().ToList();
+                    var fileName = $"{Guid.NewGuid()}{ext}";
+                    var filePath = Path.Combine(uploadsRoot, fileName);
 
-                var existing = await _db.Amenities
-                    .Where(a => distinct.Contains(a.Id))
-                    .Select(a => a.Id)
-                    .ToListAsync();
+                    await using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
 
-                foreach (var amenityId in existing)
-                {
-                    _db.PropertyAmenities.Add(new PropertyAmenity
+                    var url = $"/uploads/listings/{listing.Id}/{fileName}";
+
+                    _db.PropertyImages.Add(new PropertyImage
                     {
                         PropertyId = listing.Id,
-                        AmenityId = amenityId
+                        Url = url,
+                        IsCover = (i == req.CoverIndex),
+                        SortOrder = i
                     });
                 }
 
                 await _db.SaveChangesAsync();
-            }
 
-            return CreatedAtAction(nameof(GetById), new { id = listing.Id }, new
+                if (amenityIds.Count > 0)
+                {
+                    var distinct = amenityIds.Distinct().ToList();
+
+                    var existing = await _db.Amenities
+                        .Where(a => distinct.Contains(a.Id))
+                        .Select(a => a.Id)
+                        .ToListAsync();
+
+                    foreach (var amenityId in existing)
+                    {
+                        _db.PropertyAmenities.Add(new PropertyAmenity
+                        {
+                            PropertyId = listing.Id,
+                            AmenityId = amenityId
+                        });
+                    }
+
+                    await _db.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+
+                return CreatedAtAction(nameof(GetById), new { id = listing.Id }, new
+                {
+                    listing.Id,
+                    listing.Name,
+                    listing.PricePerNight
+                });
+            }
+            catch (Exception ex)
             {
-                listing.Id,
-                listing.Name,
-                listing.PricePerNight
-            });
+                await transaction.RollbackAsync();
+
+                if (!string.IsNullOrWhiteSpace(uploadsRoot) && Directory.Exists(uploadsRoot))
+                {
+                    try
+                    {
+                        Directory.Delete(uploadsRoot, true);
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while creating the listing.",
+                    error = ex.Message
+                });
+            }
         }
 
         // -------------------- GET BY ID --------------------
