@@ -38,14 +38,15 @@ namespace RentLoop.API.Services
         // ✅ (2) Provjera prava pristupa konverzaciji
         // - Admin može sve
         // - User može samo svoje
-        public async Task<Conversation> EnsureCanAccessConversationAsync(int currentUserId, bool isAdmin, int conversationId)
+        public async Task<Conversation?> EnsureCanAccessConversationAsync(int currentUserId, bool isAdmin, int conversationId)
         {
             var conv = await _db.Conversations.FirstOrDefaultAsync(c => c.Id == conversationId);
+
             if (conv == null)
-                throw new Exception("Conversation not found.");
+                return null;
 
             if (!isAdmin && conv.UserId != currentUserId)
-                throw new Exception("Forbidden.");
+                return null;
 
             return conv;
         }
@@ -53,36 +54,37 @@ namespace RentLoop.API.Services
         // ✅ (3) Admin: lista razgovora (Inbox)
         public async Task<List<ChatConversationDto>> GetAdminConversationsAsync()
         {
-            // Napomena: ako hoćeš da admin vidi samo dodijeljene, filtriraš po AdminId
-            var list = await _db.Conversations
+            var conversations = await _db.Conversations
                 .Include(c => c.User)
                 .OrderByDescending(c => c.LastMessageAt)
                 .ToListAsync();
 
-            // Uzmi "zadnju poruku" za preview (MVP verzija: per conversation query)
-            // Ako želiš optimizaciju, kasnije.
-            var result = new List<ChatConversationDto>();
+            var conversationIds = conversations.Select(c => c.Id).ToList();
 
-            foreach (var c in list)
-            {
-                var lastMsg = await _db.Messages
-                    .Where(m => m.ConversationId == c.Id)
-                    .OrderByDescending(m => m.SentAt)
-                    .Select(m => new { m.Text })
-                    .FirstOrDefaultAsync();
-
-                result.Add(new ChatConversationDto
+            var lastMessages = await _db.Messages
+                .Where(m => conversationIds.Contains(m.ConversationId))
+                .GroupBy(m => m.ConversationId)
+                .Select(g => new
                 {
-                    Id = c.Id,
-                    UserId = c.UserId,
-                    UserName = c.User != null
-                        ? $"{c.User.FirstName} {c.User.LastName}".Trim()
-                        : $"User #{c.UserId}",
-                    AdminId = c.AdminId,
-                    LastMessageAt = c.LastMessageAt,
-                    LastMessageText = lastMsg?.Text
-                });
-            }
+                    ConversationId = g.Key,
+                    LastMessageText = g
+                        .OrderByDescending(m => m.SentAt)
+                        .Select(m => m.Text)
+                        .FirstOrDefault()
+                })
+                .ToDictionaryAsync(x => x.ConversationId, x => x.LastMessageText);
+
+            var result = conversations.Select(c => new ChatConversationDto
+            {
+                Id = c.Id,
+                UserId = c.UserId,
+                UserName = c.User != null
+                    ? $"{c.User.FirstName} {c.User.LastName}".Trim()
+                    : $"User #{c.UserId}",
+                AdminId = c.AdminId,
+                LastMessageAt = c.LastMessageAt,
+                LastMessageText = lastMessages.ContainsKey(c.Id) ? lastMessages[c.Id] : null
+            }).ToList();
 
             return result;
         }

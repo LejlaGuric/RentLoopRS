@@ -35,6 +35,6 @@ namespace RentLoop.API.Models
         public string? Note { get; set; }
 
         public Review? Review { get; set; }
-        public ICollection<PropertyAvailability> BookedDays { get; set; } = new List<PropertyAvailability>();
+        
     }
 }

@@ -180,13 +180,6 @@ namespace RentLoop.API.Controllers
             r.StatusId = 4;
             r.DecisionAt = DateTime.UtcNow;
 
-            var availabilityRows = await _db.PropertyAvailability
-                .Where(a => a.ReservationId == r.Id)
-                .ToListAsync();
-
-            if (availabilityRows.Count > 0)
-                _db.PropertyAvailability.RemoveRange(availabilityRows);
-
             await _db.SaveChangesAsync();
 
             return Ok(new { message = "Reservation cancelled." });
@@ -255,20 +248,6 @@ namespace RentLoop.API.Controllers
             r.ApprovedByAdminId = adminId;
             r.DecisionAt = DateTime.UtcNow;
 
-            var start = r.CheckIn.Date;
-            var end = r.CheckOut.Date;
-
-            for (var d = start; d < end; d = d.AddDays(1))
-            {
-                _db.PropertyAvailability.Add(new PropertyAvailability
-                {
-                    PropertyId = r.PropertyId,
-                    Date = d,
-                    IsBooked = true,
-                    ReservationId = r.Id
-                });
-            }
-
             await _db.SaveChangesAsync();
 
             _mq.PublishReservationApproved(new
@@ -283,7 +262,7 @@ namespace RentLoop.API.Controllers
                 DecisionAt = r.DecisionAt
             });
 
-            return Ok(new { message = "Reservation approved and days booked." });
+            return Ok(new { message = "Reservation approved." });
         }
 
         // ADMIN — all reservations (optional status)

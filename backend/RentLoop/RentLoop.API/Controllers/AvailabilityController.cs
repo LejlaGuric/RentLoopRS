@@ -21,19 +21,36 @@ namespace RentLoop.API.Controllers
         [HttpGet("{propertyId:int}")]
         public async Task<IActionResult> Get(int propertyId, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
-            var q = _db.PropertyAvailability
+            var fromDate = from?.Date ?? DateTime.UtcNow.Date;
+            var toDate = to?.Date ?? fromDate.AddMonths(6);
+
+            if (toDate <= fromDate)
+                return BadRequest("Invalid range.");
+
+            var reservations = await _db.Reservations
                 .AsNoTracking()
-                .Where(x => x.PropertyId == propertyId && x.IsBooked);
-
-            if (from.HasValue) q = q.Where(x => x.Date >= from.Value.Date);
-            if (to.HasValue) q = q.Where(x => x.Date < to.Value.Date); // to je exclusive
-
-            var dates = await q
-                .OrderBy(x => x.Date)
-                .Select(x => x.Date)
+                .Where(r =>
+                    r.PropertyId == propertyId &&
+                    (r.StatusId == 1 || r.StatusId == 2) &&
+                    fromDate < r.CheckOut &&
+                    toDate > r.CheckIn)
+                .Select(r => new { r.CheckIn, r.CheckOut })
                 .ToListAsync();
 
-            return Ok(dates);
+            var bookedDays = new HashSet<DateTime>();
+
+            foreach (var r in reservations)
+            {
+                var start = r.CheckIn.Date < fromDate ? fromDate : r.CheckIn.Date;
+                var end = r.CheckOut.Date > toDate ? toDate : r.CheckOut.Date;
+
+                for (var d = start; d < end; d = d.AddDays(1))
+                {
+                    bookedDays.Add(d);
+                }
+            }
+
+            return Ok(bookedDays.OrderBy(d => d).ToList());
         }
     }
 }

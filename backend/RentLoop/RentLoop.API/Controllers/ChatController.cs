@@ -80,7 +80,9 @@ namespace RentLoop.API.Controllers
 
             var isAdmin = await IsAdminAsync(userId);
 
-            await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            var conv = await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            if (conv == null)
+                return NotFound("Conversation not found or access denied.");
 
             var msgs = await _chat.GetMessagesAsync(conversationId, userId);
             return Ok(msgs);
@@ -95,7 +97,9 @@ namespace RentLoop.API.Controllers
 
             var isAdmin = await IsAdminAsync(userId);
 
-            await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            var conv = await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            if (conv == null)
+                return NotFound("Conversation not found or access denied.");
 
             var msg = await _chat.SendMessageAsync(conversationId, userId, req.Text);
             return Ok(msg);
@@ -110,7 +114,9 @@ namespace RentLoop.API.Controllers
 
             var isAdmin = await IsAdminAsync(userId);
 
-            await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            var conv = await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            if (conv == null)
+                return NotFound("Conversation not found or access denied.");
 
             await _chat.MarkAsReadAsync(conversationId, userId);
             return Ok();

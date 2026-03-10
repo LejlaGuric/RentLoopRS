@@ -25,7 +25,7 @@ namespace RentLoop.API.Data
                     IsActive = true
                 };
 
-                admin.PasswordHash = hasher.HashPassword(admin, "Admin123!");
+                admin.PasswordHash = hasher.HashPassword(admin, "admin");
                 db.Users.Add(admin);
             }
 
@@ -46,7 +46,7 @@ namespace RentLoop.API.Data
                     IsActive = true
                 };
 
-                demo.PasswordHash = hasher.HashPassword(demo, "Demo123!");
+                demo.PasswordHash = hasher.HashPassword(demo, "demo");
                 db.Users.Add(demo);
             }
 

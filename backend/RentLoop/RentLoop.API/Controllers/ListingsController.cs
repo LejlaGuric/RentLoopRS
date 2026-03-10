@@ -22,6 +22,33 @@ namespace RentLoop.API.Controllers
             _env = env;
         }
 
+        private class ListingScoreItem
+        {
+            public int Id { get; set; }
+            public string Name { get; set; } = "";
+            public decimal PricePerNight { get; set; }
+            public string City { get; set; } = "";
+            public string RentType { get; set; } = "";
+            public int CityId { get; set; }
+            public int RentTypeId { get; set; }
+            public int RoomsCount { get; set; }
+            public int MaxGuests { get; set; }
+            public decimal DistanceToCenterKm { get; set; }
+            public string? CoverUrl { get; set; }
+            public double AvgRating { get; set; }
+            public int ReviewsCount { get; set; }
+            public DateTime CreatedAt { get; set; }
+        }
+
+        private class ListingHistoryProfile
+        {
+            public int Id { get; set; }
+            public int CityId { get; set; }
+            public int RentTypeId { get; set; }
+            public decimal PricePerNight { get; set; }
+            public int RoomsCount { get; set; }
+        }
+
         // -------------------- HELPERS --------------------
         private int? GetUserIdOrNull()
         {
@@ -29,7 +56,6 @@ namespace RentLoop.API.Controllers
             if (int.TryParse(raw, out var id)) return id;
             return null;
         }
-
 
         [HttpGet]
         public async Task<IActionResult> GetAll(
@@ -43,7 +69,7 @@ namespace RentLoop.API.Controllers
             [FromQuery] string? q,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20
-)
+        )
         {
             page = Math.Max(page, 1);
             pageSize = Math.Clamp(pageSize, 1, 50);
@@ -55,7 +81,6 @@ namespace RentLoop.API.Controllers
                 .Where(l => l.IsActive)
                 .AsQueryable();
 
-            // FILTERI
             if (cityId.HasValue) query = query.Where(l => l.CityId == cityId.Value);
             if (rentTypeId.HasValue) query = query.Where(l => l.RentTypeId == rentTypeId.Value);
             if (minPrice.HasValue) query = query.Where(l => l.PricePerNight >= minPrice.Value);
@@ -63,14 +88,12 @@ namespace RentLoop.API.Controllers
             if (rooms.HasValue) query = query.Where(l => l.RoomsCount == rooms.Value);
             if (guests.HasValue) query = query.Where(l => l.MaxGuests >= guests.Value);
 
-            // SEARCH
             if (!string.IsNullOrWhiteSpace(q))
             {
                 var term = q.Trim();
                 query = query.Where(l => EF.Functions.Like(l.Name, $"%{term}%"));
             }
 
-            // SORT
             sort = (sort ?? "newest").ToLower();
             query = sort switch
             {
@@ -129,10 +152,8 @@ namespace RentLoop.API.Controllers
             });
         }
 
-
         // -------------------- RECOMMENDATIONS --------------------
 
-        // ✅ GET: api/listings/popular?take=15
         [HttpGet("popular")]
         public async Task<IActionResult> Popular([FromQuery] int take = 15)
         {
@@ -162,17 +183,19 @@ namespace RentLoop.API.Controllers
                 .Where(l => l.IsActive)
                 .OrderByDescending(l => l.CreatedAt)
                 .Take(250)
-                .Select(l => new
+                .Select(l => new ListingScoreItem
                 {
-                    l.Id,
-                    l.Name,
-                    l.PricePerNight,
+                    Id = l.Id,
+                    Name = l.Name,
+                    PricePerNight = l.PricePerNight,
                     City = l.City != null ? l.City.Name : "",
                     RentType = l.RentType != null ? l.RentType.Name : "",
-                    l.RoomsCount,
-                    l.MaxGuests,
-                    l.DistanceToCenterKm,
-                    l.CreatedAt,
+                    CityId = l.CityId,
+                    RentTypeId = l.RentTypeId,
+                    RoomsCount = l.RoomsCount,
+                    MaxGuests = l.MaxGuests,
+                    DistanceToCenterKm = l.DistanceToCenterKm,
+                    CreatedAt = l.CreatedAt,
 
                     CoverUrl = _db.PropertyImages
                         .Where(pi => pi.PropertyId == l.Id && pi.IsCover)
@@ -193,11 +216,11 @@ namespace RentLoop.API.Controllers
                 })
                 .ToListAsync();
 
-            int PopularScore(dynamic x)
+            int PopularScore(ListingScoreItem x)
             {
                 int score = 0;
-                if (views7d.TryGetValue((int)x.Id, out var vCnt)) score += Math.Min(15, vCnt / 2);
-                if (res30d.TryGetValue((int)x.Id, out var rCnt)) score += Math.Min(30, rCnt * 3);
+                if (views7d.TryGetValue(x.Id, out var vCnt)) score += Math.Min(15, vCnt / 2);
+                if (res30d.TryGetValue(x.Id, out var rCnt)) score += Math.Min(30, rCnt * 3);
                 score += (int)Math.Min(10, x.AvgRating * 2);
                 score += (int)Math.Min(5, x.ReviewsCount / 10);
                 return score;
@@ -228,7 +251,6 @@ namespace RentLoop.API.Controllers
             return Ok(ranked);
         }
 
-        // ✅ GET: api/listings/recommended?take=15
         [HttpGet("recommended")]
         [Authorize]
         public async Task<IActionResult> Recommended([FromQuery] int take = 15)
@@ -237,9 +259,7 @@ namespace RentLoop.API.Controllers
 
             var userId = GetUserIdOrNull();
             if (!userId.HasValue) return Unauthorized();
-            
 
-            // 2) Zadnjih 10 views
             var recentViewedIds = await _db.ListingViews
                 .AsNoTracking()
                 .Where(v => v.UserId == userId.Value)
@@ -249,7 +269,6 @@ namespace RentLoop.API.Controllers
                 .Take(10)
                 .ToListAsync();
 
-            // 3) Zadnjih 5 rezervacija
             var recentReservedIds = await _db.Reservations
                 .AsNoTracking()
                 .Where(r => r.UserId == userId.Value)
@@ -259,10 +278,8 @@ namespace RentLoop.API.Controllers
                 .Take(5)
                 .ToListAsync();
 
-            // Ne preporučuj ono što je user već rezervisao
             var exclude = recentReservedIds;
 
-            // 4) Popularnost mape
             var fromViews = DateTime.UtcNow.AddDays(-7);
             var fromRes = DateTime.UtcNow.AddDays(-30);
 
@@ -280,40 +297,43 @@ namespace RentLoop.API.Controllers
                 .Select(g => new { ListingId = g.Key, Cnt = g.Count() })
                 .ToDictionaryAsync(x => x.ListingId, x => x.Cnt);
 
-            // 5) Listing profili iz historije (za “sličnost”)
             var historyIds = recentViewedIds.Concat(recentReservedIds).Distinct().ToList();
 
             var historyListings = await _db.Listings
                 .AsNoTracking()
                 .Where(l => historyIds.Contains(l.Id))
-                .Select(l => new { l.Id, l.CityId, l.RentTypeId, l.PricePerNight, l.RoomsCount })
+                .Select(l => new ListingHistoryProfile
+                {
+                    Id = l.Id,
+                    CityId = l.CityId,
+                    RentTypeId = l.RentTypeId,
+                    PricePerNight = l.PricePerNight,
+                    RoomsCount = l.RoomsCount
+                })
                 .ToListAsync();
 
-            // 6) Kandidati (limit)
             var baseQuery = _db.Listings
                 .AsNoTracking()
                 .Include(l => l.City)
                 .Include(l => l.RentType)
                 .Where(l => l.IsActive && !exclude.Contains(l.Id));
 
-            
-
             var candidates = await baseQuery
                 .OrderByDescending(l => l.CreatedAt)
                 .Take(250)
-                .Select(l => new
+                .Select(l => new ListingScoreItem
                 {
-                    l.Id,
-                    l.Name,
-                    l.PricePerNight,
+                    Id = l.Id,
+                    Name = l.Name,
+                    PricePerNight = l.PricePerNight,
                     City = l.City != null ? l.City.Name : "",
                     RentType = l.RentType != null ? l.RentType.Name : "",
-                    l.CityId,
-                    l.RentTypeId,
-                    l.RoomsCount,
-                    l.MaxGuests,
-                    l.DistanceToCenterKm,
-                    l.CreatedAt,
+                    CityId = l.CityId,
+                    RentTypeId = l.RentTypeId,
+                    RoomsCount = l.RoomsCount,
+                    MaxGuests = l.MaxGuests,
+                    DistanceToCenterKm = l.DistanceToCenterKm,
+                    CreatedAt = l.CreatedAt,
 
                     CoverUrl = _db.PropertyImages
                         .Where(pi => pi.PropertyId == l.Id && pi.IsCover)
@@ -334,13 +354,10 @@ namespace RentLoop.API.Controllers
                 })
                 .ToListAsync();
 
-            int Score(dynamic c)
+            int Score(ListingScoreItem c)
             {
                 int score = 0;
 
-                
-
-                // B) Prethodne rezervacije / pregledi (sličnost)
                 foreach (var h in historyListings)
                 {
                     if (c.CityId == h.CityId) score += 6;
@@ -353,9 +370,8 @@ namespace RentLoop.API.Controllers
                     if (c.RoomsCount == h.RoomsCount) score += 2;
                 }
 
-                // C) Popularnost
-                if (views7d.TryGetValue((int)c.Id, out var vCnt)) score += Math.Min(10, vCnt / 3);
-                if (res30d.TryGetValue((int)c.Id, out var rCnt)) score += Math.Min(15, rCnt * 2);
+                if (views7d.TryGetValue(c.Id, out var vCnt)) score += Math.Min(10, vCnt / 3);
+                if (res30d.TryGetValue(c.Id, out var rCnt)) score += Math.Min(15, rCnt * 2);
 
                 score += (int)Math.Min(10, c.AvgRating * 2);
                 score += (int)Math.Min(5, c.ReviewsCount / 10);
@@ -385,14 +401,12 @@ namespace RentLoop.API.Controllers
                 .Take(take)
                 .ToList();
 
-            // fallback ako nema historije/signala
             if (ranked.Count == 0)
                 return await Popular(take);
 
             return Ok(ranked);
         }
 
-        // ✅ POST: api/listings/{id}/view
         [HttpPost("{id:int}/view")]
         [Authorize]
         public async Task<IActionResult> LogView(int id)
@@ -719,12 +733,28 @@ namespace RentLoop.API.Controllers
             var exists = await _db.Listings.AnyAsync(l => l.Id == id && l.IsActive);
             if (!exists) return NotFound("Listing not found.");
 
-            var bookedDays = await _db.PropertyAvailability
+            var reservations = await _db.Reservations
                 .AsNoTracking()
-                .Where(a => a.PropertyId == id && a.Date >= from.Date && a.Date < to.Date && a.IsBooked)
-                .OrderBy(a => a.Date)
-                .Select(a => a.Date)
+                .Where(r =>
+                    r.PropertyId == id &&
+                    (r.StatusId == 1 || r.StatusId == 2) &&
+                    from < r.CheckOut &&
+                    to > r.CheckIn)
+                .Select(r => new { r.CheckIn, r.CheckOut })
                 .ToListAsync();
+
+            var bookedDays = new HashSet<DateTime>();
+
+            foreach (var r in reservations)
+            {
+                var start = r.CheckIn.Date < from.Date ? from.Date : r.CheckIn.Date;
+                var end = r.CheckOut.Date > to.Date ? to.Date : r.CheckOut.Date;
+
+                for (var d = start; d < end; d = d.AddDays(1))
+                {
+                    bookedDays.Add(d);
+                }
+            }
 
             return Ok(bookedDays);
         }

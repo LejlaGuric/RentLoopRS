@@ -295,3 +295,6 @@ C:\Users\PC\Desktop\RentLoop n\RentLoopRS\backend\RentLoop\RentLoop.API\obj\Debu
 C:\Users\PC\Desktop\RentLoop n\RentLoopRS\backend\RentLoop\RentLoop.API\obj\Debug\net8.0\RentLoop.API.pdb
 C:\Users\PC\Desktop\RentLoop n\RentLoopRS\backend\RentLoop\RentLoop.API\obj\Debug\net8.0\RentLoop.API.genruntimeconfig.cache
 C:\Users\PC\Desktop\RentLoop n\RentLoopRS\backend\RentLoop\RentLoop.API\obj\Debug\net8.0\ref\RentLoop.API.dll
+C:\Users\PC\Desktop\RentLoop n\RentLoopRS\backend\RentLoop\RentLoop.API\bin\Debug\net8.0\DotNetEnv.dll
+C:\Users\PC\Desktop\RentLoop n\RentLoopRS\backend\RentLoop\RentLoop.API\bin\Debug\net8.0\Sprache.dll
+C:\Users\PC\Desktop\RentLoop n\RentLoopRS\backend\RentLoop\RentLoop.API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

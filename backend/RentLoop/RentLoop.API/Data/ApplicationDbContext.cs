@@ -180,36 +180,7 @@ namespace RentLoop.API.Data
                 new City { Id = 4, Name = "Banja Luka" }
             );
 
-            // Users
-            // Users
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = 1,
-                    Username = "admin",
-                    Email = "admin@rentloop.com",
-                    PasswordHash = "AQAAAAIAAYagAAAAEMRw5vgxTMvW08zOCvCTMu4hHp1VPdxSFwkFUDbdOiwMo/GAwIDM/EKFwr7tHuGfQQ==",
-                    FirstName = "Admin",
-                    LastName = "RentLoop",
-                    Address = "Mostar",
-                    Phone = "000-000",
-                    Role = 1,
-                    IsActive = true
-                },
-                new User
-                {
-                    Id = 2,
-                    Username = "demo",
-                    Email = "demo@rentloop.com",
-                    PasswordHash = "AQAAAAIAAYagAAAAEM3ETeA/RYamGNigPexLLY0+LFq45A7YNMIh3Z33DDbie/i4U5DyIsN9QYL+G+aycA==",
-                    FirstName = "Demo",
-                    LastName = "User",
-                    Address = "Sarajevo",
-                    Phone = "061-111-222",
-                    Role = 2,
-                    IsActive = true
-                }
-            );
+           
 
 
             // Amenities
