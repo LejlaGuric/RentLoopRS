@@ -15,8 +15,8 @@ class ReservationCreateRequest {
 
   Map<String, dynamic> toJson() => {
         'listingId': listingId,
-        'checkIn': checkIn.toUtc().toIso8601String(),
-        'checkOut': checkOut.toUtc().toIso8601String(),
+        'checkIn': checkIn.toIso8601String(),
+        'checkOut': checkOut.toIso8601String(),
         'guests': guests,
         'note': note,
       };

@@ -55,38 +55,28 @@ namespace RentLoop.API.Controllers
             if (userId == 0)
                 return Unauthorized();
 
-            var r = await _db.Reservations.FirstOrDefaultAsync(x => x.Id == req.ReservationId);
-            if (r == null) return NotFound("Reservation not found.");
-            if (r.UserId != userId) return Forbid();
+            var reservation = await _db.Reservations.FirstOrDefaultAsync(x => x.Id == req.ReservationId);
+            if (reservation == null)
+                return NotFound("Reservation not found.");
 
-            if (!IsApproved(r))
-                return BadRequest("Reservation must be approved (StatusId = 2) before payment.");
+            if (reservation.UserId != userId)
+                return Forbid();
 
-            if (r.IsPaid)
+            if (!IsApproved(reservation))
+                return BadRequest("Reservation must be approved before payment.");
+
+            if (reservation.IsPaid)
                 return BadRequest("Reservation already paid.");
 
-            var alreadyCaptured = await _db.Payments.AnyAsync(p =>
-                p.ReservationId == r.Id && p.Provider == "PayPal" && p.Status == "CAPTURED");
-
-            if (alreadyCaptured)
-                return BadRequest("Reservation already paid (CAPTURED payment exists).");
-
-            var openPaymentExists = await _db.Payments.AnyAsync(p =>
-                p.ReservationId == r.Id && p.Provider == "PayPal" &&
-                (p.Status == "CREATED" || p.Status == "APPROVED" || p.Status == "PAYER_ACTION_REQUIRED"));
-
-            if (openPaymentExists)
-                return BadRequest("Already exists open PayPal payment for this reservation.");
-
-            var amount = r.TotalPrice;
+            var amount = reservation.TotalPrice;
             var currency = "EUR";
 
-            var (orderId, approveUrl) = await _pp.CreateOrder(amount, currency, $"reservation-{r.Id}");
+            var (orderId, approveUrl) = await _pp.CreateOrder(amount, currency, $"reservation-{reservation.Id}");
 
             _db.Payments.Add(new Payment
             {
                 UserId = userId,
-                ReservationId = r.Id,
+                ReservationId = reservation.Id,
                 Provider = "PayPal",
                 ProviderOrderId = orderId,
                 Amount = amount,
@@ -95,6 +85,7 @@ namespace RentLoop.API.Controllers
             });
 
             await _db.SaveChangesAsync();
+
             return Ok(new CreatePayPalOrderResponse(orderId, approveUrl));
         }
 
@@ -109,74 +100,87 @@ namespace RentLoop.API.Controllers
                 .Include(p => p.Reservation)
                 .FirstOrDefaultAsync(p =>
                     p.Provider == "PayPal" &&
-                    p.ReservationId == req.ReservationId &&
-                    p.ProviderOrderId == req.OrderId);
+                    p.ProviderOrderId == req.OrderId &&
+                    p.ReservationId == req.ReservationId);
 
-            if (payment == null) return NotFound("Payment not found.");
-            if (payment.UserId != userId) return Forbid();
+            if (payment == null)
+                return NotFound("Payment not found.");
+
+            if (payment.Reservation == null)
+                return BadRequest("Reservation not found for payment.");
+
+            if (payment.Reservation.UserId != userId)
+                return Forbid();
 
             if (payment.Status == "CAPTURED")
                 return Ok(new CapturePayPalResponse("ALREADY_CAPTURED"));
 
-            var status = await _pp.CaptureOrder(req.OrderId);
-
-            if (status == "COMPLETED")
+            try
             {
-                payment.Status = "CAPTURED";
-                payment.CapturedAt = DateTime.UtcNow;
+                var status = await _pp.CaptureOrder(req.OrderId);
 
-                if (payment.Reservation != null)
+                if (status == "COMPLETED")
                 {
+                    payment.Status = "CAPTURED";
+                    payment.CapturedAt = DateTime.UtcNow;
+
                     payment.Reservation.IsPaid = true;
                     payment.Reservation.PaidAt = DateTime.UtcNow;
+
+                    await _db.SaveChangesAsync();
+                    return Ok(new CapturePayPalResponse("COMPLETED"));
                 }
 
+                payment.Status = "FAILED";
                 await _db.SaveChangesAsync();
-                return Ok(new CapturePayPalResponse("COMPLETED"));
-            }
 
-            payment.Status = "FAILED";
-            await _db.SaveChangesAsync();
-            return Ok(new CapturePayPalResponse(status));
+                return Ok(new CapturePayPalResponse(status));
+            }
+            catch (Exception ex)
+            {
+                payment.Status = "FAILED";
+                await _db.SaveChangesAsync();
+
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
         }
 
-        [HttpPost("paypal/dev-force-paid")]
-        public async Task<IActionResult> DevForcePaid([FromBody] DevPaidRequest req)
+        [AllowAnonymous]
+        [HttpGet("paypal/return")]
+        public IActionResult PayPalReturn([FromQuery] string? token)
         {
-            if (!_env.IsDevelopment())
-                return NotFound();
+            if (string.IsNullOrEmpty(token))
+                return Content("Missing PayPal token");
 
-            var userId = GetUserId();
-            if (userId == 0)
-                return Unauthorized();
+            var deepLink = $"rentloop://paypal-return?token={Uri.EscapeDataString(token)}";
 
-            var r = await _db.Reservations.FirstOrDefaultAsync(x => x.Id == req.ReservationId);
-            if (r == null) return NotFound("Reservation not found.");
-            if (r.UserId != userId) return Forbid();
+            var html =
+                "<html><head>" +
+                "<meta http-equiv='refresh' content='0;url=" + deepLink + "' />" +
+                "</head><body>" +
+                "Returning to app..." +
+                "</body></html>";
 
-            if (!IsApproved(r))
-                return BadRequest("Reservation must be approved (StatusId = 2).");
+            return Content(html, "text/html");
+        }
 
-            if (r.IsPaid)
-                return BadRequest("Reservation already paid.");
+        [AllowAnonymous]
+        [HttpGet("paypal/cancel")]
+        public IActionResult PayPalCancel()
+        {
+            var deepLink = "rentloop://paypal-cancel";
 
-            r.IsPaid = true;
-            r.PaidAt = DateTime.UtcNow;
+            var html =
+                "<html><head>" +
+                "<meta http-equiv='refresh' content='0;url=" + deepLink + "' />" +
+                "</head><body>" +
+                "Payment cancelled." +
+                "</body></html>";
 
-            _db.Payments.Add(new Payment
-            {
-                UserId = userId,
-                ReservationId = r.Id,
-                Provider = "PayPal",
-                ProviderOrderId = "DEV-FORCED",
-                Amount = r.TotalPrice,
-                Currency = "EUR",
-                Status = "CAPTURED",
-                CapturedAt = DateTime.UtcNow
-            });
-
-            await _db.SaveChangesAsync();
-            return Ok(new { ok = true, message = "DEV: marked as paid" });
+            return Content(html, "text/html");
         }
     }
 }

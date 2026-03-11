@@ -43,6 +43,9 @@ class AdminReservationItem {
   final int guests;
   final String? note;
 
+  final bool isPaid;
+  final DateTime? paidAt;
+
   AdminReservationItem({
     required this.id,
     required this.checkIn,
@@ -74,6 +77,8 @@ class AdminReservationItem {
     required this.rejectReason,
     required this.createdAt,
     required this.guests,
+    required this.isPaid,
+    this.paidAt,
     this.decisionAt,
     this.note,
   });
@@ -85,7 +90,7 @@ class AdminReservationItem {
     return AdminReservationItem(
       id: (json['id'] ?? 0) as int,
       checkIn: DateTime.parse(json['checkIn']),
-      checkOut: DateTime.parse(json['checkOut']),
+      checkOut: DateTime.parse(json['checkOut']).subtract(const Duration(days: 1)),
       totalPrice: _toDouble(json['totalPrice']),
       statusId: (json['statusId'] ?? 0) as int,
       status: (json['status'] ?? '') as String,
@@ -122,6 +127,8 @@ class AdminReservationItem {
       createdAt: DateTime.parse(json['createdAt']),
       guests: (json['guests'] ?? 0) as int,
       note: json['note']?.toString(),
+      isPaid: (json['isPaid'] ?? false) == true,
+      paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt']) : null,
     );
   }
 

@@ -88,10 +88,7 @@ class _RentLoopAppState extends State<RentLoopApp> {
         if (status == 'COMPLETED' || status == 'ALREADY_CAPTURED') {
           await _storage.delete('pending_reservation_id');
 
-          navigatorKey.currentState?.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const ProfilePage()),
-            (_) => false,
-          );
+          
         }
       }
 

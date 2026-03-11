@@ -116,7 +116,7 @@ namespace RentLoop.API.Controllers
                 return BadRequest("Invalid date range.");
             }
 
-            var totalPrice = days * listing.PricePerNight;
+            var totalPrice = (days - 1) * listing.PricePerNight;
 
             var overlap = await _db.Reservations.AnyAsync(r =>
                 r.PropertyId == listing.Id &&

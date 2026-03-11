@@ -329,7 +329,7 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
                         'Check-out',
                         _rangeEnd == null
                             ? '—'
-                            : _df.format(_dOnly(_rangeEnd!).add(const Duration(days: 1))),
+                            : _df.format(_dOnly(_rangeEnd!)),
                       ],
                       ['Noćenja', nights == 0 ? '—' : nights.toString()],
                       [

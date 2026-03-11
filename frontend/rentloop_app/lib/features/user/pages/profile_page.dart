@@ -81,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _handleInitialPayPalLink();
+      _tryCapturePendingPayment();
     }
   }
 
@@ -99,6 +99,41 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
       }
     } catch (_) {}
   }
+
+  Future<void> _tryCapturePendingPayment() async {
+  final storage = TokenStorage();
+
+  final reservationIdRaw = await storage.read('pending_reservation_id');
+  final orderId = await storage.read('pending_paypal_order_id');
+
+  if (reservationIdRaw == null || orderId == null) return;
+
+  final reservationId = int.tryParse(reservationIdRaw);
+  if (reservationId == null) return;
+
+  try {
+    final result = await _payments.capturePayPalOrder(
+      reservationId: reservationId,
+      orderId: orderId,
+    );
+
+    if (!mounted) return;
+
+    await storage.delete('pending_reservation_id');
+    await storage.delete('pending_paypal_order_id');
+    await _load();
+
+    final status = result.status.toUpperCase();
+
+    if (status == 'COMPLETED' || status == 'ALREADY_CAPTURED') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Plaćanje uspješno završeno ✅')),
+      );
+    }
+  } catch (_) {
+    // ako capture još nije spreman ili korisnik nije završio PayPal
+  }
+}
 
   Future<void> _handlePayPalReturn(Uri uri) async {
     final uriString = uri.toString();
@@ -343,6 +378,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
 
       final storage = TokenStorage();
       await storage.save('pending_reservation_id', r.id.toString());
+      await storage.save('pending_paypal_order_id', created.orderId);
 
       if (!mounted) return;
 

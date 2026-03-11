@@ -236,6 +236,11 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
                   child: Column(
                     children: [
                       _kv('Status', '${item.status} (ID: ${item.statusId})'),
+                      _kv('Plaćanje', item.isPaid ? 'Plaćeno' : 'Nije plaćeno'),
+                      _kv(
+                        'Vrijeme plaćanja',
+                        item.paidAt == null ? '—' : _fmtDateTime(item.paidAt!),
+                      ),
                       _kv('Check-in', _fmtDate(item.checkIn)),
                       _kv('Check-out', _fmtDate(item.checkOut)),
                       _kv('Guests', item.guests.toString()),
@@ -449,7 +454,7 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: ConstrainedBox(
-                                  constraints: const BoxConstraints(minWidth: 1100),
+                                  constraints: const BoxConstraints(minWidth: 1250),
                                   child: DataTable(
                                     headingRowHeight: 52,
                                     dataRowMinHeight: 56,
@@ -462,6 +467,7 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
                                       DataColumn(label: Text('Check-in', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Check-out', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Plaćanje', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Akcije', style: TextStyle(fontWeight: FontWeight.bold))),
                                     ],
@@ -478,6 +484,9 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
                                           DataCell(Text(_fmtDate(item.checkOut))),
                                           DataCell(
                                             _StatusPill(text: item.status, statusId: item.statusId),
+                                          ),
+                                          DataCell(
+                                            _PaymentPill(isPaid: item.isPaid),
                                           ),
                                           DataCell(Text('${item.totalPrice.toStringAsFixed(2)} KM')),
                                           DataCell(
@@ -555,6 +564,41 @@ class _StatusPill extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+class _PaymentPill extends StatelessWidget {
+  final bool isPaid;
+
+  const _PaymentPill({required this.isPaid});
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = isPaid
+        ? Colors.green.withOpacity(0.12)
+        : Colors.red.withOpacity(0.10);
+
+    final border = isPaid
+        ? Colors.green.withOpacity(0.35)
+        : Colors.red.withOpacity(0.30);
+
+    final textColor = isPaid ? Colors.green.shade800 : Colors.red.shade800;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        isPaid ? 'Plaćeno' : 'Nije plaćeno',
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
       ),
     );
   }

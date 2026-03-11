@@ -52,22 +52,32 @@ namespace RentLoop.API.Services.PayPal
             {
                 intent = "CAPTURE",
                 purchase_units = new[]
+    {
+        new
+        {
+            reference_id = referenceId,
+            amount = new
+            {
+                currency_code = currency,
+                value = amountStr
+            }
+        }
+    },
+                payment_source = new
                 {
-                    new
+                    paypal = new
                     {
-                        reference_id = referenceId,
-                        amount = new { currency_code = currency, value = amountStr }
+                        experience_context = new
+                        {
+                            user_action = "PAY_NOW",
+                            shipping_preference = "NO_SHIPPING",
+                            locale = "en-US",
+                            return_url = _cfg.ReturnUrl,
+                            cancel_url = _cfg.CancelUrl
+                        }
                     }
-                },
-                application_context = new
-                {
-                    user_action = "PAY_NOW",
-                    landing_page = "LOGIN",
-                    shipping_preference = "NO_SHIPPING",
-                    locale = "en-US",
-                    return_url = _cfg.ReturnUrl,
-                    cancel_url = _cfg.CancelUrl
                 }
+             
             };
 
             req.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
@@ -84,7 +94,9 @@ namespace RentLoop.API.Services.PayPal
             string? approveUrl = null;
             foreach (var link in doc.RootElement.GetProperty("links").EnumerateArray())
             {
-                if (link.GetProperty("rel").GetString() == "approve")
+                var rel = link.GetProperty("rel").GetString();
+
+                if (rel == "payer-action" || rel == "approve")
                 {
                     approveUrl = link.GetProperty("href").GetString();
                     break;

@@ -63,6 +63,8 @@
       - PayPal__Mode=${PayPal__Mode}
       - PayPal__ClientId=${PayPal__ClientId}
       - PayPal__Secret=${PayPal__Secret}
+      - PayPal__ReturnUrl=${PayPal__ReturnUrl}
+      - PayPal__CancelUrl=${PayPal__CancelUrl}
     restart: on-failure
 
   worker:
