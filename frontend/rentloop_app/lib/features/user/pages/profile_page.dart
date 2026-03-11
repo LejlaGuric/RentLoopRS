@@ -42,10 +42,20 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
   bool _editing = false;
   bool _creatingPayment = false;
 
+  final _profileFormKey = GlobalKey<FormState>();
+
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
   final _phone = TextEditingController();
   final _address = TextEditingController();
+
+  String? _profileGeneralError;
+  String? _firstNameServerError;
+  String? _lastNameServerError;
+  String? _phoneServerError;
+  String? _addressServerError;
+
+  final RegExp _phoneRegex = RegExp(r'^(\+?\d{8,15})$');
 
   @override
   void initState() {
@@ -164,6 +174,8 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
       _phone.text = me.phone ?? '';
       _address.text = me.address ?? '';
 
+      _clearProfileMappedErrors();
+
       setState(() => _loading = false);
     } catch (e) {
       setState(() {
@@ -173,8 +185,111 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
     }
   }
 
+  void _clearProfileMappedErrors() {
+    _profileGeneralError = null;
+    _firstNameServerError = null;
+    _lastNameServerError = null;
+    _phoneServerError = null;
+    _addressServerError = null;
+  }
+
+  void _mapProfileServerError(String message) {
+    final msg = message.toLowerCase();
+
+    if (msg.contains('first name') || msg.contains('firstname') || msg.contains('ime')) {
+      _firstNameServerError = message;
+      return;
+    }
+
+    if (msg.contains('last name') || msg.contains('lastname') || msg.contains('prezime')) {
+      _lastNameServerError = message;
+      return;
+    }
+
+    if (msg.contains('phone') || msg.contains('telefon')) {
+      _phoneServerError = message;
+      return;
+    }
+
+    if (msg.contains('address') || msg.contains('adresa')) {
+      _addressServerError = message;
+      return;
+    }
+
+    _profileGeneralError = message;
+  }
+
+  void _clearProfileFieldError(String field) {
+    setState(() {
+      _profileGeneralError = null;
+
+      switch (field) {
+        case 'firstName':
+          _firstNameServerError = null;
+          break;
+        case 'lastName':
+          _lastNameServerError = null;
+          break;
+        case 'phone':
+          _phoneServerError = null;
+          break;
+        case 'address':
+          _addressServerError = null;
+          break;
+      }
+    });
+  }
+
+  String? _validateFirstName(String? value) {
+    final v = value?.trim() ?? '';
+
+    if (v.isNotEmpty && v.length > 50) {
+      return 'Ime može imati najviše 50 karaktera';
+    }
+
+    if (_firstNameServerError != null) return _firstNameServerError;
+    return null;
+  }
+
+  String? _validateLastName(String? value) {
+    final v = value?.trim() ?? '';
+
+    if (v.isNotEmpty && v.length > 50) {
+      return 'Prezime može imati najviše 50 karaktera';
+    }
+
+    if (_lastNameServerError != null) return _lastNameServerError;
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    final v = value?.trim() ?? '';
+
+    if (v.isNotEmpty) {
+      if (v.length > 30) return 'Telefon može imati najviše 30 karaktera';
+      if (!_phoneRegex.hasMatch(v)) return 'Telefon nije u ispravnom formatu';
+    }
+
+    if (_phoneServerError != null) return _phoneServerError;
+    return null;
+  }
+
+  String? _validateAddress(String? value) {
+    final v = value?.trim() ?? '';
+
+    if (v.length > 200) return 'Adresa može imati najviše 200 karaktera';
+
+    if (_addressServerError != null) return _addressServerError;
+    return null;
+  }
+
   Future<void> _save() async {
     if (_me == null) return;
+
+    setState(_clearProfileMappedErrors);
+
+    final ok = _profileFormKey.currentState?.validate() ?? false;
+    if (!ok) return;
 
     setState(() {
       _loading = true;
@@ -194,6 +309,11 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
       _me = updated;
       _editing = false;
 
+      _firstName.text = updated.firstName ?? '';
+      _lastName.text = updated.lastName ?? '';
+      _phone.text = updated.phone ?? '';
+      _address.text = updated.address ?? '';
+
       setState(() => _loading = false);
 
       if (mounted) {
@@ -202,10 +322,14 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
         );
       }
     } catch (e) {
+      final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
+
       setState(() {
         _loading = false;
-        _error = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
+        _mapProfileServerError(msg);
       });
+
+      _profileFormKey.currentState?.validate();
     }
   }
 
@@ -310,12 +434,17 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
   }
 
   void _openChangePasswordDialog() {
+    final formKey = GlobalKey<FormState>();
+
     final currentCtrl = TextEditingController();
     final newCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
 
     bool loading = false;
-    String error = '';
+    String? generalError;
+    String? currentServerError;
+    String? newServerError;
+    String? confirmServerError;
 
     showDialog(
       context: context,
@@ -323,25 +452,84 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setStateDialog) {
+            void clearMappedErrors() {
+              generalError = null;
+              currentServerError = null;
+              newServerError = null;
+              confirmServerError = null;
+            }
+
+            void mapServerError(String message) {
+              final msg = message.toLowerCase();
+
+              if (msg.contains('current password') || msg.contains('trenutna lozinka')) {
+                currentServerError = message;
+                return;
+              }
+
+              if (msg.contains('new password') || msg.contains('nova lozinka')) {
+                newServerError = message;
+                return;
+              }
+
+              if (msg.contains('confirm') || msg.contains('potvrdi')) {
+                confirmServerError = message;
+                return;
+              }
+
+              generalError = message;
+            }
+
+            String? validateCurrent(String? value) {
+              final v = value ?? '';
+              if (v.isEmpty) return 'Trenutna lozinka je obavezna';
+              if (currentServerError != null) return currentServerError;
+              return null;
+            }
+
+            String? validateNew(String? value) {
+              final v = value ?? '';
+              if (v.isEmpty) return 'Nova lozinka je obavezna';
+              if (v.length < 6) return 'Nova lozinka mora imati najmanje 6 karaktera';
+              if (v.length > 100) return 'Nova lozinka može imati najviše 100 karaktera';
+              if (newServerError != null) return newServerError;
+              return null;
+            }
+
+            String? validateConfirm(String? value) {
+              final v = value ?? '';
+              if (v.isEmpty) return 'Potvrda lozinke je obavezna';
+              if (v != newCtrl.text) return 'Lozinke se ne podudaraju';
+              if (confirmServerError != null) return confirmServerError;
+              return null;
+            }
+
+            void clearFieldError(String field) {
+              setStateDialog(() {
+                generalError = null;
+
+                switch (field) {
+                  case 'current':
+                    currentServerError = null;
+                    break;
+                  case 'new':
+                    newServerError = null;
+                    break;
+                  case 'confirm':
+                    confirmServerError = null;
+                    break;
+                }
+              });
+            }
+
             Future<void> submit() async {
-              if (currentCtrl.text.isEmpty || newCtrl.text.isEmpty || confirmCtrl.text.isEmpty) {
-                setStateDialog(() => error = 'Sva polja su obavezna.');
-                return;
-              }
+              setStateDialog(clearMappedErrors);
 
-              if (newCtrl.text.length < 6) {
-                setStateDialog(() => error = 'Nova lozinka mora imati min 6 karaktera.');
-                return;
-              }
-
-              if (newCtrl.text != confirmCtrl.text) {
-                setStateDialog(() => error = 'Lozinke se ne podudaraju.');
-                return;
-              }
+              final ok = formKey.currentState?.validate() ?? false;
+              if (!ok) return;
 
               setStateDialog(() {
                 loading = true;
-                error = '';
               });
 
               try {
@@ -358,10 +546,14 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                   const SnackBar(content: Text('Lozinka uspješno promijenjena 🔐')),
                 );
               } catch (e) {
+                final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
+
                 setStateDialog(() {
                   loading = false;
-                  error = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
+                  mapServerError(msg);
                 });
+
+                formKey.currentState?.validate();
               }
             }
 
@@ -369,41 +561,60 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
               title: const Text('Promjena lozinke'),
               content: SizedBox(
                 width: 420,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (error.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Text(error, style: const TextStyle(color: Colors.red)),
+                child: Form(
+                  key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (generalError != null && generalError!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            generalError!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      TextFormField(
+                        controller: currentCtrl,
+                        obscureText: true,
+                        validator: validateCurrent,
+                        onChanged: (_) => clearFieldError('current'),
+                        decoration: const InputDecoration(
+                          labelText: 'Trenutna lozinka',
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                    TextField(
-                      controller: currentCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Trenutna lozinka',
-                        border: OutlineInputBorder(),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: newCtrl,
+                        obscureText: true,
+                        validator: validateNew,
+                        onChanged: (_) {
+                          clearFieldError('new');
+                          formKey.currentState?.validate();
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Nova lozinka',
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: newCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Nova lozinka',
-                        border: OutlineInputBorder(),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: confirmCtrl,
+                        obscureText: true,
+                        validator: validateConfirm,
+                        onChanged: (_) {
+                          clearFieldError('confirm');
+                          formKey.currentState?.validate();
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Potvrdi novu lozinku',
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: confirmCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Potvrdi novu lozinku',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               actions: [
@@ -453,7 +664,6 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                 style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 12),
-
               if (r.statusId == 1) ...[
                 SizedBox(
                   width: double.infinity,
@@ -553,7 +763,6 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                   ),
                 ),
               ],
-
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
@@ -771,6 +980,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                               _lastName.text = me.lastName ?? '';
                               _phone.text = me.phone ?? '';
                               _address.text = me.address ?? '';
+                              _clearProfileMappedErrors();
                               setState(() => _editing = false);
                             },
                             child: const Text('Odustani'),
@@ -784,25 +994,62 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                         ],
                       ],
                     ),
-                    child: Column(
-                      children: [
-                        _Field(label: 'Ime', controller: _firstName, enabled: _editing),
-                        const SizedBox(height: 12),
-                        _Field(label: 'Prezime', controller: _lastName, enabled: _editing),
-                        const SizedBox(height: 12),
-                        _Field(
-                          label: 'Telefon',
-                          controller: _phone,
-                          enabled: _editing,
-                          keyboardType: TextInputType.phone,
-                        ),
-                        const SizedBox(height: 12),
-                        _Field(label: 'Adresa', controller: _address, enabled: _editing),
-                        const SizedBox(height: 10),
-                        _ReadOnlyRow(label: 'Email', value: _me!.email),
-                        const SizedBox(height: 6),
-                        _ReadOnlyRow(label: 'Username', value: _me!.username),
-                      ],
+                    child: Form(
+                      key: _profileFormKey,
+                      autovalidateMode: _editing
+                          ? AutovalidateMode.onUserInteraction
+                          : AutovalidateMode.disabled,
+                      child: Column(
+                        children: [
+                          if (_profileGeneralError != null &&
+                              _profileGeneralError!.isNotEmpty) ...[
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                _profileGeneralError!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                          _Field(
+                            label: 'Ime',
+                            controller: _firstName,
+                            enabled: _editing,
+                            validator: _validateFirstName,
+                            onChanged: (_) => _clearProfileFieldError('firstName'),
+                          ),
+                          const SizedBox(height: 12),
+                          _Field(
+                            label: 'Prezime',
+                            controller: _lastName,
+                            enabled: _editing,
+                            validator: _validateLastName,
+                            onChanged: (_) => _clearProfileFieldError('lastName'),
+                          ),
+                          const SizedBox(height: 12),
+                          _Field(
+                            label: 'Telefon',
+                            controller: _phone,
+                            enabled: _editing,
+                            keyboardType: TextInputType.phone,
+                            validator: _validatePhone,
+                            onChanged: (_) => _clearProfileFieldError('phone'),
+                          ),
+                          const SizedBox(height: 12),
+                          _Field(
+                            label: 'Adresa',
+                            controller: _address,
+                            enabled: _editing,
+                            validator: _validateAddress,
+                            onChanged: (_) => _clearProfileFieldError('address'),
+                          ),
+                          const SizedBox(height: 10),
+                          _ReadOnlyRow(label: 'Email', value: _me!.email),
+                          const SizedBox(height: 6),
+                          _ReadOnlyRow(label: 'Username', value: _me!.username),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -997,20 +1244,26 @@ class _Field extends StatelessWidget {
   final TextEditingController controller;
   final bool enabled;
   final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
+  final ValueChanged<String>? onChanged;
 
   const _Field({
     required this.label,
     required this.controller,
     required this.enabled,
     this.keyboardType,
+    this.validator,
+    this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       enabled: enabled,
       keyboardType: keyboardType,
+      validator: validator,
+      onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
@@ -1103,4 +1356,4 @@ class _ReservationTile extends StatelessWidget {
       ),
     );
   }
-}  
+}

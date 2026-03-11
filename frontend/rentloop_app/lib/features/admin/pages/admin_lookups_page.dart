@@ -21,11 +21,12 @@ class _AdminLookupsPageState extends State<AdminLookupsPage>
 
   List<LookupItem> _cities = [];
   List<LookupItem> _rentTypes = [];
+  List<LookupItem> _amenities = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _load();
   }
 
@@ -44,11 +45,13 @@ class _AdminLookupsPageState extends State<AdminLookupsPage>
     try {
       final cities = await _service.getCities();
       final rentTypes = await _service.getRentTypes();
+      final amenities = await _service.getAmenities();
 
       if (!mounted) return;
       setState(() {
         _cities = cities;
         _rentTypes = rentTypes;
+        _amenities = amenities;
       });
     } catch (e) {
       if (!mounted) return;
@@ -426,6 +429,7 @@ class _AdminLookupsPageState extends State<AdminLookupsPage>
             tabs: const [
               Tab(text: 'Cities'),
               Tab(text: 'Rent Types'),
+              Tab(text: 'Amenities'),
             ],
           ),
         ),
@@ -467,6 +471,24 @@ class _AdminLookupsPageState extends State<AdminLookupsPage>
                   entityName: 'tipa najma',
                   itemName: item.name,
                   onDelete: () => _service.deleteRentType(item.id),
+                ),
+              ),
+              _buildTable(
+                title: 'Amenities',
+                items: _amenities,
+                onAdd: () => _openCreateDialog(
+                  title: 'Dodaj amenity',
+                  onSave: (value) => _service.createAmenity(value),
+                ),
+                onEdit: (item) => _openEditDialog(
+                  title: 'Izmijeni amenity',
+                  item: item,
+                  onSave: (value) => _service.updateAmenity(item.id, value),
+                ),
+                onDelete: (item) => _confirmDelete(
+                  entityName: 'amenity-ja',
+                  itemName: item.name,
+                  onDelete: () => _service.deleteAmenity(item.id),
                 ),
               ),
             ],

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace RentLoop.API.Controllers
@@ -67,15 +68,29 @@ namespace RentLoop.API.Controllers
 
         public class UpdateMeRequest
         {
+            [MaxLength(50)]
             public string? FirstName { get; set; }
+
+            [MaxLength(50)]
             public string? LastName { get; set; }
+
+            [MaxLength(30)]
+            [RegularExpression(
+                @"^(\+?\d{8,15})$",
+                ErrorMessage = "Phone format is not valid."
+            )]
             public string? Phone { get; set; }
+
+            [MaxLength(200)]
             public string? Address { get; set; }
         }
 
         [HttpPut("me")]
         public async Task<IActionResult> UpdateMe([FromBody] UpdateMeRequest req)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var userId = GetUserId();
             if (userId == 0)
                 return Unauthorized();

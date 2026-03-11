@@ -5,6 +5,7 @@ using RentLoop.API.Data;
 using RentLoop.API.DTOs.Listing;
 using RentLoop.API.DTOs;
 using RentLoop.API.Models;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace RentLoop.API.Controllers
@@ -432,8 +433,14 @@ namespace RentLoop.API.Controllers
 
         public class ListingCreateFormDataRequest
         {
+            [Required]
+            [MaxLength(100)]
             public string Name { get; set; } = "";
+
+            [MaxLength(1000)]
             public string? Description { get; set; }
+
+            [MaxLength(200)]
             public string? Address { get; set; }
 
             public int CityId { get; set; }
@@ -460,6 +467,9 @@ namespace RentLoop.API.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] ListingCreateFormDataRequest req)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (string.IsNullOrWhiteSpace(req.Name))
                 return BadRequest("Name is required.");
 
@@ -686,6 +696,9 @@ namespace RentLoop.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddImage(int id, [FromBody] ListingImageCreateRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (string.IsNullOrWhiteSpace(request.Url))
                 return BadRequest("Url is required.");
 

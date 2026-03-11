@@ -39,6 +39,8 @@ dependencies:
   intl: ^0.20.2
   url_launcher: ^6.3.0
   app_links: ^6.3.2
+  pdf: ^3.11.0
+  printing: ^5.13.4
   signalr_netcore: ^1.3.7
   flutter_localizations:
     sdk: flutter

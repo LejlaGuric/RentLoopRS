@@ -1,4 +1,4 @@
-﻿
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace RentLoop.API.Models
 {
@@ -12,7 +12,12 @@ namespace RentLoop.API.Models
         public int TypeId { get; set; }
         public NotificationType? Type { get; set; }
 
+        [Required]
+        [MaxLength(150)]
         public string Title { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(1000)]
         public string Body { get; set; } = string.Empty;
 
         public bool IsRead { get; set; } = false;

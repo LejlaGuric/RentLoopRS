@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
 using RentLoop.API.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace RentLoop.API.Controllers
 {
@@ -19,6 +20,8 @@ namespace RentLoop.API.Controllers
 
         public class LookupUpsertRequest
         {
+            [Required]
+            [MaxLength(100)]
             public string Name { get; set; } = "";
         }
 
@@ -43,6 +46,9 @@ namespace RentLoop.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateCity([FromBody] LookupUpsertRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var name = (request.Name ?? "").Trim();
             if (string.IsNullOrWhiteSpace(name))
                 return BadRequest("Name is required.");
@@ -66,6 +72,9 @@ namespace RentLoop.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCity(int id, [FromBody] LookupUpsertRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var name = (request.Name ?? "").Trim();
             if (string.IsNullOrWhiteSpace(name))
                 return BadRequest("Name is required.");
@@ -127,6 +136,9 @@ namespace RentLoop.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateRentType([FromBody] LookupUpsertRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var name = (request.Name ?? "").Trim();
             if (string.IsNullOrWhiteSpace(name))
                 return BadRequest("Name is required.");
@@ -150,6 +162,9 @@ namespace RentLoop.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateRentType(int id, [FromBody] LookupUpsertRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var name = (request.Name ?? "").Trim();
             if (string.IsNullOrWhiteSpace(name))
                 return BadRequest("Name is required.");
@@ -211,6 +226,9 @@ namespace RentLoop.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateAmenity([FromBody] LookupUpsertRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var name = (request.Name ?? "").Trim();
             if (string.IsNullOrWhiteSpace(name))
                 return BadRequest("Name is required.");
@@ -234,6 +252,9 @@ namespace RentLoop.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAmenity(int id, [FromBody] LookupUpsertRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var name = (request.Name ?? "").Trim();
             if (string.IsNullOrWhiteSpace(name))
                 return BadRequest("Name is required.");
@@ -252,6 +273,26 @@ namespace RentLoop.API.Controllers
             return Ok(new { amenity.Id, amenity.Name });
         }
 
+        [HttpDelete("amenities/{id:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteAmenity(int id)
+        {
+            var amenity = await _db.Amenities.FirstOrDefaultAsync(x => x.Id == id);
+            if (amenity == null)
+                return NotFound("Amenity not found.");
 
+            _db.Amenities.Remove(amenity);
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict("Amenity cannot be deleted because related records exist.");
+            }
+
+            return Ok(new { message = "Amenity deleted." });
+        }
     }
 }

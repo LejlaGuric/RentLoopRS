@@ -1,4 +1,4 @@
-﻿
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace RentLoop.API.Models
 {
@@ -21,20 +21,18 @@ namespace RentLoop.API.Models
         public bool IsPaid { get; set; } = false;
         public DateTime? PaidAt { get; set; }
 
-
         public int StatusId { get; set; }
         public ReservationStatus? Status { get; set; }
 
-        // Admin odobrio/odbijao:
         public int? ApprovedByAdminId { get; set; }
         public User? ApprovedByAdmin { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DecisionAt { get; set; }
 
+        [MaxLength(1000)]
         public string? Note { get; set; }
 
         public Review? Review { get; set; }
-        
     }
 }

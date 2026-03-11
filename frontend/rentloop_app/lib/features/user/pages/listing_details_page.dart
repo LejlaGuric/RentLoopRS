@@ -3,9 +3,8 @@ import '../../../core/config/api_config.dart';
 
 import '../models/listing_details.dart';
 import '../services/listings_service.dart';
-import '../services/favorites_service.dart'; 
+import '../services/favorites_service.dart';
 import 'reservation_create_page.dart';
-
 
 class ListingDetailsPage extends StatefulWidget {
   final int listingId;
@@ -18,13 +17,12 @@ class ListingDetailsPage extends StatefulWidget {
 
 class _ListingDetailsPageState extends State<ListingDetailsPage> {
   final _svc = ListingsService();
-  final _favSvc = FavoritesService(); // ✅ NOVO
+  final _favSvc = FavoritesService();
 
   bool _loading = true;
   String _error = '';
   ListingDetails? _data;
 
-  // ✅ NOVO: favorites state
   bool _isFav = false;
   bool _favLoading = false;
 
@@ -172,10 +170,8 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
       children: [
         _gallery(context, imgs, blue),
-
         const SizedBox(height: 14),
 
-        // naslov + lokacija
         Text(
           d.name,
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
@@ -196,7 +192,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
 
         const SizedBox(height: 14),
 
-        // info cards
         Row(
           children: [
             Expanded(child: _infoCard('Cijena', '${d.pricePerNight.toStringAsFixed(0)} KM / noć', blue)),
@@ -239,16 +234,31 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
 
         const SizedBox(height: 12),
 
-  _section(
-  title: 'Udaljenost',
-  child: Wrap(
-    spacing: 8,
-    runSpacing: 8,
-    children: [
-      _chip('Udaljenost: ${d.distanceToCenterKm.toStringAsFixed(1)} km', icon: Icons.map_outlined),
-    ],
-  ),
-),    
+        _section(
+          title: 'Udaljenost',
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _chip('Udaljenost: ${d.distanceToCenterKm.toStringAsFixed(1)} km', icon: Icons.map_outlined),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        _section(
+          title: 'Osnovne pogodnosti',
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _boolChip('WiFi', d.hasWifi, trueIcon: Icons.wifi, falseIcon: Icons.wifi_off),
+              _boolChip('Klima', d.hasAirConditioning, trueIcon: Icons.ac_unit, falseIcon: Icons.block),
+              _boolChip('Ljubimci dozvoljeni', d.petsAllowed, trueIcon: Icons.pets, falseIcon: Icons.block),
+            ],
+          ),
+        ),
 
         if (d.selectedAmenities.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -264,35 +274,30 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
 
         const SizedBox(height: 16),
 
-        // CTA dugme (kasnije rezervacija)
         SizedBox(
           height: 52,
           child: ElevatedButton(
             onPressed: () async {
-  final d = _data!;
-  final changed = await Navigator.of(context).push<bool>(
-    MaterialPageRoute(
-      builder: (_) => ReservationCreatePage(
-        listingId: d.id, // ili widget.listingId, oba su ok
-        listingName: d.name,
-        pricePerNight: d.pricePerNight.toDouble(),
-        maxGuests: d.maxGuests,
-      ),
-    ),
-  );
+              final d = _data!;
+              final changed = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (_) => ReservationCreatePage(
+                    listingId: d.id,
+                    listingName: d.name,
+                    pricePerNight: d.pricePerNight.toDouble(),
+                    maxGuests: d.maxGuests,
+                  ),
+                ),
+              );
 
-  if (!mounted) return;
+              if (!mounted) return;
 
-  if (changed == true) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Rezervacija poslana (čeka odobrenje).')),
-    );
-
-    // opcionalno: refresh detalja (ne mora, ali može)
-    // await _load();
-  }
-},
-
+              if (changed == true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Rezervacija poslana (čeka odobrenje).')),
+                );
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: blue,
               foregroundColor: Colors.white,
@@ -305,8 +310,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
       ],
     );
   }
-
-  // ------------------ GALLERY ------------------
 
   Widget _gallery(BuildContext context, List<String> imgs, Color blue) {
     final count = imgs.length;
@@ -340,8 +343,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                   );
                 },
               ),
-
-            // strelice (samo ako ima više slika)
             if (count > 1) ...[
               Positioned(
                 left: 10,
@@ -362,8 +363,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                 ),
               ),
             ],
-
-            // indicator (1/5)
             if (count > 0)
               Positioned(
                 right: 12,
@@ -380,8 +379,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                   ),
                 ),
               ),
-
-            // hint
             if (count > 0)
               Positioned(
                 left: 12,
@@ -436,8 +433,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
       ),
     );
   }
-
-  // ------------------ UI HELPERS ------------------
 
   Widget _section({required String title, required Widget child}) {
     return Container(
@@ -504,9 +499,36 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
       ),
     );
   }
-}
 
-// ------------------ FULLSCREEN PREVIEW ------------------
+  Widget _boolChip(String text, bool value, {IconData? trueIcon, IconData? falseIcon}) {
+    final bg = value ? Colors.green.withOpacity(0.10) : Colors.red.withOpacity(0.08);
+    final border = value ? Colors.green.withOpacity(0.28) : Colors.red.withOpacity(0.25);
+    final fg = value ? Colors.green.shade700 : Colors.red.shade700;
+    final icon = value ? trueIcon : falseIcon;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: fg),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            value ? text : '$text - ne',
+            style: TextStyle(fontWeight: FontWeight.w800, color: fg),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _GalleryPreviewPage extends StatefulWidget {
   final int listingId;

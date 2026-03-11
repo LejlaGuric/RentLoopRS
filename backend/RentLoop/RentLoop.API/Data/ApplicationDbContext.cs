@@ -185,12 +185,10 @@ namespace RentLoop.API.Data
 
             // Amenities
             modelBuilder.Entity<Amenity>().HasData(
-                new Amenity { Id = 1, Name = "Wi-Fi" },
-                new Amenity { Id = 2, Name = "Parking" },
-                new Amenity { Id = 3, Name = "Klima" },
-                new Amenity { Id = 4, Name = "Lift" },
-                new Amenity { Id = 5, Name = "Balkon" },
-                new Amenity { Id = 6, Name = "Pogled" }
+                new Amenity { Id = 1, Name = "Parking" },
+                new Amenity { Id = 2, Name = "Lift" },
+                new Amenity { Id = 3, Name = "Balkon" },
+                new Amenity { Id = 4, Name = "Pogled" }
             );
 
        

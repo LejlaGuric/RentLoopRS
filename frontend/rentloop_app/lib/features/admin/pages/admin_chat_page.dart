@@ -13,15 +13,26 @@ class AdminChatPage extends StatefulWidget {
 
 class _AdminChatPageState extends State<AdminChatPage> {
   final ChatService _svc = ChatService();
+  final TextEditingController _searchCtrl = TextEditingController();
 
   bool _loading = true;
   String _error = '';
+
   List<AdminConversationDto> _items = [];
+  List<AdminConversationDto> _filteredItems = [];
 
   @override
   void initState() {
     super.initState();
+    _searchCtrl.addListener(_applyFilter);
     _load();
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.removeListener(_applyFilter);
+    _searchCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -35,7 +46,10 @@ class _AdminChatPageState extends State<AdminChatPage> {
       list.sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
 
       if (!mounted) return;
-      setState(() => _items = list);
+      setState(() {
+        _items = list;
+      });
+      _applyFilter();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -44,6 +58,21 @@ class _AdminChatPageState extends State<AdminChatPage> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _applyFilter() {
+    final q = _searchCtrl.text.trim().toLowerCase();
+
+    setState(() {
+      if (q.isEmpty) {
+        _filteredItems = List<AdminConversationDto>.from(_items);
+      } else {
+        _filteredItems = _items.where((c) {
+          final userName = c.userName.toLowerCase();
+          return userName.contains(q);
+        }).toList();
+      }
+    });
   }
 
   String _fmt(DateTime d) {
@@ -79,20 +108,50 @@ class _AdminChatPageState extends State<AdminChatPage> {
         child: ListView(
           padding: const EdgeInsets.all(12),
           children: [
+            TextField(
+              controller: _searchCtrl,
+              decoration: InputDecoration(
+                hintText: 'Pretraga po imenu...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
             if (_loading) ...[
               const SizedBox(height: 60),
               const Center(child: CircularProgressIndicator()),
               const SizedBox(height: 60),
             ] else if (_error.isNotEmpty) ...[
-              Text(_error, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+              Text(
+                _error,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ] else if (_items.isEmpty) ...[
               const SizedBox(height: 40),
               Text(
                 'Nema razgovora još.',
-                style: TextStyle(color: Colors.black.withOpacity(0.6), fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.black.withOpacity(0.6),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ] else if (_filteredItems.isEmpty) ...[
+              const SizedBox(height: 40),
+              Text(
+                'Nema rezultata za unesenu pretragu.',
+                style: TextStyle(
+                  color: Colors.black.withOpacity(0.6),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ] else ...[
-              ..._items.map((c) {
+              ..._filteredItems.map((c) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: InkWell(

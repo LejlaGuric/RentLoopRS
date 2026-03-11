@@ -9,6 +9,7 @@ using System.Security.Claims;
 using RentLoop.API.Services.PayPal;
 using RentLoop.API.Services;
 using RentLoop.API.Hubs;
+using RentLoop.API.Services.Reservations;
 
 var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
 if (File.Exists(envPath))
@@ -36,6 +37,8 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddScoped<ChatService>();
+
+builder.Services.AddScoped<IReservationStateService, ReservationStateService>();
 
 builder.Services.AddSingleton<RentLoop.API.Messaging.RabbitMqPublisher>();
 

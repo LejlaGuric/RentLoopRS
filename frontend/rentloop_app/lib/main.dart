@@ -3,12 +3,11 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 
+import 'core/navigation/app_navigator.dart';
 import 'core/storage/token_storage.dart';
 import 'features/auth/login_page.dart';
 import 'features/user/pages/profile_page.dart';
 import 'features/user/services/payments_service.dart';
-
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

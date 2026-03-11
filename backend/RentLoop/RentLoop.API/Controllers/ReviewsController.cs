@@ -38,6 +38,9 @@ namespace RentLoop.API.Controllers
         [Authorize(Roles = "Client")]
         public async Task<IActionResult> Create([FromBody] ReviewCreateRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var userId = GetUserId();
             if (userId == 0)
                 return Unauthorized();
@@ -70,7 +73,7 @@ namespace RentLoop.API.Controllers
                 PropertyId = reservation.PropertyId,
                 UserId = userId,
                 Rating = request.Rating,
-                Comment = request.Comment,
+                Comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim(),
                 CreatedAt = DateTime.UtcNow
             };
 

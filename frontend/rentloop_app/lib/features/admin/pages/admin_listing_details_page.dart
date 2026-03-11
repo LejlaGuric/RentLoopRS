@@ -20,10 +20,8 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
 
   int _selectedImageIndex = 0;
 
-  // ✅ kontroler za horizontalni scroll thumbnails-a
   final ScrollController _thumbCtrl = ScrollController();
 
-  // dimenzije thumbnail kartice (moraju odgovarati onome što imaš dole)
   static const double _thumbWidth = 124;
   static const double _thumbGap = 12;
   static const double _thumbItemExtent = _thumbWidth + _thumbGap;
@@ -67,7 +65,6 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
         _selectedImageIndex = idx;
       });
 
-      // ✅ nakon što se UI nacrta, scrollaj thumbs do selektovane slike
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _ensureThumbVisible(_selectedImageIndex);
       });
@@ -88,7 +85,6 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
   void _ensureThumbVisible(int index) {
     if (!_thumbCtrl.hasClients) return;
 
-    // ciljna pozicija: neka thumbnail dođe lijepo u sredinu (otprilike)
     final target = (index * _thumbItemExtent) - (_thumbCtrl.position.viewportDimension / 2) + (_thumbWidth / 2);
 
     final clamped = target.clamp(
@@ -104,11 +100,10 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
   }
 
   void _scrollThumbsBy(int dir) {
-    // dir: -1 lijevo, +1 desno
     if (!_thumbCtrl.hasClients) return;
 
     final current = _thumbCtrl.offset;
-    final delta = _thumbItemExtent * 2; // skok za ~2 thumbnail-a (možeš promijeniti)
+    final delta = _thumbItemExtent * 2;
     final target = current + (dir * delta);
 
     final clamped = target.clamp(
@@ -176,7 +171,6 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -217,7 +211,6 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
             Expanded(
               child: Row(
                 children: [
-                  // GALERIJA
                   Expanded(
                     flex: 2,
                     child: Card(
@@ -230,7 +223,6 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                           children: [
                             const Text('Galerija', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
                             const SizedBox(height: 14),
-
                             Expanded(
                               child: images.isEmpty
                                   ? const Center(child: Text('Nema slika'))
@@ -260,15 +252,12 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                                       ),
                                     ),
                             ),
-
                             const SizedBox(height: 14),
-
                             if (images.isNotEmpty)
                               SizedBox(
                                 height: 96,
                                 child: Row(
                                   children: [
-                                    // ✅ Lijeva strelica
                                     AnimatedBuilder(
                                       animation: _thumbCtrl,
                                       builder: (_, __) {
@@ -280,10 +269,7 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                                         );
                                       },
                                     ),
-
                                     const SizedBox(width: 8),
-
-                                    // ✅ Thumbnails list
                                     Expanded(
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(14),
@@ -328,10 +314,7 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                                         ),
                                       ),
                                     ),
-
                                     const SizedBox(width: 8),
-
-                                    // ✅ Desna strelica
                                     AnimatedBuilder(
                                       animation: _thumbCtrl,
                                       builder: (_, __) {
@@ -354,7 +337,6 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
 
                   const SizedBox(width: 16),
 
-                  // INFO
                   Expanded(
                     flex: 3,
                     child: Card(
@@ -373,6 +355,20 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                             _kv('Sobe', d.roomsCount.toString()),
                             _kv('Max gosti', d.maxGuests.toString()),
                             _kv('Udaljenost do centra', '${d.distanceToCenterKm.toStringAsFixed(2)} km'),
+
+                            const SizedBox(height: 18),
+
+                            _sectionTitle('Osnovne pogodnosti'),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: [
+                                _boolTag('WiFi', d.hasWifi),
+                                _boolTag('Klima', d.hasAirConditioning),
+                                _boolTag('Ljubimci dozvoljeni', d.petsAllowed),
+                              ],
+                            ),
 
                             const SizedBox(height: 18),
 
@@ -503,6 +499,25 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
         border: Border.all(color: Colors.blue.withOpacity(0.35)),
       ),
       child: Text(text, style: const TextStyle(fontWeight: FontWeight.w800)),
+    );
+  }
+
+  Widget _boolTag(String text, bool value) {
+    final bgColor = value ? Colors.green.withOpacity(0.12) : Colors.red.withOpacity(0.10);
+    final borderColor = value ? Colors.green.withOpacity(0.40) : Colors.red.withOpacity(0.35);
+    final textColor = value ? Colors.green.shade700 : Colors.red.shade700;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: bgColor,
+        border: Border.all(color: borderColor),
+      ),
+      child: Text(
+        '${value ? "✅" : "❌"} $text',
+        style: TextStyle(fontWeight: FontWeight.w800, color: textColor),
+      ),
     );
   }
 

@@ -1,4 +1,4 @@
-﻿
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace RentLoop.API.Models
 {
@@ -15,7 +15,9 @@ namespace RentLoop.API.Models
         public int UserId { get; set; }
         public User? User { get; set; }
 
-        public int Rating { get; set; } // 1-5
+        public int Rating { get; set; }
+
+        [MaxLength(1000)]
         public string? Comment { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

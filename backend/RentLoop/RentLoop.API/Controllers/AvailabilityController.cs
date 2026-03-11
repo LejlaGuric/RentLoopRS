@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
+using RentLoop.API.Helpers;
 
 namespace RentLoop.API.Controllers
 {
     [ApiController]
     [Route("api/availability")]
-    [Authorize] // dovoljno da je ulogovan
+    [Authorize]
     public class AvailabilityController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -31,7 +32,8 @@ namespace RentLoop.API.Controllers
                 .AsNoTracking()
                 .Where(r =>
                     r.PropertyId == propertyId &&
-                    (r.StatusId == 1 || r.StatusId == 2) &&
+                    (r.StatusId == ReservationStatusIds.Pending ||
+                     r.StatusId == ReservationStatusIds.Approved) &&
                     fromDate < r.CheckOut &&
                     toDate > r.CheckIn)
                 .Select(r => new { r.CheckIn, r.CheckOut })

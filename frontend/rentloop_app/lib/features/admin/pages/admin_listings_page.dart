@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 import '../models/admin_listing_list_item.dart';
+import '../reports/listings_pdf_report.dart';
 import '../services/admin_listings_service.dart';
 import 'admin_listing_details_page.dart';
 import 'admin_listing_create_page.dart';
@@ -15,6 +16,7 @@ class AdminListingsPage extends StatefulWidget {
 
 class _AdminListingsPageState extends State<AdminListingsPage> {
   final _service = AdminListingsService();
+  final _pdfReport = ListingsPdfReport();
   final _searchCtrl = TextEditingController();
 
   bool _loading = true;
@@ -88,6 +90,22 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
     await _load();
   }
 
+  Future<void> _generatePdf() async {
+    try {
+      await _pdfReport.generate(_filtered);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Greška pri generisanju PDF-a: ${e.toString().replaceFirst('Exception: ', '')}',
+          ),
+        ),
+      );
+    }
+  }
+
   void _openDetails(int id) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => AdminListingDetailsPage(listingId: id)),
@@ -105,7 +123,10 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
           children: [
             Text(_error, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 10),
-            ElevatedButton(onPressed: _load, child: const Text('Pokušaj ponovo')),
+            ElevatedButton(
+              onPressed: _load,
+              child: const Text('Pokušaj ponovo'),
+            ),
           ],
         ),
       );
@@ -115,7 +136,6 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // TOP BAR
           Row(
             children: [
               Expanded(
@@ -124,7 +144,9 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
                   decoration: InputDecoration(
                     hintText: 'Pretraga (naziv, grad, tip najma...)',
                     prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     isDense: true,
                   ),
                 ),
@@ -136,6 +158,15 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
                 label: const Text('Refresh'),
               ),
               const SizedBox(width: 12),
+              Tooltip(
+                message: 'PDF izvještaj je prilagođen za horizontalni (landscape) prikaz.',
+                child: OutlinedButton.icon(
+                  onPressed: _filtered.isEmpty ? null : _generatePdf,
+                  icon: const Icon(Icons.picture_as_pdf),
+                  label: const Text('PDF stanovi'),
+                ),
+              ),
+              const SizedBox(width: 12),
               ElevatedButton.icon(
                 onPressed: _openCreate,
                 icon: const Icon(Icons.add),
@@ -143,24 +174,21 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
           Expanded(
             child: Card(
               elevation: 1.5,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: DataTable2(
-                  // Ovo ti daje “normalan” razmak svuda
                   columnSpacing: 14,
                   horizontalMargin: 12,
                   minWidth: 900,
-
                   headingRowHeight: 52,
                   dataRowHeight: 56,
-
                   columns: const [
                     DataColumn2(label: Text('ID'), size: ColumnSize.S),
                     DataColumn2(label: Text('Naziv'), size: ColumnSize.L),
@@ -188,7 +216,9 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
                         DataCell(Text(l.pricePerNight.toStringAsFixed(2))),
                         DataCell(Text(l.roomsCount.toString())),
                         DataCell(Text(l.maxGuests.toString())),
-                        DataCell(Text('${l.avgRating.toStringAsFixed(2)} (${l.reviewsCount})')),
+                        DataCell(
+                          Text('${l.avgRating.toStringAsFixed(2)} (${l.reviewsCount})'),
+                        ),
                         DataCell(
                           OutlinedButton(
                             onPressed: () => _openDetails(l.id),

@@ -95,4 +95,49 @@ class AdminLookupsService {
 
     throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri brisanju tipa najma.');
   }
+
+  Future<List<LookupItem>> getAmenities() async {
+    final res = await _api.get('/api/lookups/amenities', auth: true);
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      final list = jsonDecode(res.body) as List<dynamic>;
+      return list
+          .map((e) => LookupItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri učitavanju amenities.');
+  }
+
+  Future<void> createAmenity(String name) async {
+    final res = await _api.post(
+      '/api/lookups/amenities',
+      {'name': name},
+      auth: true,
+    );
+
+    if (res.statusCode >= 200 && res.statusCode < 300) return;
+
+    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri dodavanju amenity-ja.');
+  }
+
+  Future<void> updateAmenity(int id, String name) async {
+    final res = await _api.put(
+      '/api/lookups/amenities/$id',
+      {'name': name},
+      auth: true,
+    );
+
+    if (res.statusCode >= 200 && res.statusCode < 300) return;
+
+    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri izmjeni amenity-ja.');
+  }
+
+  Future<void> deleteAmenity(int id) async {
+    final res = await _api.deleteEmpty('/api/lookups/amenities/$id', auth: true);
+
+    if (res.statusCode >= 200 && res.statusCode < 300) return;
+
+    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri brisanju amenity-ja.');
+  }
 }

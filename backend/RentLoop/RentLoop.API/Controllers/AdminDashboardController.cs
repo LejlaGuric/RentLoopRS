@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
+using RentLoop.API.Helpers;
 
 namespace RentLoop.API.Controllers
 {
@@ -24,7 +25,9 @@ namespace RentLoop.API.Controllers
             var activeUsersCount = await _db.Users.CountAsync(u => u.IsActive);
             var listingsCount = await _db.Listings.CountAsync();
             var reservationsCount = await _db.Reservations.CountAsync();
-            var pendingReservations = await _db.Reservations.CountAsync(r => r.StatusId == 1);
+
+            var pendingReservations = await _db.Reservations
+                .CountAsync(r => r.StatusId == ReservationStatusIds.Pending);
 
             var avgRating = await _db.Reviews
                 .Select(r => (double?)r.Rating)

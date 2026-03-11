@@ -1,23 +1,27 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../features/auth/login_page.dart';
 import '../config/api_config.dart';
+import '../navigation/app_navigator.dart';
 import '../storage/token_storage.dart';
 
 class ApiClient {
   final TokenStorage _storage = TokenStorage();
 
   static const Duration _timeout = Duration(seconds: 10);
+  static bool _isRedirectingToLogin = false;
 
   Future<Map<String, String>> _headers({
     bool json = true,
     bool auth = true,
   }) async {
-    final token = auth ? await _storage.getToken() : null;
+    final token = auth ? await _storage.getAccessToken() : null;
 
     return {
       if (json) 'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }
 
@@ -35,17 +39,142 @@ class ApiClient {
     return uri.replace(queryParameters: qp.isEmpty ? null : qp);
   }
 
-  // ✅ GET
+  int? _getUserIdFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+
+      final payload = parts[1];
+      final normalized = base64.normalize(payload);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final map = jsonDecode(decoded) as Map<String, dynamic>;
+
+      final v = map['nameid'] ??
+          map['sub'] ??
+          map['userid'] ??
+          map['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+      if (v == null) return null;
+      return int.tryParse(v.toString());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _redirectToLogin() async {
+    if (_isRedirectingToLogin) return;
+    _isRedirectingToLogin = true;
+
+    await _storage.clearAll();
+
+    final nav = navigatorKey.currentState;
+    if (nav != null) {
+      nav.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    }
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _isRedirectingToLogin = false;
+    });
+  }
+
+  Future<bool> _tryRefreshToken() async {
+    final accessToken = await _storage.getAccessToken();
+    final refreshToken = await _storage.getRefreshToken();
+
+    if (accessToken == null ||
+        accessToken.isEmpty ||
+        refreshToken == null ||
+        refreshToken.isEmpty) {
+      return false;
+    }
+
+    final userId = _getUserIdFromToken(accessToken);
+    if (userId == null) return false;
+
+    final url = Uri.parse('${ApiConfig.baseUrl}/api/auth/refresh-token');
+
+    try {
+      final res = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'userId': userId,
+              'refreshToken': refreshToken,
+            }),
+          )
+          .timeout(_timeout);
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        await _storage.clearAll();
+        return false;
+      }
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final newAccessToken = data['accessToken'] as String?;
+      final newRefreshToken = data['refreshToken'] as String?;
+
+      if (newAccessToken == null ||
+          newAccessToken.isEmpty ||
+          newRefreshToken == null ||
+          newRefreshToken.isEmpty) {
+        await _storage.clearAll();
+        return false;
+      }
+
+      await _storage.saveAccessToken(newAccessToken);
+      await _storage.saveRefreshToken(newRefreshToken);
+
+      return true;
+    } catch (_) {
+      await _storage.clearAll();
+      return false;
+    }
+  }
+
+  Future<http.Response> _sendWithRefresh(
+    Future<http.Response> Function() requestBuilder, {
+    bool auth = true,
+  }) async {
+    var response = await requestBuilder();
+
+    if (!auth || response.statusCode != 401) {
+      return response;
+    }
+
+    final refreshed = await _tryRefreshToken();
+    if (!refreshed) {
+      await _redirectToLogin();
+      return response;
+    }
+
+    response = await requestBuilder();
+
+    if (response.statusCode == 401) {
+      await _redirectToLogin();
+    }
+
+    return response;
+  }
+
   Future<http.Response> get(
     String path, {
     Map<String, dynamic>? query,
     bool auth = true,
   }) async {
     final url = _buildUri(path, query: query);
-    return http.get(url, headers: await _headers(auth: auth)).timeout(_timeout);
+
+    return _sendWithRefresh(
+      () async => http
+          .get(url, headers: await _headers(auth: auth))
+          .timeout(_timeout),
+      auth: auth,
+    );
   }
 
-  // ✅ POST JSON
   Future<http.Response> post(
     String path,
     Object body, {
@@ -53,22 +182,34 @@ class ApiClient {
     bool auth = true,
   }) async {
     final url = _buildUri(path, query: query);
-    return http
-        .post(url, headers: await _headers(auth: auth), body: jsonEncode(body))
-        .timeout(_timeout);
+
+    return _sendWithRefresh(
+      () async => http
+          .post(
+            url,
+            headers: await _headers(auth: auth),
+            body: jsonEncode(body),
+          )
+          .timeout(_timeout),
+      auth: auth,
+    );
   }
 
-  // ✅ POST bez body (npr. log view)
   Future<http.Response> postEmpty(
     String path, {
     Map<String, dynamic>? query,
     bool auth = true,
   }) async {
     final url = _buildUri(path, query: query);
-    return http.post(url, headers: await _headers(json: false, auth: auth)).timeout(_timeout);
+
+    return _sendWithRefresh(
+      () async => http
+          .post(url, headers: await _headers(json: false, auth: auth))
+          .timeout(_timeout),
+      auth: auth,
+    );
   }
 
-  // ✅ PUT JSON
   Future<http.Response> put(
     String path,
     Object body, {
@@ -76,36 +217,53 @@ class ApiClient {
     bool auth = true,
   }) async {
     final url = _buildUri(path, query: query);
-    return http
-        .put(url, headers: await _headers(auth: auth), body: jsonEncode(body))
-        .timeout(_timeout);
+
+    return _sendWithRefresh(
+      () async => http
+          .put(
+            url,
+            headers: await _headers(auth: auth),
+            body: jsonEncode(body),
+          )
+          .timeout(_timeout),
+      auth: auth,
+    );
   }
 
-  // ✅ PUT bez body
   Future<http.Response> putEmpty(
     String path, {
     Map<String, dynamic>? query,
     bool auth = true,
   }) async {
     final url = _buildUri(path, query: query);
-    return http.put(url, headers: await _headers(json: false, auth: auth)).timeout(_timeout);
+
+    return _sendWithRefresh(
+      () async => http
+          .put(url, headers: await _headers(json: false, auth: auth))
+          .timeout(_timeout),
+      auth: auth,
+    );
   }
 
-  // ✅ NOVO: DELETE bez body (treba za favorites remove)
   Future<http.Response> deleteEmpty(
     String path, {
     Map<String, dynamic>? query,
     bool auth = true,
   }) async {
     final url = _buildUri(path, query: query);
-    return http.delete(url, headers: await _headers(json: false, auth: auth)).timeout(_timeout);
+
+    return _sendWithRefresh(
+      () async => http
+          .delete(url, headers: await _headers(json: false, auth: auth))
+          .timeout(_timeout),
+      auth: auth,
+    );
   }
 
-  // ✅ OVO TI TREBA ADMINU za multipart upload
   Future<Map<String, String>> multipartHeaders() async {
-    final token = await _storage.getToken();
+    final token = await _storage.getAccessToken();
     return {
-      if (token != null) 'Authorization': 'Bearer $token',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }
 }

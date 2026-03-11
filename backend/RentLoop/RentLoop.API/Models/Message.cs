@@ -1,4 +1,6 @@
-﻿namespace RentLoop.API.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RentLoop.API.Models
 {
     public class Message
     {
@@ -10,7 +12,10 @@
         public int SenderUserId { get; set; }
         public User? SenderUser { get; set; }
 
+        [Required]
+        [MaxLength(2000)]
         public string Text { get; set; } = string.Empty;
+
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
         public bool IsRead { get; set; } = false;

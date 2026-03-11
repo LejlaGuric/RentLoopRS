@@ -5,7 +5,8 @@ import '../config/api_config.dart';
 import '../storage/token_storage.dart';
 
 class LoginResult {
-  final String token;
+  final String accessToken;
+  final String refreshToken;
   final int userId;
   final String username;
   final String email;
@@ -14,7 +15,8 @@ class LoginResult {
   final int roleId; // 1 Admin, 2 Client
 
   const LoginResult({
-    required this.token,
+    required this.accessToken,
+    required this.refreshToken,
     required this.userId,
     required this.username,
     required this.email,
@@ -45,28 +47,36 @@ class AuthService {
       }),
     );
 
-    // tvoje API vraća string poruke za 400/401
     if (res.statusCode == 400) {
       throw Exception(_cleanMessage(res.body));
     }
     if (res.statusCode == 401) {
-      throw Exception(_cleanMessage(res.body.isEmpty ? 'Invalid credentials.' : res.body));
+      throw Exception(_cleanMessage(
+        res.body.isEmpty ? 'Invalid credentials.' : res.body,
+      ));
     }
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw Exception('Greška servera (${res.statusCode}).');
     }
 
     final data = jsonDecode(res.body) as Map<String, dynamic>;
-    final token = data['token'] as String?;
 
-    if (token == null || token.isEmpty) {
-      throw Exception('Server nije vratio token.');
+    final accessToken = data['accessToken'] as String?;
+    final refreshToken = data['refreshToken'] as String?;
+
+    if (accessToken == null || accessToken.isEmpty) {
+      throw Exception('Server nije vratio access token.');
+    }
+
+    if (refreshToken == null || refreshToken.isEmpty) {
+      throw Exception('Server nije vratio refresh token.');
     }
 
     final user = data['user'] as Map<String, dynamic>;
 
     final result = LoginResult(
-      token: token,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       userId: (user['id'] as num).toInt(),
       username: (user['username'] ?? '') as String,
       email: (user['email'] ?? '') as String,
@@ -75,13 +85,13 @@ class AuthService {
       roleId: (user['role'] as num).toInt(),
     );
 
-    // ✅ KLJUČNO: spremi token (već imaš - ostaje)
-    await _storage.saveToken(token);
+    await _storage.saveAccessToken(accessToken);
+    await _storage.saveRefreshToken(refreshToken);
 
     return result;
   }
 
-    Future<void> register({
+  Future<void> register({
     required String username,
     required String email,
     required String password,
@@ -110,14 +120,15 @@ class AuthService {
       throw Exception(_cleanMessage(res.body));
     }
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(_cleanMessage(res.body.isEmpty ? 'Greška servera (${res.statusCode}).' : res.body));
+      throw Exception(_cleanMessage(
+        res.body.isEmpty ? 'Greška servera (${res.statusCode}).' : res.body,
+      ));
     }
 
-    // backend vraća: { message: "Registered successfully." }
     return;
   }
 
-    Future<void> changePassword({
+  Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
   }) async {
@@ -145,33 +156,35 @@ class AuthService {
     }
   }
 
-
-
   Future<void> logout() async {
-    await _storage.clearToken();
+    await _storage.clearAll();
   }
 
-  Future<String?> getToken() async {
-    return _storage.getToken();
+  Future<String?> getAccessToken() async {
+    return _storage.getAccessToken();
   }
 
-  // ✅ NEW: brzo provjeri da li je user ulogovan
+  Future<String?> getRefreshToken() async {
+    return _storage.getRefreshToken();
+  }
+
   Future<bool> isLoggedIn() async {
-    final t = await _storage.getToken();
+    final t = await _storage.getAccessToken();
     return t != null && t.isNotEmpty;
   }
 
-  // ✅ NEW: standard headeri za auth pozive (Bearer)
   Future<Map<String, String>> authHeaders() async {
-    final token = await _storage.getToken();
-    if (token == null || token.isEmpty) return {'Content-Type': 'application/json'};
+    final token = await _storage.getAccessToken();
+    if (token == null || token.isEmpty) {
+      return {'Content-Type': 'application/json'};
+    }
+
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     };
   }
 
-  // ✅ OPTIONAL: čitanje userId iz JWT-a (korisno za debug/UI, nije obavezno)
   int? getUserIdFromTokenSync(String token) {
     try {
       final parts = token.split('.');
@@ -182,8 +195,11 @@ class AuthService {
       final decoded = utf8.decode(base64Url.decode(normalized));
       final map = jsonDecode(decoded) as Map<String, dynamic>;
 
-      // backend obično koristi ClaimTypes.NameIdentifier ili "sub"
-      final v = map['nameid'] ?? map['sub'] ?? map['userid'];
+      final v = map['nameid'] ??
+          map['sub'] ??
+          map['userid'] ??
+          map['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
       if (v == null) return null;
 
       return int.tryParse(v.toString());
@@ -193,7 +209,6 @@ class AuthService {
   }
 
   String _cleanMessage(String msg) {
-    // backend ti vraća plain text (npr. "UsernameOrEmail is required.")
     return msg.replaceAll('"', '').trim();
   }
 }

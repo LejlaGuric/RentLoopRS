@@ -91,6 +91,16 @@ namespace RentLoop.API.Controllers
         [HttpPost("conversations/{conversationId:int}/messages")]
         public async Task<ActionResult<ChatMessageDto>> SendMessage(int conversationId, [FromBody] SendMessageRequest req)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (req == null)
+                return BadRequest("Request body is required.");
+
+            var text = (req.Text ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(text))
+                return BadRequest("Text is required.");
+
             var userId = GetUserId();
             if (userId == 0)
                 return Unauthorized();
@@ -101,7 +111,7 @@ namespace RentLoop.API.Controllers
             if (conv == null)
                 return NotFound("Conversation not found or access denied.");
 
-            var msg = await _chat.SendMessageAsync(conversationId, userId, req.Text);
+            var msg = await _chat.SendMessageAsync(conversationId, userId, text);
             return Ok(msg);
         }
 

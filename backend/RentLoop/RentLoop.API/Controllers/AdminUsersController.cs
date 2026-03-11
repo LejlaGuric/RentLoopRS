@@ -49,11 +49,22 @@ namespace RentLoop.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] AdminCreateUserRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             request.Username = (request.Username ?? "").Trim();
             request.Email = (request.Email ?? "").Trim().ToLowerInvariant();
+            request.FirstName = (request.FirstName ?? "").Trim();
+            request.LastName = (request.LastName ?? "").Trim();
+            request.Address = (request.Address ?? "").Trim();
+            request.Phone = (request.Phone ?? "").Trim();
 
-            if (string.IsNullOrWhiteSpace(request.Username)) return BadRequest("Username is required.");
-            if (string.IsNullOrWhiteSpace(request.Email)) return BadRequest("Email is required.");
+            if (string.IsNullOrWhiteSpace(request.Username))
+                return BadRequest("Username is required.");
+
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest("Email is required.");
+
             if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
                 return BadRequest("Password must be at least 6 characters.");
 
@@ -61,10 +72,12 @@ namespace RentLoop.API.Controllers
                 return BadRequest("Role must be 1 (Admin) or 2 (Client).");
 
             var usernameTaken = await _db.Users.AnyAsync(u => u.Username.ToLower() == request.Username.ToLower());
-            if (usernameTaken) return BadRequest("Username already exists.");
+            if (usernameTaken)
+                return BadRequest("Username already exists.");
 
             var emailTaken = await _db.Users.AnyAsync(u => u.Email.ToLower() == request.Email.ToLower());
-            if (emailTaken) return BadRequest("Email already exists.");
+            if (emailTaken)
+                return BadRequest("Email already exists.");
 
             var user = new User
             {
@@ -104,9 +117,11 @@ namespace RentLoop.API.Controllers
         public async Task<IActionResult> Deactivate(int id)
         {
             var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
-            if (user == null) return NotFound("User not found.");
+            if (user == null)
+                return NotFound("User not found.");
 
-            if (user.Role == 1) return BadRequest("Cannot deactivate admin via this endpoint.");
+            if (user.Role == 1)
+                return BadRequest("Cannot deactivate admin via this endpoint.");
 
             user.IsActive = false;
             await _db.SaveChangesAsync();
@@ -119,7 +134,8 @@ namespace RentLoop.API.Controllers
         public async Task<IActionResult> Activate(int id)
         {
             var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
-            if (user == null) return NotFound("User not found.");
+            if (user == null)
+                return NotFound("User not found.");
 
             user.IsActive = true;
             await _db.SaveChangesAsync();
@@ -132,7 +148,8 @@ namespace RentLoop.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
-            if (user == null) return NotFound("User not found.");
+            if (user == null)
+                return NotFound("User not found.");
 
             if (user.Role == 1)
                 return BadRequest("Cannot delete admin via this endpoint.");
