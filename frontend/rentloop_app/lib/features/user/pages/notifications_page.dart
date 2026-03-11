@@ -94,7 +94,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   IconData _iconFor(NotificationItem n) {
     if (n.typeId == 2) return Icons.check_circle_rounded;
-    if (n.typeId == 1) return Icons.close_rounded;
+    if (n.typeId == 3) return Icons.close_rounded;
     return Icons.notifications_rounded;
   }
 

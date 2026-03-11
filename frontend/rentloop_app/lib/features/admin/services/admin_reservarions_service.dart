@@ -33,12 +33,18 @@ class AdminReservationsService {
     }
   }
 
-  Future<void> reject(int id) async {
-    final res = await _api.put('/api/reservations/$id/reject', {});
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(_extractError(res.body) ?? 'Ne mogu odbiti rezervaciju.');
-    }
+  Future<void> reject(int id, String reason) async {
+  final res = await _api.put(
+    '/api/reservations/$id/reject',
+    {
+      "reason": reason,
+    },
+  );
+
+  if (res.statusCode < 200 || res.statusCode >= 300) {
+    throw Exception(_extractError(res.body) ?? 'Ne mogu odbiti rezervaciju.');
   }
+}
 
   String? _extractError(String body) {
     try {

@@ -16,7 +16,7 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
   String _error = '';
   List<AdminReservationItem> _items = [];
 
-  int? _statusFilter; // null = svi
+  int? _statusFilter;
 
   final _statusOptions = const <int?, String>{
     null: 'Svi',
@@ -25,7 +25,6 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
     3: 'Rejected',
   };
 
-  // Ujednačen izgled dugmadi
   final ButtonStyle _btnPrimary = ElevatedButton.styleFrom(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
     minimumSize: const Size(0, 38),
@@ -112,19 +111,46 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
   }
 
   Future<void> _reject(AdminReservationItem item) async {
-    final ok = await _confirm(
-      title: 'Odbiti rezervaciju?',
-      message: 'Odbiti rezervaciju #${item.id} za "${item.listing}"?',
-      confirmText: 'Odbij',
+    final controller = TextEditingController();
+
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Razlog odbijanja'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'Unesite razlog...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Otkaži'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              Navigator.pop(context, text);
+            },
+            child: const Text('Odbij'),
+          ),
+        ],
+      ),
     );
-    if (!ok) return;
+
+    if (reason == null || reason.isEmpty) return;
 
     try {
-      await _service.reject(item.id);
+      await _service.reject(item.id, reason);
+
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Rezervacija odbijena.')),
       );
+
       await _load();
     } catch (e) {
       _showError(e.toString());
@@ -132,30 +158,123 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
   }
 
   void _showDetails(AdminReservationItem item) {
+    final fullName = '${item.firstName} ${item.lastName}'.trim();
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text('Detalji rezervacije #${item.id}'),
         content: SizedBox(
-          width: 560,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _kv('Listing', item.listing),
-              _kv('User', item.user),
-              _kv('Status', '${item.status} (ID: ${item.statusId})'),
-              _kv('Check-in', _fmtDate(item.checkIn)),
-              _kv('Check-out', _fmtDate(item.checkOut)),
-              _kv('Guests', item.guests.toString()),
-              _kv('Total', '${item.totalPrice.toStringAsFixed(2)} KM'),
-              _kv('Created', _fmtDateTime(item.createdAt)),
-              _kv('Note', (item.note == null || item.note!.trim().isEmpty) ? '—' : item.note!),
-            ],
+          width: 760,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _sectionCard(
+                  title: 'Korisnik',
+                  icon: Icons.person_rounded,
+                  child: Column(
+                    children: [
+                      _kv('Puno ime', fullName.isEmpty ? '—' : fullName),
+                      _kv('Username', item.username.isEmpty ? '—' : item.username),
+                      _kv('Email', item.email.isEmpty ? '—' : item.email),
+                      _kv('Telefon', item.phoneNumber.isEmpty ? '—' : item.phoneNumber),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: 'Historija korisnika',
+                  icon: Icons.history_rounded,
+                  child: Column(
+                    children: [
+                      _kv('Ukupno rezervacija', item.totalReservations.toString()),
+                      _kv('Odobrene', item.approvedReservations.toString()),
+                      _kv('Otkazane', item.cancelledReservations.toString()),
+                      _kv('Odbijene', item.rejectedReservations.toString()),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: 'Smještaj',
+                  icon: Icons.home_rounded,
+                  child: Column(
+                    children: [
+                      _kv('Naziv', item.listing.isEmpty ? '—' : item.listing),
+                      _kv('Grad', item.city.isEmpty ? '—' : item.city),
+                      _kv('Adresa', item.address.isEmpty ? '—' : item.address),
+                      _kv('Tip najma', item.rentType.isEmpty ? '—' : item.rentType),
+                      _kv('Cijena/noć', '${item.pricePerNight.toStringAsFixed(2)} KM'),
+                      _kv('Broj soba', item.rooms.toString()),
+                      _kv('Max gostiju', item.maxGuests.toString()),
+                      _kv(
+                        'Pogodnosti',
+                        [
+                          if (item.wifi) 'WiFi',
+                          if (item.airConditioning) 'Klima',
+                          if (item.petsAllowed) 'Ljubimci dozvoljeni',
+                        ].isEmpty
+                            ? '—'
+                            : [
+                                if (item.wifi) 'WiFi',
+                                if (item.airConditioning) 'Klima',
+                                if (item.petsAllowed) 'Ljubimci dozvoljeni',
+                              ].join(', '),
+                      ),
+                      _kv(
+                        'Opis',
+                        item.description.trim().isEmpty ? '—' : item.description,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: 'Rezervacija',
+                  icon: Icons.book_online_rounded,
+                  child: Column(
+                    children: [
+                      _kv('Status', '${item.status} (ID: ${item.statusId})'),
+                      _kv('Check-in', _fmtDate(item.checkIn)),
+                      _kv('Check-out', _fmtDate(item.checkOut)),
+                      _kv('Guests', item.guests.toString()),
+                      _kv('Total', '${item.totalPrice.toStringAsFixed(2)} KM'),
+                      _kv('Created', _fmtDateTime(item.createdAt)),
+                      _kv('Note', (item.note == null || item.note!.trim().isEmpty) ? '—' : item.note!),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: 'Audit trag',
+                  icon: Icons.fact_check_rounded,
+                  child: Column(
+                    children: [
+                      _kv(
+                        'Admin',
+                        item.approvedByAdmin.trim().isEmpty ? '—' : item.approvedByAdmin,
+                      ),
+                      _kv(
+                        'Vrijeme odluke',
+                        item.decisionAt == null ? '—' : _fmtDateTime(item.decisionAt!),
+                      ),
+                      _kv(
+                        'Komentar / razlog',
+                        item.rejectReason.trim().isEmpty ? '—' : item.rejectReason,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Zatvori')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Zatvori'),
+          ),
           if (item.statusId == 1) ...[
             ElevatedButton(
               onPressed: () {
@@ -177,6 +296,42 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
     );
   }
 
+  Widget _sectionCard({
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.025),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+
   Widget _kv(String k, String v) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -184,13 +339,18 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 150,
             child: Text(
               '$k:',
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
-          Expanded(child: Text(v)),
+          Expanded(
+            child: Text(
+              v,
+              style: TextStyle(color: Colors.black.withOpacity(0.75)),
+            ),
+          ),
         ],
       ),
     );
@@ -223,7 +383,6 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Filter row
             Row(
               children: [
                 const Text('Status:', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -250,7 +409,10 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
                     color: Colors.black.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Text('Ukupno: ${_items.length}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    'Ukupno: ${_items.length}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ],
             ),
@@ -287,7 +449,6 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: ConstrainedBox(
-                                  // minimum širina da tabela “diše”
                                   constraints: const BoxConstraints(minWidth: 1100),
                                   child: DataTable(
                                     headingRowHeight: 52,
@@ -306,12 +467,13 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
                                     ],
                                     rows: _items.map((item) {
                                       final pending = item.statusId == 1;
+                                      final fullName = '${item.firstName} ${item.lastName}'.trim();
 
                                       return DataRow(
                                         cells: [
                                           DataCell(Text(item.id.toString())),
                                           DataCell(Text(item.listing)),
-                                          DataCell(Text(item.user)),
+                                          DataCell(Text(fullName.isEmpty ? item.username : fullName)),
                                           DataCell(Text(_fmtDate(item.checkIn))),
                                           DataCell(Text(_fmtDate(item.checkOut))),
                                           DataCell(
@@ -372,8 +534,6 @@ class _StatusPill extends StatelessWidget {
     Color bg;
     Color border;
 
-    // Bez ručnih boja u “vizuelnom” smislu? Ovo su samo blage nijanse statusa.
-    // Ako želiš totalno neutralno, reci pa ću ostaviti samo text.
     if (statusId == 1) {
       bg = Colors.orange.withOpacity(0.12);
       border = Colors.orange.withOpacity(0.35);

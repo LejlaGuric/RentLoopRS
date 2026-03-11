@@ -745,24 +745,39 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                   ),
                 ),
               ] else ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF6F6F6),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE8E8E8)),
-                  ),
-                  child: Text(
-                    r.statusId == 3
-                        ? 'Rezervacija je odbijena (Rejected).'
-                        : r.statusId == 4
-                            ? 'Rezervacija je otkazana (Cancelled).'
-                            : 'Rezervacija nije dostupna za akcije.',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+  Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF6F6F6),
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: const Color(0xFFE8E8E8)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          r.statusId == 3
+              ? 'Rezervacija je odbijena (Rejected).'
+              : r.statusId == 4
+                  ? 'Rezervacija je otkazana (Cancelled).'
+                  : 'Rezervacija nije dostupna za akcije.',
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+              if (r.statusId == 3 && r.rejectReason != null && r.rejectReason!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'Razlog odbijanja: ${r.rejectReason}',
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ],
+              ]
+            ],
+          ),
+        ),
+      ],
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,

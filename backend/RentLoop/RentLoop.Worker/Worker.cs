@@ -29,7 +29,6 @@ public class Worker : BackgroundService
         {
             try
             {
-                // 1) CONNECT (ako već nije)
                 if (_connection == null || !_connection.IsOpen || _channel == null || !_channel.IsOpen)
                 {
                     CleanupRabbit();
@@ -43,7 +42,6 @@ public class Worker : BackgroundService
                         UserName = user,
                         Password = pass,
                         DispatchConsumersAsync = true,
-
                         AutomaticRecoveryEnabled = true,
                         TopologyRecoveryEnabled = true,
                         NetworkRecoveryInterval = TimeSpan.FromSeconds(5),
@@ -72,7 +70,7 @@ public class Worker : BackgroundService
                         return;
                     }
 
-                    _connection = conn; ;
+                    _connection = conn;
 
                     _connection.ConnectionShutdown += (_, e) =>
                         Console.WriteLine($"❌ Rabbit connection shutdown: {e.ReplyText}");
@@ -82,7 +80,7 @@ public class Worker : BackgroundService
                     _channel.ModelShutdown += (_, e) =>
                         Console.WriteLine($"❌ Rabbit channel shutdown: {e.ReplyText}");
 
-                    // 2) DECLARE QUEUE
+                    // QUEUES
                     _channel.QueueDeclare(
                         queue: "reservation.approved",
                         durable: true,
@@ -91,23 +89,26 @@ public class Worker : BackgroundService
                         arguments: null
                     );
 
-                    // 3) CONSUME
+                    _channel.QueueDeclare(
+                        queue: "reservation.rejected",
+                        durable: true,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null
+                    );
+
+                    // APPROVED CONSUMER
                     var consumer = new AsyncEventingBasicConsumer(_channel);
 
                     consumer.Received += async (model, ea) =>
                     {
-                        Console.WriteLine("✅ Received handler START");
-
                         try
                         {
                             var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-                            Console.WriteLine("✅ JSON OK: " + json);
-
                             var data = JsonSerializer.Deserialize<ReservationApprovedMessage>(json);
 
                             if (data == null)
                             {
-                                Console.WriteLine("⚠️ data is null");
                                 _channel.BasicAck(ea.DeliveryTag, false);
                                 return;
                             }
@@ -130,14 +131,10 @@ public class Worker : BackgroundService
                             await db.SaveChangesAsync(stoppingToken);
 
                             _channel.BasicAck(ea.DeliveryTag, false);
-                            Console.WriteLine("✅ SAVE + ACK OK");
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            Console.WriteLine("❌ PROCESS FAILED: " + ex);
-
-                            // vrati poruku nazad u queue da se pokuša opet
-                            try { _channel.BasicNack(ea.DeliveryTag, false, true); } catch { /* ignore */ }
+                            try { _channel.BasicNack(ea.DeliveryTag, false, true); } catch { }
                         }
                     };
 
@@ -148,22 +145,68 @@ public class Worker : BackgroundService
                     );
 
                     Console.WriteLine("✅ CONSUMING reservation.approved");
+
+
+                    // REJECTED CONSUMER
+                    var rejectedConsumer = new AsyncEventingBasicConsumer(_channel);
+
+                    rejectedConsumer.Received += async (model, ea) =>
+                    {
+                        try
+                        {
+                            var json = Encoding.UTF8.GetString(ea.Body.ToArray());
+                            var data = JsonSerializer.Deserialize<ReservationRejectedMessage>(json);
+
+                            if (data == null)
+                            {
+                                _channel.BasicAck(ea.DeliveryTag, false);
+                                return;
+                            }
+
+                            using var scope = _scopeFactory.CreateScope();
+                            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                            var notification = new Notification
+                            {
+                                UserId = data.UserId,
+                                TypeId = 3,
+                                Title = "Rezervacija odbijena",
+                                Body = $"Vaša rezervacija je odbijena. Razlog: {data.RejectReason}",
+                                RelatedPropertyId = data.PropertyId,
+                                RelatedReservationId = data.ReservationId,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            db.Notifications.Add(notification);
+                            await db.SaveChangesAsync(stoppingToken);
+
+                            _channel.BasicAck(ea.DeliveryTag, false);
+                        }
+                        catch
+                        {
+                            try { _channel.BasicNack(ea.DeliveryTag, false, true); } catch { }
+                        }
+                    };
+
+                    _channel.BasicConsume(
+                        queue: "reservation.rejected",
+                        autoAck: false,
+                        consumer: rejectedConsumer
+                    );
+
+                    Console.WriteLine("✅ CONSUMING reservation.rejected");
                 }
 
-                // drži service živ
                 await Task.Delay(1000, stoppingToken);
             }
             catch (OperationCanceledException)
             {
-                // gašenje
                 break;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("❌ Worker loop error: " + ex);
                 CleanupRabbit();
-
-                // malo sačekaj prije ponovnog pokušaja
                 await Task.Delay(2000, stoppingToken);
             }
         }
@@ -194,4 +237,12 @@ public class ReservationApprovedMessage
     public int ReservationId { get; set; }
     public int UserId { get; set; }
     public int PropertyId { get; set; }
+}
+
+public class ReservationRejectedMessage
+{
+    public int ReservationId { get; set; }
+    public int UserId { get; set; }
+    public int PropertyId { get; set; }
+    public string RejectReason { get; set; } = "";
 }

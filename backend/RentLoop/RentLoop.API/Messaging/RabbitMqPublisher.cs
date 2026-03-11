@@ -4,34 +4,32 @@ using System.Text.Json;
 
 namespace RentLoop.API.Messaging;
 
-public class RabbitMqPublisher
+public class RabbitMqPublisher : IDisposable
 {
-    private readonly string _host;
-    private readonly string _user;
-    private readonly string _pass;
+    private readonly IConnection _connection;
+    private readonly IModel _channel;
+    private bool _disposed;
 
     public RabbitMqPublisher(IConfiguration cfg)
     {
-        _host = cfg["RabbitMQ:Host"] ?? "rabbitmq";
-        _user = cfg["RabbitMQ:User"] ?? "guest";
-        _pass = cfg["RabbitMQ:Pass"] ?? "guest";
-    }
+        var host = cfg["RabbitMQ:Host"] ?? "rabbitmq";
+        var user = cfg["RabbitMQ:User"] ?? "guest";
+        var pass = cfg["RabbitMQ:Pass"] ?? "guest";
 
-    public void PublishReservationApproved(object payload)
-    {
         var factory = new ConnectionFactory
         {
-            HostName = _host,     // ✅ koristi docker host
+            HostName = host,
             Port = 5672,
-            UserName = _user,
-            Password = _pass,
+            UserName = user,
+            Password = pass,
             DispatchConsumersAsync = true
         };
 
-        using var conn = factory.CreateConnection();
-        using var ch = conn.CreateModel();
+        _connection = factory.CreateConnection();
+        _channel = _connection.CreateModel();
 
-        ch.QueueDeclare(
+        // approve queue
+        _channel.QueueDeclare(
             queue: "reservation.approved",
             durable: true,
             exclusive: false,
@@ -39,17 +37,70 @@ public class RabbitMqPublisher
             arguments: null
         );
 
+        // reject queue
+        _channel.QueueDeclare(
+            queue: "reservation.rejected",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null
+        );
+    }
+
+    public void PublishReservationApproved(object payload)
+    {
+        Publish("reservation.approved", payload);
+    }
+
+    public void PublishReservationRejected(object payload)
+    {
+        Publish("reservation.rejected", payload);
+    }
+
+    private void Publish(string queueName, object payload)
+    {
+        if (_disposed)
+            throw new ObjectDisposedException(nameof(RabbitMqPublisher));
+
         var json = JsonSerializer.Serialize(payload);
         var body = Encoding.UTF8.GetBytes(json);
 
-        var props = ch.CreateBasicProperties();
+        var props = _channel.CreateBasicProperties();
         props.Persistent = true;
 
-        ch.BasicPublish(
+        _channel.BasicPublish(
             exchange: "",
-            routingKey: "reservation.approved",
+            routingKey: queueName,
             basicProperties: props,
             body: body
         );
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+
+        try
+        {
+            if (_channel.IsOpen)
+                _channel.Close();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (_connection.IsOpen)
+                _connection.Close();
+        }
+        catch
+        {
+        }
+
+        _channel.Dispose();
+        _connection.Dispose();
+
+        _disposed = true;
     }
 }

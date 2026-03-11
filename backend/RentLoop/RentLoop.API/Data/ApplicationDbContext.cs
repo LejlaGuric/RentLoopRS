@@ -165,11 +165,8 @@ namespace RentLoop.API.Data
             );
 
             modelBuilder.Entity<NotificationType>().HasData(
-                new NotificationType { Id = 1, Name = "PriceDrop" },
                 new NotificationType { Id = 2, Name = "ReservationApproved" },
-                new NotificationType { Id = 3, Name = "ReservationRejected" },
-                new NotificationType { Id = 4, Name = "Reminder" },
-                new NotificationType { Id = 5, Name = "General" }
+                new NotificationType { Id = 3, Name = "ReservationRejected" }
             );
 
             // Cities

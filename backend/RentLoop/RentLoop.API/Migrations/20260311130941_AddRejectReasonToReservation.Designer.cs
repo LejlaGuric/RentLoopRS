@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RentLoop.API.Data;
 
@@ -11,9 +12,11 @@ using RentLoop.API.Data;
 namespace RentLoop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260311130941_AddRejectReasonToReservation")]
+    partial class AddRejectReasonToReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -349,6 +352,11 @@ namespace RentLoop.API.Migrations
                     b.HasData(
                         new
                         {
+                            Id = 1,
+                            Name = "PriceDrop"
+                        },
+                        new
+                        {
                             Id = 2,
                             Name = "ReservationApproved"
                         },
@@ -356,6 +364,16 @@ namespace RentLoop.API.Migrations
                         {
                             Id = 3,
                             Name = "ReservationRejected"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Reminder"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "General"
                         });
                 });
 

@@ -192,6 +192,7 @@ namespace RentLoop.API.Controllers
 
                     r.CreatedAt,
                     r.Note,
+                    r.RejectReason,
 
                     IsPaid = r.IsPaid,
                     PaidAt = r.PaidAt,
@@ -301,8 +302,12 @@ namespace RentLoop.API.Controllers
                 .AsNoTracking()
                 .Include(r => r.User)
                 .Include(r => r.Property)
+                    .ThenInclude(p => p.City)
+                .Include(r => r.Property)
+                    .ThenInclude(p => p.RentType)
                 .Include(r => r.Status)
                 .Where(r => r.StatusId == ReservationStatusIds.Pending)
+                .Include(r => r.ApprovedByAdmin)
                 .OrderBy(r => r.CreatedAt)
                 .Select(r => new
                 {
@@ -311,8 +316,42 @@ namespace RentLoop.API.Controllers
                     r.CheckOut,
                     r.TotalPrice,
                     Status = r.Status != null ? r.Status.Name : "",
-                    User = r.User != null ? r.User.Username : "",
-                    Listing = r.Property != null ? r.Property.Name : ""
+                    User = r.User == null ? null : new
+                    {
+                        r.User.Username,
+                        r.User.FirstName,
+                        r.User.LastName,
+                        r.User.Email,
+                        r.User.Phone,
+
+                        TotalReservations = _db.Reservations.Count(x => x.UserId == r.UserId),
+                        CancelledReservations = _db.Reservations.Count(x => x.UserId == r.UserId && x.StatusId == ReservationStatusIds.Cancelled),
+                        RejectedReservations = _db.Reservations.Count(x => x.UserId == r.UserId && x.StatusId == ReservationStatusIds.Rejected),
+                        ApprovedReservations = _db.Reservations.Count(x => x.UserId == r.UserId && x.StatusId == ReservationStatusIds.Approved)
+                    },
+                    Listing = r.Property == null ? null : new
+                    {
+                        r.Property.Name,
+                        r.Property.Description,
+                        r.Property.Address,
+                        City = r.Property.City != null ? r.Property.City.Name : "",
+                        RentType = r.Property.RentType != null ? r.Property.RentType.Name : "",
+                        r.Property.PricePerNight,
+                        r.Property.RoomsCount,
+                        r.Property.MaxGuests,
+                        r.Property.DistanceToCenterKm,
+                        r.Property.HasWifi,
+                        r.Property.HasAirConditioning,
+                        r.Property.PetsAllowed
+                    },
+                    r.CreatedAt,
+                    r.Guests,
+                    r.Note,
+                    r.DecisionAt,
+                    r.RejectReason,
+                    ApprovedByAdmin = r.ApprovedByAdmin != null
+                        ? ((r.ApprovedByAdmin.FirstName ?? "") + " " + (r.ApprovedByAdmin.LastName ?? "")).Trim()
+                        : ""
                 })
                 .ToListAsync();
 
@@ -426,7 +465,11 @@ namespace RentLoop.API.Controllers
                 .AsNoTracking()
                 .Include(r => r.User)
                 .Include(r => r.Property)
+                    .ThenInclude(p => p.City)
+                .Include(r => r.Property)
+                    .ThenInclude(p => p.RentType)
                 .Include(r => r.Status)
+                .Include(r => r.ApprovedByAdmin)
                 .OrderByDescending(r => r.CreatedAt)
                 .AsQueryable();
 
@@ -441,13 +484,44 @@ namespace RentLoop.API.Controllers
                 r.TotalPrice,
                 StatusId = r.StatusId,
                 Status = r.Status != null ? r.Status.Name : "",
-                User = r.User != null ? r.User.Username : "",
-                Listing = r.Property != null ? r.Property.Name : "",
+                User = r.User == null ? null : new
+                {
+                    r.User.Username,
+                    r.User.FirstName,
+                    r.User.LastName,
+                    r.User.Email,
+                    r.User.Phone,
+
+                    TotalReservations = _db.Reservations.Count(x => x.UserId == r.UserId),
+                    CancelledReservations = _db.Reservations.Count(x => x.UserId == r.UserId && x.StatusId == ReservationStatusIds.Cancelled),
+                    RejectedReservations = _db.Reservations.Count(x => x.UserId == r.UserId && x.StatusId == ReservationStatusIds.Rejected),
+                    ApprovedReservations = _db.Reservations.Count(x => x.UserId == r.UserId && x.StatusId == ReservationStatusIds.Approved)
+                },
+                Listing = r.Property == null ? null : new
+                {
+                    r.Property.Name,
+                    r.Property.Description,
+                    r.Property.Address,
+                    City = r.Property.City != null ? r.Property.City.Name : "",
+                    RentType = r.Property.RentType != null ? r.Property.RentType.Name : "",
+                    r.Property.PricePerNight,
+                    r.Property.RoomsCount,
+                    r.Property.MaxGuests,
+                    r.Property.DistanceToCenterKm,
+                    r.Property.HasWifi,
+                    r.Property.HasAirConditioning,
+                    r.Property.PetsAllowed
+                },
                 r.CreatedAt,
                 r.Guests,
                 r.Note,
                 r.IsPaid,
-                r.PaidAt
+                r.PaidAt,
+                r.DecisionAt,
+                r.RejectReason,
+                ApprovedByAdmin = r.ApprovedByAdmin != null
+                    ? ((r.ApprovedByAdmin.FirstName ?? "") + " " + (r.ApprovedByAdmin.LastName ?? "")).Trim()
+                    : ""
             }).ToListAsync();
 
             _logger.LogInformation(
@@ -461,7 +535,7 @@ namespace RentLoop.API.Controllers
         // ADMIN — reject
         [HttpPut("{id:int}/reject")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Reject(int id)
+        public async Task<IActionResult> Reject(int id, [FromBody] ReservationRejectRequest request)
         {
             var adminId = GetUserId();
             if (adminId == 0)
@@ -499,8 +573,22 @@ namespace RentLoop.API.Controllers
 
             r.ApprovedByAdminId = adminId;
             r.DecisionAt = DateTime.UtcNow;
+            r.RejectReason = request.Reason.Trim();
 
             await _db.SaveChangesAsync();
+
+            _mq.PublishReservationRejected(new
+            {
+                ReservationId = r.Id,
+                UserId = r.UserId,
+                PropertyId = r.PropertyId,
+                CheckIn = r.CheckIn,
+                CheckOut = r.CheckOut,
+                TotalPrice = r.TotalPrice,
+                RejectReason = r.RejectReason,
+                RejectedByAdminId = adminId,
+                DecisionAt = r.DecisionAt
+            });
 
             _logger.LogInformation(
                 "Reservation {ReservationId} rejected successfully by admin {AdminId}.",

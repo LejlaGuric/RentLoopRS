@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\controllers\\reservationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\controllers\\reservationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -31,14 +31,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "RentLoop.API\\Controllers\\AuthController.cs",
-              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "RentLoop.API\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAmwAsAAAASAAAAAAAAAA==",
+              "Title": "ReservationsController.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Controllers\\ReservationsController.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Controllers\\ReservationsController.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Controllers\\ReservationsController.cs",
+              "RelativeToolTip": "RentLoop.API\\Controllers\\ReservationsController.cs",
+              "ViewState": "AgIAAE8BAAAAAAAAAAAAAGQBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-11T00:05:56.919Z",
+              "WhenOpened": "2026-03-11T14:58:15.983Z",
               "EditorCaption": ""
             }
           ]

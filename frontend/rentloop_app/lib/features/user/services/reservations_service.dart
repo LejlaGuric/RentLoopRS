@@ -12,19 +12,21 @@ class MyReservationDto {
   final double totalPrice;
   final bool isPaid;
   final DateTime? paidAt;
+  final String? rejectReason;
 
-  MyReservationDto({
-    required this.id,
-    required this.listingId,
-    required this.listingTitle,
-    required this.from,
-    required this.to,
-    required this.statusId,
-    required this.statusName,
-    required this.totalPrice,
-    required this.isPaid,
-    required this.paidAt,
-  });
+ MyReservationDto({
+  required this.id,
+  required this.listingId,
+  required this.listingTitle,
+  required this.from,
+  required this.to,
+  required this.statusId,
+  required this.statusName,
+  required this.totalPrice,
+  required this.isPaid,
+  required this.paidAt,
+  this.rejectReason,
+});
 
   static DateTime? _tryParseDate(dynamic v) {
     if (v == null) return null;
@@ -85,17 +87,18 @@ class MyReservationDto {
     final totalPrice = _toDouble(j['totalPrice'] ?? j['price']);
 
     return MyReservationDto(
-      id: _toInt(j['id']),
-      listingId: listingId,
-      listingTitle: listingTitle,
-      from: from,
-      to: to,
-      statusId: statusId,
-      statusName: statusName,
-      totalPrice: totalPrice,
-      isPaid: (j['isPaid'] ?? false) == true,
-      paidAt: _tryParseDate(j['paidAt']),
-    );
+    id: _toInt(j['id']),
+    listingId: listingId,
+    listingTitle: listingTitle,
+    from: from,
+    to: to,
+    statusId: statusId,
+    statusName: statusName,
+    totalPrice: totalPrice,
+    isPaid: (j['isPaid'] ?? false) == true,
+    paidAt: _tryParseDate(j['paidAt']),
+    rejectReason: j['rejectReason']?.toString(),
+  );
   }
 }
 
