@@ -28,6 +28,16 @@ Docker Desktop must be running before starting the project.
 
 ---
 
+Before running the project, it is necessary to extract all provided .env files and place them back into their original folders.
+
+Three .env files are included in the repository as password-protected ZIP archives.
+Each archive is protected with the password:
+
+```bash
+fit
+```
+
+
 ## Start Backend Services
 
 In the root project folder (where `docker-compose.yml` is located), run:
@@ -110,8 +120,8 @@ The system supports online payments using the PayPal Sandbox environment.
 ## PayPal Sandbox Test Credentials
 
 ```
-Email: sb-2vl2448691010@personal.example.com
-Password: m)lO,Yi6
+Email: sb-7tws049885658@personal.example.com
+Password: *yAHg68+
 ```
 
 These credentials are intended strictly for testing purposes within the PayPal Sandbox environment.
