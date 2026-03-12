@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/config/api_config.dart';
 import '../models/admin_listing_details.dart';
+import '../models/admin_listing_review.dart';
 import '../services/admin_listings_service.dart';
 
 class AdminListingDetailsPage extends StatefulWidget {
@@ -17,6 +18,10 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
   bool _loading = true;
   String _error = '';
   AdminListingDetails? _data;
+
+  List<AdminListingReview> _reviews = [];
+  bool _reviewsLoading = false;
+  String _reviewsError = '';
 
   int _selectedImageIndex = 0;
 
@@ -44,14 +49,29 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
     return '${ApiConfig.baseUrl}/$relative';
   }
 
+  String _formatDate(DateTime date) {
+    final d = date.toLocal();
+    final day = d.day.toString().padLeft(2, '0');
+    final month = d.month.toString().padLeft(2, '0');
+    final year = d.year.toString();
+    final hour = d.hour.toString().padLeft(2, '0');
+    final minute = d.minute.toString().padLeft(2, '0');
+    return '$day.$month.$year $hour:$minute';
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = '';
+      _reviews = [];
+      _reviewsError = '';
+      _reviewsLoading = true;
     });
 
     try {
       final d = await _service.getById(widget.listingId);
+      final reviews = await _service.getReviewsForListing(widget.listingId);
+
       if (!mounted) return;
 
       int idx = 0;
@@ -62,6 +82,7 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
 
       setState(() {
         _data = d;
+        _reviews = reviews;
         _selectedImageIndex = idx;
       });
 
@@ -73,7 +94,10 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
       setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (!mounted) return;
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        _reviewsLoading = false;
+      });
     }
   }
 
@@ -205,9 +229,7 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
               '${d.city} • ${d.rentType}',
               style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
             ),
-
             const SizedBox(height: 18),
-
             Expanded(
               child: Row(
                 children: [
@@ -334,9 +356,7 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(width: 16),
-
                   Expanded(
                     flex: 3,
                     child: Card(
@@ -397,6 +417,44 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                             _sectionTitle('Opis'),
                             const SizedBox(height: 8),
                             _textBox(d.description.isEmpty ? '-' : d.description),
+
+                            const SizedBox(height: 18),
+
+                            _sectionTitle('Recenzije korisnika'),
+                            const SizedBox(height: 10),
+
+                            if (_reviewsLoading)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: Center(child: CircularProgressIndicator()),
+                              )
+                            else if (_reviewsError.isNotEmpty)
+                              Text(
+                                _reviewsError,
+                                style: const TextStyle(color: Colors.red),
+                              )
+                            else if (_reviews.isEmpty)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: Colors.grey.withOpacity(0.22)),
+                                ),
+                                child: const Text('Nema recenzija za ovaj stan.'),
+                              )
+                            else
+                              Column(
+                                children: _reviews
+                                    .map(
+                                      (r) => Padding(
+                                        padding: const EdgeInsets.only(bottom: 12),
+                                        child: _reviewCard(r),
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
                           ],
                         ),
                       ),
@@ -517,6 +575,61 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
       child: Text(
         '${value ? "✅" : "❌"} $text',
         style: TextStyle(fontWeight: FontWeight.w800, color: textColor),
+      ),
+    );
+  }
+
+  Widget _reviewCard(AdminListingReview review) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.withOpacity(0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  review.user,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  color: Colors.amber.withOpacity(0.16),
+                  border: Border.all(color: Colors.amber.withOpacity(0.45)),
+                ),
+                child: Text(
+                  '⭐ ${review.rating}/5',
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            review.comment == null || review.comment!.trim().isEmpty
+                ? 'Korisnik nije ostavio komentar.'
+                : review.comment!,
+            style: const TextStyle(fontSize: 14, height: 1.35),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            _formatDate(review.createdAt),
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade700,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
       ),
     );
   }

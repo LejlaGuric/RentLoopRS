@@ -7,6 +7,7 @@ import '../../../core/config/api_config.dart';
 import '../../../core/http/api_client.dart';
 import '../models/admin_listing_details.dart';
 import '../models/admin_listing_list_item.dart';
+import '../models/admin_listing_review.dart';
 
 class AdminListingsService {
   final ApiClient _api = ApiClient();
@@ -31,7 +32,9 @@ class AdminListingsService {
           .toList();
     }
 
-    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri učitavanju stanova.');
+    throw Exception(
+      res.body.isNotEmpty ? res.body : 'Greška pri učitavanju stanova.',
+    );
   }
 
   Future<AdminListingDetails> getById(int id) async {
@@ -42,7 +45,24 @@ class AdminListingsService {
       return AdminListingDetails.fromJson(map);
     }
 
-    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri učitavanju detalja.');
+    throw Exception(
+      res.body.isNotEmpty ? res.body : 'Greška pri učitavanju detalja.',
+    );
+  }
+
+  Future<List<AdminListingReview>> getReviewsForListing(int listingId) async {
+    final res = await _api.get('/api/reviews/listing/$listingId');
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      final list = jsonDecode(res.body) as List<dynamic>;
+      return list
+          .map((e) => AdminListingReview.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    throw Exception(
+      res.body.isNotEmpty ? res.body : 'Greška pri učitavanju recenzija.',
+    );
   }
 
   Future<void> createListingMultipart({
@@ -90,14 +110,22 @@ class AdminListingsService {
       final file = File(p);
       if (!file.existsSync()) continue;
       final filename = p.split(Platform.pathSeparator).last;
-      req.files.add(await http.MultipartFile.fromPath('Images', file.path, filename: filename));
+      req.files.add(
+        await http.MultipartFile.fromPath(
+          'Images',
+          file.path,
+          filename: filename,
+        ),
+      );
     }
 
     final streamed = await req.send();
     final body = await streamed.stream.bytesToString();
 
     if (streamed.statusCode < 200 || streamed.statusCode >= 300) {
-      throw Exception(body.isNotEmpty ? body : 'Greška pri dodavanju stana.');
+      throw Exception(
+        body.isNotEmpty ? body : 'Greška pri dodavanju stana.',
+      );
     }
   }
 }

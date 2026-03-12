@@ -1,7 +1,12 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|c:\\users\\pc\\desktop\\rentloop n\\rentlooprs\\backend\\rentloop\\rentloop.api\\controllers\\reviewscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{47AD400D-EBD7-40EE-B9AA-ADE7B0AFFBAC}|RentLoop.API\\RentLoop.API.csproj|solutionrelative:rentloop.api\\controllers\\reviewscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +14,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -22,6 +27,19 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ReviewsController.cs",
+              "DocumentMoniker": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Controllers\\ReviewsController.cs",
+              "RelativeDocumentMoniker": "RentLoop.API\\Controllers\\ReviewsController.cs",
+              "ToolTip": "C:\\Users\\PC\\Desktop\\RentLoop n\\RentLoopRS\\backend\\RentLoop\\RentLoop.API\\Controllers\\ReviewsController.cs",
+              "RelativeToolTip": "RentLoop.API\\Controllers\\ReviewsController.cs",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAwwG4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-12T14:33:00.93Z",
+              "EditorCaption": ""
             }
           ]
         }
