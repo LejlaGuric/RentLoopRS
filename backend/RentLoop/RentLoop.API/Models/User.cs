@@ -42,7 +42,7 @@ namespace RentLoop.API.Models
 
         public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
-        public ICollection<SearchHistory> Searches { get; set; } = new List<SearchHistory>();
+       
 
         // Chat
         public ICollection<Conversation> ClientConversations { get; set; } = new List<Conversation>();

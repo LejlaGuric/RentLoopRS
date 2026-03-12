@@ -19,13 +19,12 @@ namespace RentLoop.API.Data
 
         public DbSet<Reservation> Reservations => Set<Reservation>();
         public DbSet<ReservationStatus> ReservationStatuses => Set<ReservationStatus>();
-        public DbSet<PropertyAvailability> PropertyAvailability => Set<PropertyAvailability>();
         public DbSet<Review> Reviews => Set<Review>();
 
         public DbSet<Favorite> Favorites => Set<Favorite>();
         public DbSet<Payment> Payments { get; set; }
 
-        public DbSet<SearchHistory> SearchHistory => Set<SearchHistory>();
+        
 
         public DbSet<ListingView> ListingViews { get; set; }
 
@@ -105,10 +104,6 @@ namespace RentLoop.API.Data
                 .HasForeignKey<Review>(rv => rv.ReservationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Availability: (PropertyId, Date) unique (da nema duplih dana)
-            modelBuilder.Entity<PropertyAvailability>()
-                .HasIndex(a => new { a.PropertyId, a.Date })
-                .IsUnique();
 
             // DECIMAL precision (SQL Server)
             modelBuilder.Entity<Listing>()
@@ -123,13 +118,7 @@ namespace RentLoop.API.Data
                 .Property(x => x.TotalPrice)
                 .HasPrecision(18, 2);
 
-            modelBuilder.Entity<SearchHistory>()
-                .Property(x => x.MinPrice)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<SearchHistory>()
-                .Property(x => x.MaxPrice)
-                .HasPrecision(18, 2);
+           
 
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.User)

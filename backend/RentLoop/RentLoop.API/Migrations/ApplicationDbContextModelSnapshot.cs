@@ -422,36 +422,6 @@ namespace RentLoop.API.Migrations
                     b.ToTable("PropertyAmenities");
                 });
 
-            modelBuilder.Entity("RentLoop.API.Models.PropertyAvailability", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsBooked")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PropertyId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ReservationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReservationId");
-
-                    b.HasIndex("PropertyId", "Date")
-                        .IsUnique();
-
-                    b.ToTable("PropertyAvailability");
-                });
-
             modelBuilder.Entity("RentLoop.API.Models.PropertyImage", b =>
                 {
                     b.Property<int>("Id")
@@ -652,54 +622,6 @@ namespace RentLoop.API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
-                });
-
-            modelBuilder.Entity("RentLoop.API.Models.SearchHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("CityId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Guests")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("MaxPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("MinPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("RentTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RoomsCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SearchedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Sort")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CityId");
-
-                    b.HasIndex("RentTypeId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SearchHistory");
                 });
 
             modelBuilder.Entity("RentLoop.API.Models.User", b =>
@@ -931,23 +853,6 @@ namespace RentLoop.API.Migrations
                     b.Navigation("Property");
                 });
 
-            modelBuilder.Entity("RentLoop.API.Models.PropertyAvailability", b =>
-                {
-                    b.HasOne("RentLoop.API.Models.Listing", "Property")
-                        .WithMany("Availability")
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RentLoop.API.Models.Reservation", "Reservation")
-                        .WithMany()
-                        .HasForeignKey("ReservationId");
-
-                    b.Navigation("Property");
-
-                    b.Navigation("Reservation");
-                });
-
             modelBuilder.Entity("RentLoop.API.Models.PropertyImage", b =>
                 {
                     b.HasOne("RentLoop.API.Models.Listing", "Property")
@@ -1020,29 +925,6 @@ namespace RentLoop.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RentLoop.API.Models.SearchHistory", b =>
-                {
-                    b.HasOne("RentLoop.API.Models.City", "City")
-                        .WithMany()
-                        .HasForeignKey("CityId");
-
-                    b.HasOne("RentLoop.API.Models.RentType", "RentType")
-                        .WithMany()
-                        .HasForeignKey("RentTypeId");
-
-                    b.HasOne("RentLoop.API.Models.User", "User")
-                        .WithMany("Searches")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("City");
-
-                    b.Navigation("RentType");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("RentLoop.API.Models.Amenity", b =>
                 {
                     b.Navigation("PropertyAmenities");
@@ -1060,8 +942,6 @@ namespace RentLoop.API.Migrations
 
             modelBuilder.Entity("RentLoop.API.Models.Listing", b =>
                 {
-                    b.Navigation("Availability");
-
                     b.Navigation("Favorites");
 
                     b.Navigation("Images");
@@ -1106,8 +986,6 @@ namespace RentLoop.API.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Reservations");
-
-                    b.Navigation("Searches");
 
                     b.Navigation("SentMessages");
                 });

@@ -39,7 +39,6 @@ namespace RentLoop.API.Models
         public ICollection<PropertyImage> Images { get; set; } = new List<PropertyImage>();
         public ICollection<PropertyAmenity> PropertyAmenities { get; set; } = new List<PropertyAmenity>();
         public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
-        public ICollection<PropertyAvailability> Availability { get; set; } = new List<PropertyAvailability>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     }
