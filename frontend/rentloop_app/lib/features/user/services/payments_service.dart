@@ -88,4 +88,18 @@ class PaymentsService {
       throw Exception(res.body);
     }
   }
+
+  Future<String> refundPayPal(int reservationId) async {
+  final res = await _api.post(
+    '/api/payments/paypal/refund/$reservationId',
+    {},
+    auth: true,
+  );
+
+  if (res.statusCode < 200 || res.statusCode >= 300) {
+    throw Exception(res.body);
+  }
+
+  return res.body;
+}
 }

@@ -117,12 +117,14 @@ namespace RentLoop.API.Controllers
 
             try
             {
-                var status = await _pp.CaptureOrder(req.OrderId);
+                var (status, captureId) = await _pp.CaptureOrder(req.OrderId);
 
                 if (status == "COMPLETED")
                 {
                     payment.Status = "CAPTURED";
                     payment.CapturedAt = DateTime.UtcNow;
+
+                    payment.ProviderCaptureId = captureId;
 
                     payment.Reservation.IsPaid = true;
                     payment.Reservation.PaidAt = DateTime.UtcNow;
@@ -181,6 +183,72 @@ namespace RentLoop.API.Controllers
                 "</body></html>";
 
             return Content(html, "text/html");
+        }
+
+        [HttpPost("paypal/refund/{reservationId}")]
+        public async Task<IActionResult> RefundPayPal(int reservationId)
+        {
+            var userId = GetUserId();
+            if (userId == 0)
+                return Unauthorized();
+
+            var payment = await _db.Payments
+                .Include(p => p.Reservation)
+                .Where(p =>
+                    p.ReservationId == reservationId &&
+                    p.Provider == "PayPal" &&
+                    p.Status == "CAPTURED" &&
+                    p.IsRefunded == false)
+                .OrderByDescending(p => p.CapturedAt)
+                .FirstOrDefaultAsync();
+
+            if (payment == null)
+                return NotFound("Payment not found.");
+
+            if (payment.Reservation == null)
+                return BadRequest("Reservation not found.");
+
+            // možeš ograničiti da samo admin ili vlasnik može refund
+            if (payment.Reservation.UserId != userId)
+                return Forbid();
+
+            if (payment.ProviderCaptureId == null)
+                return BadRequest("No captureId found for refund.");
+
+            if (payment.IsRefunded)
+                return BadRequest("Already refunded.");
+
+            try
+            {
+                var status = await _pp.RefundCapture(payment.ProviderCaptureId);
+
+                if (status == "COMPLETED")
+                {
+                    payment.IsRefunded = true;
+                    payment.RefundedAt = DateTime.UtcNow;
+                    payment.RefundStatus = "COMPLETED";
+                    payment.Status = "REFUNDED";
+
+                    payment.Reservation.IsPaid = false;
+                    payment.Reservation.PaidAt = null;
+
+                    await _db.SaveChangesAsync();
+
+                    return Ok("Refund successful.");
+                }
+
+                payment.RefundStatus = status;
+                await _db.SaveChangesAsync();
+
+                return Ok($"Refund status: {status}");
+            }
+            catch (Exception ex)
+            {
+                payment.RefundStatus = "FAILED";
+                await _db.SaveChangesAsync();
+
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

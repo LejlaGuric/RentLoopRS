@@ -1,23 +1,28 @@
-﻿namespace RentLoop.API.Models
+﻿using RentLoop.API.Models;
+
+public class Payment
 {
-    public class Payment
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public int UserId { get; set; }
-        public User? User { get; set; }
+    public int UserId { get; set; }
+    public User? User { get; set; }
 
-        public int ReservationId { get; set; }
-        public Reservation? Reservation { get; set; }
+    public int ReservationId { get; set; }
+    public Reservation? Reservation { get; set; }
 
-        public string Provider { get; set; } = "PayPal";
-        public string ProviderOrderId { get; set; } = string.Empty;
+    public string Provider { get; set; } = "PayPal";
+    public string ProviderOrderId { get; set; } = string.Empty;
 
-        public decimal Amount { get; set; }
-        public string Currency { get; set; } = "EUR";
+    public decimal Amount { get; set; }
+    public string Currency { get; set; } = "EUR";
 
-        public string Status { get; set; } = "CREATED"; // CREATED/CAPTURED/FAILED
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? CapturedAt { get; set; }
-    }
+    public string Status { get; set; } = "CREATED"; // CREATED/CAPTURED/FAILED
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? CapturedAt { get; set; }
+
+    // 👇 NOVO
+    public string? ProviderCaptureId { get; set; }
+    public bool IsRefunded { get; set; } = false;
+    public DateTime? RefundedAt { get; set; }
+    public string? RefundStatus { get; set; }
 }

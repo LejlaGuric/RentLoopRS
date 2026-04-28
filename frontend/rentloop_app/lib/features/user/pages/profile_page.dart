@@ -279,7 +279,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
     final v = value?.trim() ?? '';
 
     if (v.isNotEmpty && v.length > 50) {
-      return 'Ime može imati najviše 50 karaktera';
+      return 'Ime može imati najviše 50 karaktera.';
     }
 
     if (_firstNameServerError != null) return _firstNameServerError;
@@ -302,7 +302,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
 
     if (v.isNotEmpty) {
       if (v.length > 30) return 'Telefon može imati najviše 30 karaktera';
-      if (!_phoneRegex.hasMatch(v)) return 'Telefon nije u ispravnom formatu';
+      if (!_phoneRegex.hasMatch(v)) return 'Unesite validan broj telefona (8–15 cifara).';
     }
 
     if (_phoneServerError != null) return _phoneServerError;
@@ -679,156 +679,231 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
     );
   }
 
-  void _openReservationActions(MyReservationDto r) {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: Colors.white,
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                r.listingTitle.isEmpty ? 'Rezervacija #${r.id}' : r.listingTitle,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '${_fmtDate(r.from)} → ${_fmtDate(r.to)}',
-                style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              if (r.statusId == 1) ...[
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _cancelReservation(r);
-                    },
-                    icon: const Icon(Icons.cancel),
-                    label: const Text('Otkaži rezervaciju'),
-                  ),
-                ),
-              ] else if (r.statusId == 2 && r.isPaid == false) ...[
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: FilledButton.icon(
-                    onPressed: _creatingPayment
-                        ? null
-                        : () {
-                            Navigator.pop(context);
-                            _payReservation(r);
-                          },
-                    icon: const Icon(Icons.payments),
-                    label: Text(_creatingPayment ? 'Učitavanje...' : 'Plati (PayPal)'),
-                  ),
-                ),
-              ] else if (r.statusId == 2 && r.isPaid == true) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFFAF0),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFB7E4C7)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text(
-                            'Plaćeno',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (r.paidAt != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          'Vrijeme plaćanja: ${_fmtDate(r.paidAt)}',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: FilledButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _openReviewDialog(r);
-                          },
-                          icon: const Icon(Icons.star_rate),
-                          label: const Text('Ocijeni boravak'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ] else ...[
-  Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF6F6F6),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: const Color(0xFFE8E8E8)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          r.statusId == 3
-              ? 'Rezervacija je odbijena (Rejected).'
-              : r.statusId == 4
-                  ? 'Rezervacija je otkazana (Cancelled).'
-                  : 'Rezervacija nije dostupna za akcije.',
-          style: const TextStyle(fontWeight: FontWeight.w700),
+  Future<void> _refundReservation(MyReservationDto r) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Povrat novca'),
+      content: Text(
+        'Da li sigurno želite izvršiti povrat novca za rezervaciju "${r.listingTitle.isEmpty ? '#${r.id}' : r.listingTitle}"?',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Odustani'),
         ),
-              if (r.statusId == 3 && r.rejectReason != null && r.rejectReason!.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  'Razlog odbijanja: ${r.rejectReason}',
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ]
-            ],
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
           ),
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Potvrdi povrat'),
         ),
       ],
-              const SizedBox(height: 10),
+    ),
+  );
+
+  if (ok != true) return;
+
+  try {
+    final msg = await _payments.refundPayPal(r.id);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg.replaceAll('"', '').trim())),
+    );
+
+    await _load();
+  } catch (e) {
+    if (!mounted) return;
+
+    final error = e
+        .toString()
+        .replaceFirst('Exception: ', '')
+        .replaceAll('"', '')
+        .trim();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(error)),
+    );
+  }
+}
+
+ void _openReservationActions(MyReservationDto r) {
+  showModalBottomSheet(
+    context: context,
+    showDragHandle: true,
+    backgroundColor: Colors.white,
+    builder: (_) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              r.listingTitle.isEmpty ? 'Rezervacija #${r.id}' : r.listingTitle,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${_fmtDate(r.from)} → ${_fmtDate(r.to)}',
+              style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+
+            if (r.statusId == 1) ...[
               SizedBox(
                 width: double.infinity,
                 height: 48,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Zatvori'),
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _cancelReservation(r);
+                  },
+                  icon: const Icon(Icons.cancel),
+                  label: const Text('Otkaži rezervaciju'),
+                ),
+              ),
+            ] else if (r.statusId == 2 && r.isPaid == false) ...[
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton.icon(
+                  onPressed: _creatingPayment
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                          _payReservation(r);
+                        },
+                  icon: const Icon(Icons.payments),
+                  label: Text(_creatingPayment ? 'Učitavanje...' : 'Plati (PayPal)'),
+                ),
+              ),
+            ] else if (r.statusId == 2 && r.isPaid == true) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFFAF0),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFB7E4C7)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text(
+                          'Plaćeno',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (r.paidAt != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        'Vrijeme plaćanja: ${_fmtDate(r.paidAt)}',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _openReviewDialog(r);
+                        },
+                        icon: const Icon(Icons.star_rate),
+                        label: const Text('Ocijeni boravak'),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await Future.delayed(const Duration(milliseconds: 200));
+                          if (!mounted) return;
+                          await _refundReservation(r);
+                        },
+                        icon: const Icon(Icons.undo),
+                        label: const Text('Povrat novca'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF6F6F6),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE8E8E8)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      r.statusId == 3
+                          ? 'Rezervacija je odbijena (Rejected).'
+                          : r.statusId == 4
+                              ? 'Rezervacija je otkazana (Cancelled).'
+                              : 'Rezervacija nije dostupna za akcije.',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    if (r.statusId == 3 &&
+                        r.rejectReason != null &&
+                        r.rejectReason!.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        'Razlog odbijanja: ${r.rejectReason}',
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],
-          ),
-        );
-      },
-    );
-  }
+
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Zatvori'),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   void _openReviewDialog(MyReservationDto r) {
     int rating = 5;

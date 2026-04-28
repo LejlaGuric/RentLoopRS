@@ -107,7 +107,7 @@ namespace RentLoop.API.Services.PayPal
             return (orderId, approveUrl);
         }
 
-        public async Task<string> CaptureOrder(string orderId)
+        public async Task<(string status, string captureId)> CaptureOrder(string orderId)
         {
             var token = await GetAccessToken();
             var url = $"{_cfg.BaseUrl}/v2/checkout/orders/{orderId}/capture";
@@ -124,7 +124,35 @@ namespace RentLoop.API.Services.PayPal
                 throw new Exception($"PayPal capture error: {(int)res.StatusCode} {res.StatusCode} - {body}");
 
             using var doc = JsonDocument.Parse(body);
-            return doc.RootElement.GetProperty("status").GetString()!; // COMPLETED kad uspije
+            var status = doc.RootElement.GetProperty("status").GetString()!;
+
+            var captureId = doc.RootElement
+                .GetProperty("purchase_units")[0]
+                .GetProperty("payments")
+                .GetProperty("captures")[0]
+                .GetProperty("id")
+                .GetString()!;
+
+            return (status, captureId);
+        }
+        public async Task<string> RefundCapture(string captureId)
+        {
+            var token = await GetAccessToken();
+            var url = $"{_cfg.BaseUrl}/v2/payments/captures/{captureId}/refund";
+
+            using var req = new HttpRequestMessage(HttpMethod.Post, url);
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+            var res = await _http.SendAsync(req);
+            var body = await res.Content.ReadAsStringAsync();
+
+            if (!res.IsSuccessStatusCode)
+                throw new Exception($"PayPal refund error: {(int)res.StatusCode} {res.StatusCode} - {body}");
+
+            using var doc = JsonDocument.Parse(body);
+            return doc.RootElement.GetProperty("status").GetString()!;
         }
     }
 }
