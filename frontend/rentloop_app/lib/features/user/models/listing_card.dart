@@ -10,6 +10,7 @@ class ListingCard {
   final String? coverUrl;
   final double avgRating;
   final int reviewsCount;
+  final String? reason;
 
   const ListingCard({
     required this.id,
@@ -23,6 +24,7 @@ class ListingCard {
     required this.coverUrl,
     required this.avgRating,
     required this.reviewsCount,
+    this.reason,
   });
 
   factory ListingCard.fromJson(Map<String, dynamic> j) => ListingCard(
@@ -37,5 +39,6 @@ class ListingCard {
         coverUrl: j['coverUrl']?.toString(),
         avgRating: (j['avgRating'] as num?)?.toDouble() ?? 0.0,
         reviewsCount: (j['reviewsCount'] as num?)?.toInt() ?? 0,
+        reason: j['reason']?.toString(),
       );
 }

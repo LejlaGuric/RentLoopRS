@@ -333,7 +333,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 10),
 
               SizedBox(
-                height: 290,
+                height: 360,
                 child: ListView.separated(
                   controller: _recCtrl,
                   scrollDirection: Axis.horizontal,

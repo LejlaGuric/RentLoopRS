@@ -39,11 +39,11 @@ class RecommendedCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ manja slika da uvijek stane
+            // slika
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
               child: Container(
-                height: 120, // ✅ bilo 150
+                height: 90,
                 width: double.infinity,
                 color: Colors.black.withOpacity(0.05),
                 child: cover == null
@@ -57,11 +57,11 @@ class RecommendedCardWidget extends StatelessWidget {
               ),
             ),
 
-            // ✅ sadržaj zbijen + kontrola redova
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // name
                   Text(
@@ -120,7 +120,10 @@ class RecommendedCardWidget extends StatelessWidget {
                           const SizedBox(width: 6),
                           Text(
                             '(${item.reviewsCount})',
-                            style: TextStyle(color: Colors.black.withOpacity(0.55), fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                              color: Colors.black.withOpacity(0.55),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ],
                       ),
@@ -129,7 +132,37 @@ class RecommendedCardWidget extends StatelessWidget {
 
                   const SizedBox(height: 8),
 
-                  // ✅ Wrap da nikad ne overflowa horizontalno/vertikalno
+                  // 🔥 EXPLAINABLE REASON
+                  if (item.reason != null && item.reason!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.info_outline, size: 16, color: Colors.blue),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+  item.reason!,
+  style: const TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+  ),
+),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 8),
+
+                  // mini info
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,

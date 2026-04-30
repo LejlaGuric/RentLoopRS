@@ -380,6 +380,46 @@ namespace RentLoop.API.Controllers
                 return score;
             }
 
+            string BuildReason(ListingScoreItem c)
+            {
+                var reasons = new List<string>();
+
+                foreach (var h in historyListings)
+                {
+                    if (c.CityId == h.CityId)
+                        reasons.Add("nalazi se u gradu koji ste ranije pregledali");
+
+                    if (c.RentTypeId == h.RentTypeId)
+                        reasons.Add("ima isti tip smještaja kao oglasi koji su vas zanimali");
+
+                    var lower = h.PricePerNight * 0.8m;
+                    var upper = h.PricePerNight * 1.2m;
+
+                    if (c.PricePerNight >= lower && c.PricePerNight <= upper)
+                        reasons.Add("cijena je slična cijenama oglasa koje ste pregledali");
+
+                    if (c.RoomsCount == h.RoomsCount)
+                        reasons.Add("ima sličan broj soba kao prethodno pregledani oglasi");
+                }
+
+                if (views7d.TryGetValue(c.Id, out var vCnt) && vCnt > 0)
+                    reasons.Add("ovaj oglas je često pregledan u zadnjih 7 dana");
+
+                if (res30d.TryGetValue(c.Id, out var rCnt) && rCnt > 0)
+                    reasons.Add("ovaj oglas je rezervisan u zadnjih 30 dana");
+
+                if (c.AvgRating >= 4)
+                    reasons.Add("ima visoku prosječnu ocjenu korisnika");
+
+                if (c.ReviewsCount > 0)
+                    reasons.Add("ima recenzije drugih korisnika");
+
+                if (reasons.Count == 0)
+                    return "Preporučeno na osnovu popularnosti.";
+
+                return "Preporučujemo jer " + string.Join(", ", reasons.Distinct().Take(3)) + ".";
+            }
+
             var ranked = candidates
                 .Select(x => new
                 {
@@ -395,6 +435,7 @@ namespace RentLoop.API.Controllers
                     x.AvgRating,
                     x.ReviewsCount,
                     Score = Score(x),
+                    Reason = BuildReason(x),
                     x.CreatedAt
                 })
                 .OrderByDescending(x => x.Score)
