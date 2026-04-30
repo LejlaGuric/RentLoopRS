@@ -14,6 +14,11 @@ The solution consists of:
 
 ---
 
+## 🔗 GitHub Release (Final Build)
+
+Final build of the application is available here:
+https://github.com/LejlaGuric/RentLoopRS/releases/tag/predaja-rada-2026-04-30
+
 # How to Run the Project
 
 ## Environment Setup
