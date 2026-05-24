@@ -25,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
   final _resv = ReservationsService();
   final _auth = AuthService();
   final _reviews = ReviewsService();
-  final _payments = PaymentsService();
+  
 
   final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSub;
@@ -48,6 +48,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
   final _lastName = TextEditingController();
   final _phone = TextEditingController();
   final _address = TextEditingController();
+  final _payments = PaymentsService();
 
   String? _profileGeneralError;
   String? _firstNameServerError;
@@ -404,45 +405,77 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
   }
 
   Future<void> _cancelReservation(MyReservationDto r) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Otkaži rezervaciju'),
-        content: Text(
-          'Da li sigurno želiš otkazati rezervaciju "${r.listingTitle.isEmpty ? '#${r.id}' : r.listingTitle}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Odustani'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Otkaži rezervaciju'),
-          ),
-        ],
+  final reasonCtrl = TextEditingController();
+
+  final reason = await showDialog<String>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Otkaži rezervaciju'),
+      content: SingleChildScrollView(
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        'Da li sigurno želiš otkazati rezervaciju "${r.listingTitle.isEmpty ? '#${r.id}' : r.listingTitle}"?',
       ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: reasonCtrl,
+        maxLines: 3,
+        maxLength: 500,
+        decoration: const InputDecoration(
+          labelText: 'Razlog otkazivanja',
+          border: OutlineInputBorder(),
+        ),
+      ),
+    ],
+  ),
+),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Odustani'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final reason = reasonCtrl.text.trim();
+
+            if (reason.isEmpty) {
+              return;
+            }
+
+            Navigator.pop(context, reason);
+          },
+          child: const Text('Otkaži rezervaciju'),
+        ),
+      ],
+    ),
+  );
+
+ 
+
+  if (reason == null || reason.trim().isEmpty) return;
+
+  try {
+    await _resv.cancelReservation(r.id, reason.trim());
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Rezervacija uspješno otkazana.')),
     );
 
-    if (ok != true) return;
+    await _load();
+  } catch (e) {
+    if (!mounted) return;
 
-    try {
-      await _resv.cancelReservation(r.id);
+    final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Rezervacija uspješno otkazana.')),
-      );
-
-      await _load();
-    } catch (e) {
-      if (!mounted) return;
-      final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
   }
+}
 
   Future<void> _logout() async {
     final ok = await showDialog<bool>(
@@ -679,57 +712,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
     );
   }
 
-  Future<void> _refundReservation(MyReservationDto r) async {
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Povrat novca'),
-      content: Text(
-        'Da li sigurno želite izvršiti povrat novca za rezervaciju "${r.listingTitle.isEmpty ? '#${r.id}' : r.listingTitle}"?',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Odustani'),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Potvrdi povrat'),
-        ),
-      ],
-    ),
-  );
-
-  if (ok != true) return;
-
-  try {
-    final msg = await _payments.refundPayPal(r.id);
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg.replaceAll('"', '').trim())),
-    );
-
-    await _load();
-  } catch (e) {
-    if (!mounted) return;
-
-    final error = e
-        .toString()
-        .replaceFirst('Exception: ', '')
-        .replaceAll('"', '')
-        .trim();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(error)),
-    );
-  }
-}
+ 
 
  void _openReservationActions(MyReservationDto r) {
   showModalBottomSheet(
@@ -786,72 +769,53 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                 ),
               ),
             ] else if (r.statusId == 2 && r.isPaid == true) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFFAF0),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFB7E4C7)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.green),
-                        SizedBox(width: 8),
-                        Text(
-                          'Plaćeno',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (r.paidAt != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        'Vrijeme plaćanja: ${_fmtDate(r.paidAt)}',
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ],
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: FilledButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _openReviewDialog(r);
-                        },
-                        icon: const Icon(Icons.star_rate),
-                        label: const Text('Ocijeni boravak'),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: FilledButton.icon(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () async {
-                          Navigator.pop(context);
-                          await Future.delayed(const Duration(milliseconds: 200));
-                          if (!mounted) return;
-                          await _refundReservation(r);
-                        },
-                        icon: const Icon(Icons.undo),
-                        label: const Text('Povrat novca'),
-                      ),
-                    ),
-                  ],
-                ),
+  Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: const Color(0xFFEFFAF0),
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: const Color(0xFFB7E4C7)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text(
+              'Plaćeno',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                color: Colors.green,
               ),
+            ),
+          ],
+        ),
+        if (r.paidAt != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            'Vrijeme plaćanja: ${_fmtDate(r.paidAt)}',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ],
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: FilledButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _openReviewDialog(r);
+            },
+            icon: const Icon(Icons.star_rate),
+            label: const Text('Ocijeni boravak'),
+          ),
+        ),
+      ],
+    ),
+  ),
             ] else ...[
               Container(
                 width: double.infinity,

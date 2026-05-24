@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using RentLoop.API.Helpers;
 
 namespace RentLoop.API.Controllers
 {
@@ -97,7 +98,7 @@ namespace RentLoop.API.Controllers
                 LastName = request.LastName ?? "",
                 Address = request.Address ?? "",
                 Phone = request.Phone ?? "",
-                Role = 2,
+                Role = RoleIds.Client,
                 IsActive = true
             };
 
@@ -278,7 +279,7 @@ namespace RentLoop.API.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-                new Claim(ClaimTypes.Role, user.Role == 1 ? "Admin" : "Client"),
+                new Claim(ClaimTypes.Role, user.Role == RoleIds.Admin ? "Admin" : "Client"),
                 new Claim("roleId", user.Role.ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
@@ -367,17 +368,20 @@ namespace RentLoop.API.Controllers
 
             return false;
         }
-
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == request.UserId);
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                return Unauthorized("Refresh token is required.");
+
+            var user = await _db.Users.FirstOrDefaultAsync(u =>
+                u.RefreshToken == request.RefreshToken);
 
             if (user == null)
-                return Unauthorized("Invalid user.");
-
-            if (user.RefreshToken != request.RefreshToken)
                 return Unauthorized("Invalid refresh token.");
+
+            if (!user.IsActive)
+                return Unauthorized("User is inactive.");
 
             if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 return Unauthorized("Refresh token expired.");

@@ -11,7 +11,7 @@ class FavoritesService {
     final res = await _api.get('/api/favorites', auth: true);
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body.isEmpty ? 'Greška (${res.statusCode})' : res.body);
+      throw Exception(_readMessage(res.body));
     }
 
     final list = jsonDecode(res.body) as List<dynamic>;
@@ -33,7 +33,7 @@ class FavoritesService {
     final res = await _api.get('/api/favorites/check/$listingId', auth: true);
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body.isEmpty ? 'Greška (${res.statusCode})' : res.body);
+      throw Exception(_readMessage(res.body));
     }
 
     final map = jsonDecode(res.body) as Map<String, dynamic>;
@@ -45,7 +45,7 @@ class FavoritesService {
     final res = await _api.postEmpty('/api/favorites/$listingId', auth: true);
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body.isEmpty ? 'Greška (${res.statusCode})' : res.body);
+      throw Exception(_readMessage(res.body));
     }
   }
 
@@ -54,7 +54,19 @@ class FavoritesService {
     final res = await _api.deleteEmpty('/api/favorites/$listingId', auth: true);
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body.isEmpty ? 'Greška (${res.statusCode})' : res.body);
+     throw Exception(_readMessage(res.body));
     }
   }
+
+  String _readMessage(String body) {
+  try {
+    final decoded = jsonDecode(body);
+
+    if (decoded is Map && decoded['message'] is String) {
+      return decoded['message'] as String;
+    }
+  } catch (_) {}
+
+  return body.isNotEmpty ? body : 'Došlo je do greške.';
+}
 }

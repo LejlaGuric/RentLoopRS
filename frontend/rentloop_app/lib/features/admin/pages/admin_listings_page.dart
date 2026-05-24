@@ -112,6 +112,55 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
     );
   }
 
+  Future<void> _deactivateListing(int id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Deaktivacija listinga'),
+        content: const Text(
+          'Da li ste sigurni da želite deaktivirati ovaj listing? '
+          'Listing neće biti trajno obrisan, nego samo sakriven iz aktivne ponude.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Odustani'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Deaktiviraj'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _service.deactivateListing(id);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Listing je uspješno deaktiviran.'),
+        ),
+      );
+
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
@@ -159,7 +208,8 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
               ),
               const SizedBox(width: 12),
               Tooltip(
-                message: 'PDF izvještaj je prilagođen za horizontalni (landscape) prikaz.',
+                message:
+                    'PDF izvještaj je prilagođen za horizontalni (landscape) prikaz.',
                 child: OutlinedButton.icon(
                   onPressed: _filtered.isEmpty ? null : _generatePdf,
                   icon: const Icon(Icons.picture_as_pdf),
@@ -186,7 +236,7 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
                 child: DataTable2(
                   columnSpacing: 14,
                   horizontalMargin: 12,
-                  minWidth: 900,
+                  minWidth: 1050,
                   headingRowHeight: 52,
                   dataRowHeight: 56,
                   columns: const [
@@ -198,7 +248,7 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
                     DataColumn2(label: Text('Sobe'), size: ColumnSize.S),
                     DataColumn2(label: Text('Gosti'), size: ColumnSize.S),
                     DataColumn2(label: Text('Ocjena'), size: ColumnSize.S),
-                    DataColumn2(label: Text('Akcije'), size: ColumnSize.S),
+                    DataColumn2(label: Text('Akcije'), fixedWidth: 260),
                   ],
                   rows: _filtered.map((l) {
                     return DataRow(
@@ -217,14 +267,32 @@ class _AdminListingsPageState extends State<AdminListingsPage> {
                         DataCell(Text(l.roomsCount.toString())),
                         DataCell(Text(l.maxGuests.toString())),
                         DataCell(
-                          Text('${l.avgRating.toStringAsFixed(2)} (${l.reviewsCount})'),
-                        ),
-                        DataCell(
-                          OutlinedButton(
-                            onPressed: () => _openDetails(l.id),
-                            child: const Text('Detalji'),
+                          Text(
+                            '${l.avgRating.toStringAsFixed(2)} (${l.reviewsCount})',
                           ),
                         ),
+                       DataCell(
+  SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Row(
+      children: [
+        OutlinedButton(
+          onPressed: () => _openDetails(l.id),
+          child: const Text('Detalji'),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          onPressed: () => _deactivateListing(l.id),
+          child: const Text('Deaktiviraj'),
+        ),
+      ],
+    ),
+  ),
+),
                       ],
                     );
                   }).toList(),

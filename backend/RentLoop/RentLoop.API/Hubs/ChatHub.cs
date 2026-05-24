@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
 using RentLoop.API.Services;
 using System.Security.Claims;
+using RentLoop.API.Helpers;
 
 namespace RentLoop.API.Hubs
 {
@@ -40,7 +41,7 @@ namespace RentLoop.API.Hubs
                 .Select(u => u.Role)
                 .FirstOrDefaultAsync();
 
-            return role == 1;
+            return role == RoleIds.Admin;
         }
 
         private static string GroupName(int conversationId) => $"conv-{conversationId}";
@@ -53,7 +54,13 @@ namespace RentLoop.API.Hubs
 
             var isAdmin = await IsAdminAsync(userId);
 
-            await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            var conversation = await _chat.EnsureCanAccessConversationAsync(
+                userId,
+                isAdmin,
+                conversationId);
+
+            if (conversation == null)
+                throw new HubException("You do not have access to this conversation.");
 
             await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(conversationId));
         }
@@ -71,7 +78,13 @@ namespace RentLoop.API.Hubs
 
             var isAdmin = await IsAdminAsync(userId);
 
-            await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            var conversation = await _chat.EnsureCanAccessConversationAsync(
+                userId,
+                isAdmin,
+                conversationId);
+
+            if (conversation == null)
+                throw new HubException("You do not have access to this conversation.");
 
             var msgDto = await _chat.SendMessageAsync(conversationId, userId, text);
 
@@ -87,12 +100,22 @@ namespace RentLoop.API.Hubs
 
             var isAdmin = await IsAdminAsync(userId);
 
-            await _chat.EnsureCanAccessConversationAsync(userId, isAdmin, conversationId);
+            var conversation = await _chat.EnsureCanAccessConversationAsync(
+                userId,
+                isAdmin,
+                conversationId);
+
+            if (conversation == null)
+                throw new HubException("You do not have access to this conversation.");
 
             await _chat.MarkAsReadAsync(conversationId, userId);
 
             await Clients.Group(GroupName(conversationId))
-                .SendAsync("MessagesRead", new { conversationId, readerUserId = userId });
+                .SendAsync("MessagesRead", new
+                {
+                    conversationId,
+                    readerUserId = userId
+                });
         }
     }
 }

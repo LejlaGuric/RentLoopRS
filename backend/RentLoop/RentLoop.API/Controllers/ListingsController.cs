@@ -7,6 +7,8 @@ using RentLoop.API.DTOs;
 using RentLoop.API.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using RentLoop.API.Helpers;
+using RentLoop.API.DTOs.Common;
 
 namespace RentLoop.API.Controllers
 {
@@ -144,12 +146,12 @@ namespace RentLoop.API.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(new
+            return Ok(new PagedResponse<object>
             {
-                page,
-                pageSize,
-                totalCount,
-                items = data
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                Items = data.Cast<object>().ToList()
             });
         }
 
@@ -249,7 +251,13 @@ namespace RentLoop.API.Controllers
                 .Take(take)
                 .ToList();
 
-            return Ok(ranked);
+            return Ok(new PagedResponse<object>
+            {
+                Page = 1,
+                PageSize = take,
+                TotalCount = ranked.Count,
+                Items = ranked.Cast<object>().ToList()
+            });
         }
 
         [HttpGet("recommended")]
@@ -446,7 +454,13 @@ namespace RentLoop.API.Controllers
             if (ranked.Count == 0)
                 return await Popular(take);
 
-            return Ok(ranked);
+            return Ok(new PagedResponse<object>
+            {
+                Page = 1,
+                PageSize = take,
+                TotalCount = ranked.Count,
+                Items = ranked.Cast<object>().ToList()
+            });
         }
 
         [HttpPost("{id:int}/view")]
@@ -478,18 +492,24 @@ namespace RentLoop.API.Controllers
             [MaxLength(100)]
             public string Name { get; set; } = "";
 
-            [MaxLength(1000)]
-            public string? Description { get; set; }
+            [MaxLength(1000, ErrorMessage = "Opis može imati najviše 1000 karaktera.")]
+            public string Description { get; set; } = string.Empty;
 
-            [MaxLength(200)]
-            public string? Address { get; set; }
+            [Required(ErrorMessage = "Adresa je obavezna.")]
+            [MaxLength(200, ErrorMessage = "Adresa može imati najviše 200 karaktera.")]
+            public string Address { get; set; } = string.Empty;
 
             public int CityId { get; set; }
             public int RentTypeId { get; set; }
 
             public decimal PricePerNight { get; set; }
+            [Range(1, int.MaxValue, ErrorMessage = "Broj soba mora biti veći od nule.")]
             public int RoomsCount { get; set; }
+
+            [Range(1, int.MaxValue, ErrorMessage = "Maksimalan broj gostiju mora biti veći od nule.")]
             public int MaxGuests { get; set; }
+
+            [Range(0, (double)decimal.MaxValue, ErrorMessage = "Udaljenost od centra ne može biti negativna.")]
             public decimal DistanceToCenterKm { get; set; }
 
             public bool HasWifi { get; set; }
@@ -503,6 +523,94 @@ namespace RentLoop.API.Controllers
             public List<IFormFile> Images { get; set; } = new();
         }
 
+        private const int MaxImagesPerListing = 10;
+        private const long MaxImageSizeBytes = 5 * 1024 * 1024; // 5 MB
+
+        private static readonly string[] AllowedImageExtensions =
+        {
+    ".jpg", ".jpeg", ".png", ".webp"
+};
+
+        private static readonly string[] AllowedImageContentTypes =
+        {
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+};
+
+        private static async Task<bool> HasValidImageSignatureAsync(IFormFile file)
+        {
+            byte[] header = new byte[12];
+
+            await using var stream = file.OpenReadStream();
+            var read = await stream.ReadAsync(header, 0, header.Length);
+
+            if (read < 4)
+                return false;
+
+            // JPEG: FF D8 FF
+            if (header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF)
+                return true;
+
+            // PNG: 89 50 4E 47 0D 0A 1A 0A
+            if (read >= 8 &&
+                header[0] == 0x89 &&
+                header[1] == 0x50 &&
+                header[2] == 0x4E &&
+                header[3] == 0x47 &&
+                header[4] == 0x0D &&
+                header[5] == 0x0A &&
+                header[6] == 0x1A &&
+                header[7] == 0x0A)
+                return true;
+
+            // WEBP: RIFF....WEBP
+            if (read >= 12 &&
+                header[0] == 0x52 &&
+                header[1] == 0x49 &&
+                header[2] == 0x46 &&
+                header[3] == 0x46 &&
+                header[8] == 0x57 &&
+                header[9] == 0x45 &&
+                header[10] == 0x42 &&
+                header[11] == 0x50)
+                return true;
+
+            return false;
+        }
+
+        private static async Task<string?> ValidateImageFileAsync(IFormFile file)
+        {
+            if (file == null)
+                return "Image file is required.";
+
+            if (file.Length <= 0)
+                return "Image file cannot be empty.";
+
+            if (file.Length > MaxImageSizeBytes)
+                return "Each image can be at most 5 MB.";
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (!AllowedImageExtensions.Contains(ext))
+                return "Allowed image formats are: jpg, jpeg, png, webp.";
+
+            var contentType = file.ContentType?.ToLowerInvariant() ?? "";
+
+            var validContentType =
+                contentType.Contains("jpeg") ||
+                contentType.Contains("jpg") ||
+                contentType.Contains("png") ||
+                contentType.Contains("webp");
+
+            if (!validContentType)
+                return "Invalid image content type.";
+
+            
+
+            return null;
+        }
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [Consumes("multipart/form-data")]
@@ -511,11 +619,26 @@ namespace RentLoop.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+           
+
+
+            if (string.IsNullOrWhiteSpace(req.Address))
+                return BadRequest("Adresa je obavezna.");
+
+            if (req.RoomsCount <= 0)
+                return BadRequest("Broj soba mora biti veći od nule.");
+
+            if (req.MaxGuests <= 0)
+                return BadRequest("Maksimalan broj gostiju mora biti veći od nule.");
+
+            if (req.DistanceToCenterKm < 0)
+                return BadRequest("Udaljenost od centra ne može biti negativna.");
+
             if (string.IsNullOrWhiteSpace(req.Name))
-                return BadRequest("Name is required.");
+                return BadRequest("Ime je obavezno.");
 
             if (req.PricePerNight <= 0)
-                return BadRequest("PricePerNight must be greater than 0.");
+                return BadRequest("Cijena mora biti veća od 0.");
 
             var cityExists = await _db.Cities.AnyAsync(c => c.Id == req.CityId);
             if (!cityExists) return BadRequest("CityId is invalid.");
@@ -525,6 +648,17 @@ namespace RentLoop.API.Controllers
 
             if (req.Images == null || req.Images.Count == 0)
                 return BadRequest("Dodaj bar jednu sliku (Images).");
+
+            if (req.Images.Count > MaxImagesPerListing)
+                return BadRequest($"You can upload at most {MaxImagesPerListing} images per listing.");
+
+            for (int i = 0; i < req.Images.Count; i++)
+            {
+                var validationError = await ValidateImageFileAsync(req.Images[i]);
+
+                if (validationError != null)
+                    return BadRequest($"Image {i + 1}: {validationError}");
+            }
 
             if (req.CoverIndex < 0 || req.CoverIndex >= req.Images.Count)
                 req.CoverIndex = 0;
@@ -551,8 +685,8 @@ namespace RentLoop.API.Controllers
                 var listing = new Listing
                 {
                     Name = req.Name.Trim(),
-                    Description = req.Description ?? "",
-                    Address = req.Address ?? "",
+                    Description = req.Description?.Trim() ?? "",
+                    Address = req.Address.Trim(),
                     CityId = req.CityId,
                     RentTypeId = req.RentTypeId,
                     PricePerNight = req.PricePerNight,
@@ -572,16 +706,12 @@ namespace RentLoop.API.Controllers
                 uploadsRoot = Path.Combine(_env.WebRootPath, "uploads", "listings", listing.Id.ToString());
                 Directory.CreateDirectory(uploadsRoot);
 
-                var allowedExt = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-
                 for (int i = 0; i < req.Images.Count; i++)
                 {
                     var file = req.Images[i];
                     if (file.Length == 0) continue;
 
                     var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-                    if (!allowedExt.Contains(ext))
-                        throw new Exception("Dozvoljeni formati slika su: jpg, jpeg, png, webp.");
 
                     var fileName = $"{Guid.NewGuid()}{ext}";
                     var filePath = Path.Combine(uploadsRoot, fileName);
@@ -634,7 +764,7 @@ namespace RentLoop.API.Controllers
                     listing.PricePerNight
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
 
@@ -649,12 +779,77 @@ namespace RentLoop.API.Controllers
                     }
                 }
 
-                return StatusCode(500, new
+                return StatusCode(500, new ApiErrorResponse
                 {
-                    message = "An error occurred while creating the listing.",
-                    error = ex.Message
+                    Message = "An error occurred while creating the listing.",
+                    Code = "LISTING_CREATE_FAILED"
                 });
             }
+        }
+
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Update(int id, [FromBody] ListingCreateFormDataRequest req)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var listing = await _db.Listings.FirstOrDefaultAsync(l => l.Id == id);
+
+            if (listing == null)
+                return NotFound("Listing not found.");
+
+           
+
+            if (string.IsNullOrWhiteSpace(req.Address))
+                return BadRequest("Adresa je obavezna.");
+
+            listing.Name = req.Name.Trim();
+            listing.Description = req.Description?.Trim() ?? "";
+            listing.Address = req.Address.Trim();
+            listing.CityId = req.CityId;
+            listing.RentTypeId = req.RentTypeId;
+            listing.PricePerNight = req.PricePerNight;
+            listing.RoomsCount = req.RoomsCount;
+            listing.MaxGuests = req.MaxGuests;
+            listing.DistanceToCenterKm = req.DistanceToCenterKm;
+            listing.HasWifi = req.HasWifi;
+            listing.HasAirConditioning = req.HasAirConditioning;
+            listing.PetsAllowed = req.PetsAllowed;
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Listing updated successfully."
+            });
+        }
+
+        [HttpPut("{id:int}/deactivate")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Deactivate(int id)
+        {
+            var listing = await _db.Listings.FirstOrDefaultAsync(l => l.Id == id);
+
+            if (listing == null)
+                return NotFound("Listing not found.");
+
+            if (!listing.IsActive)
+            {
+                return Ok(new
+                {
+                    message = "Listing is already inactive."
+                });
+            }
+
+            listing.IsActive = false;
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Listing deactivated successfully. Existing reservations are preserved."
+            });
         }
 
         // -------------------- GET BY ID --------------------
@@ -673,6 +868,8 @@ namespace RentLoop.API.Controllers
                     l.Name,
                     l.Description,
                     l.Address,
+                    l.CityId,
+                    l.RentTypeId,
                     l.PricePerNight,
                     l.RoomsCount,
                     l.MaxGuests,
@@ -791,7 +988,8 @@ namespace RentLoop.API.Controllers
                 .AsNoTracking()
                 .Where(r =>
                     r.PropertyId == id &&
-                    (r.StatusId == 1 || r.StatusId == 2) &&
+                    (r.StatusId == ReservationStatusIds.Pending ||
+                     r.StatusId == ReservationStatusIds.Approved) &&
                     from < r.CheckOut &&
                     to > r.CheckIn)
                 .Select(r => new { r.CheckIn, r.CheckOut })

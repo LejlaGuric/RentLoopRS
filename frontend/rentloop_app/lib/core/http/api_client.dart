@@ -39,28 +39,6 @@ class ApiClient {
     return uri.replace(queryParameters: qp.isEmpty ? null : qp);
   }
 
-  int? _getUserIdFromToken(String token) {
-    try {
-      final parts = token.split('.');
-      if (parts.length != 3) return null;
-
-      final payload = parts[1];
-      final normalized = base64.normalize(payload);
-      final decoded = utf8.decode(base64Url.decode(normalized));
-      final map = jsonDecode(decoded) as Map<String, dynamic>;
-
-      final v = map['nameid'] ??
-          map['sub'] ??
-          map['userid'] ??
-          map['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-
-      if (v == null) return null;
-      return int.tryParse(v.toString());
-    } catch (_) {
-      return null;
-    }
-  }
-
   Future<void> _redirectToLogin() async {
     if (_isRedirectingToLogin) return;
     _isRedirectingToLogin = true;
@@ -91,9 +69,6 @@ class ApiClient {
       return false;
     }
 
-    final userId = _getUserIdFromToken(accessToken);
-    if (userId == null) return false;
-
     final url = Uri.parse('${ApiConfig.baseUrl}/api/auth/refresh-token');
 
     try {
@@ -102,7 +77,6 @@ class ApiClient {
             url,
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
-              'userId': userId,
               'refreshToken': refreshToken,
             }),
           )
@@ -262,6 +236,7 @@ class ApiClient {
 
   Future<Map<String, String>> multipartHeaders() async {
     final token = await _storage.getAccessToken();
+
     return {
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };

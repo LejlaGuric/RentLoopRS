@@ -36,6 +36,9 @@ namespace RentLoop.API.Models
         [MaxLength(500)]
         public string? RejectReason { get; set; }
 
+        [MaxLength(500)]
+        public string? CancelReason { get; set; }
+
         public Review? Review { get; set; }
     }
 }

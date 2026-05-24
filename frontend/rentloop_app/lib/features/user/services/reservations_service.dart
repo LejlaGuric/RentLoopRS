@@ -13,6 +13,7 @@ class MyReservationDto {
   final bool isPaid;
   final DateTime? paidAt;
   final String? rejectReason;
+  final String? cancelReason;
 
  MyReservationDto({
   required this.id,
@@ -26,6 +27,7 @@ class MyReservationDto {
   required this.isPaid,
   required this.paidAt,
   this.rejectReason,
+  this.cancelReason,
 });
 
   static DateTime? _tryParseDate(dynamic v) {
@@ -53,40 +55,23 @@ class MyReservationDto {
   }
 
   factory MyReservationDto.fromJson(Map<String, dynamic> j) {
-    // Backend ti vraća Listing = { id, name } (po tvojem controlleru)
-    final listingObj = j['listing'];
-    final listingNameFromObj =
-        listingObj is Map<String, dynamic> ? (listingObj['name'] ?? '').toString() : '';
+  final listingObj = j['listing'];
 
-    // Backend ti vraća propertyId (a ti ovdje zoveš listingId)
-    final listingIdFromObj =
-        listingObj is Map<String, dynamic> ? _toInt(listingObj['id']) : 0;
+  final listingId = _toInt(j['propertyId']);
 
-    final listingId = _toInt(
-      j['listingId'] ?? j['propertyId'] ?? j['listing']?['id'] ?? listingIdFromObj,
-    );
+  final listingTitle = listingObj is Map<String, dynamic>
+      ? (listingObj['name'] ?? '').toString()
+      : '';
 
-    final listingTitle = (j['listingTitle'] ??
-            j['listingName'] ??
-            (j['listing'] is Map ? (j['listing']['name'] ?? j['listing']['title']) : null) ??
-            listingNameFromObj ??
-            '')
-        .toString();
+  final from = _tryParseDate(j['checkIn']);
+  final to = _tryParseDate(j['checkOut']);
 
-    final from = _tryParseDate(
-      j['from'] ?? j['dateFrom'] ?? j['startDate'] ?? j['checkIn'],
-    );
+  final statusId = _toInt(j['statusId']);
+  final statusName = (j['status'] ?? '').toString();
 
-    final to = _tryParseDate(
-      j['to'] ?? j['dateTo'] ?? j['endDate'] ?? j['checkOut'],
-    );
+  final totalPrice = _toDouble(j['totalPrice']);
 
-    final statusId = _toInt(j['statusId'] ?? j['status'] ?? 0);
-    final statusName = (j['statusName'] ?? j['status'] ?? '').toString();
-
-    final totalPrice = _toDouble(j['totalPrice'] ?? j['price']);
-
-    return MyReservationDto(
+  return MyReservationDto(
     id: _toInt(j['id']),
     listingId: listingId,
     listingTitle: listingTitle,
@@ -98,8 +83,9 @@ class MyReservationDto {
     isPaid: (j['isPaid'] ?? false) == true,
     paidAt: _tryParseDate(j['paidAt']),
     rejectReason: j['rejectReason']?.toString(),
+    cancelReason: j['cancelReason']?.toString(),
   );
-  }
+}
 }
 
 /// DTO za POST /api/reservations
@@ -137,15 +123,29 @@ class ReservationsService {
       throw Exception('Ne mogu učitati rezervacije (${res.statusCode}): ${res.body}');
     }
 
-    final list = jsonDecode(res.body) as List<dynamic>;
-    return list.map((e) => MyReservationDto.fromJson(e as Map<String, dynamic>)).toList();
+    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+    final items = (decoded['items'] as List?) ?? [];
+
+     return items
+    .map((e) => MyReservationDto.fromJson(e as Map<String, dynamic>))
+    .toList();
   }
 
-  Future<void> cancelReservation(int id) async {
-  final res = await _api.putEmpty('/api/reservations/$id/cancel', auth: true);
+ Future<void> cancelReservation(int id, String reason) async {
+  final res = await _api.put(
+    '/api/reservations/$id/cancel',
+    {
+      'reason': reason,
+    },
+    auth: true,
+  );
 
   if (res.statusCode < 200 || res.statusCode >= 300) {
-    throw Exception(res.body.isEmpty ? 'Greška pri otkazivanju rezervacije.' : res.body);
+    throw Exception(
+      res.body.isEmpty
+          ? 'Greška pri otkazivanju rezervacije.'
+          : res.body,
+    );
   }
 }
 

@@ -5,6 +5,7 @@ using RentLoop.API.Services;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
+using RentLoop.API.Helpers;
 
 namespace RentLoop.API.Controllers
 {
@@ -43,7 +44,7 @@ namespace RentLoop.API.Controllers
                 .Select(u => u.Role)
                 .FirstOrDefaultAsync();
 
-            return role == 1;
+            return role == RoleIds.Admin;
         }
 
         [HttpGet("my-conversation")]

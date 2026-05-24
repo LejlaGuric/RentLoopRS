@@ -20,7 +20,6 @@ public class Payment
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CapturedAt { get; set; }
 
-    // 👇 NOVO
     public string? ProviderCaptureId { get; set; }
     public bool IsRefunded { get; set; } = false;
     public DateTime? RefundedAt { get; set; }

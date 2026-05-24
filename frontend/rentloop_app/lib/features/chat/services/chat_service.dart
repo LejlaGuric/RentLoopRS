@@ -11,7 +11,7 @@ class ChatService {
     final res = await _api.get('/api/chat/my-conversation', auth: true);
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body);
+      throw Exception(_readMessage(res.body));
     }
 
     final data = jsonDecode(res.body) as Map<String, dynamic>;
@@ -22,7 +22,7 @@ class ChatService {
     final res = await _api.get('/api/chat/conversations/$conversationId/messages', auth: true);
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body);
+      throw Exception(_readMessage(res.body));
     }
 
     final list = jsonDecode(res.body) as List<dynamic>;
@@ -35,7 +35,7 @@ class ChatService {
     final res = await _api.postEmpty('/api/chat/conversations/$conversationId/read', auth: true);
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body);
+      throw Exception(_readMessage(res.body));
     }
   }
 
@@ -48,7 +48,7 @@ class ChatService {
     );
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body);
+      throw Exception(_readMessage(res.body));
     }
 
     return ChatMessageDto.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
@@ -58,13 +58,25 @@ class ChatService {
   final res = await _api.get('/api/chat/admin/conversations', auth: true);
 
   if (res.statusCode < 200 || res.statusCode >= 300) {
-    throw Exception(res.body);
+    throw Exception(_readMessage(res.body));
   }
 
   final list = jsonDecode(res.body) as List<dynamic>;
   return list
       .map((e) => AdminConversationDto.fromJson(e as Map<String, dynamic>))
       .toList();
+}
+
+String _readMessage(String body) {
+  try {
+    final decoded = jsonDecode(body);
+
+    if (decoded is Map && decoded['message'] is String) {
+      return decoded['message'] as String;
+    }
+  } catch (_) {}
+
+  return body.isNotEmpty ? body : 'Došlo je do greške.';
 }
 
 }

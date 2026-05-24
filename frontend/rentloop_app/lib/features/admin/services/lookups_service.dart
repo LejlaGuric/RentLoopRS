@@ -11,7 +11,7 @@ class LookupsService {
       final list = jsonDecode(res.body) as List<dynamic>;
       return list.map((e) => LookupItem.fromJson(e as Map<String, dynamic>)).toList();
     }
-    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri učitavanju gradova.');
+    throw Exception(_readMessage(res.body));
   }
 
   Future<List<LookupItem>> getRentTypes() async {
@@ -20,7 +20,7 @@ class LookupsService {
       final list = jsonDecode(res.body) as List<dynamic>;
       return list.map((e) => LookupItem.fromJson(e as Map<String, dynamic>)).toList();
     }
-    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri učitavanju tipova najma.');
+   throw Exception(_readMessage(res.body));
   }
 
   Future<List<LookupItem>> getAmenities() async {
@@ -29,6 +29,18 @@ class LookupsService {
       final list = jsonDecode(res.body) as List<dynamic>;
       return list.map((e) => LookupItem.fromJson(e as Map<String, dynamic>)).toList();
     }
-    throw Exception(res.body.isNotEmpty ? res.body : 'Greška pri učitavanju amenities.');
+   throw Exception(_readMessage(res.body));
   }
+  
+  String _readMessage(String body) {
+  try {
+    final decoded = jsonDecode(body);
+
+    if (decoded is Map && decoded['message'] is String) {
+      return decoded['message'] as String;
+    }
+  } catch (_) {}
+
+  return body.isNotEmpty ? body : 'Došlo je do greške.';
+}
 }

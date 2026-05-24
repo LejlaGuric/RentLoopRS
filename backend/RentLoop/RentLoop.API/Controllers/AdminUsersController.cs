@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentLoop.API.Data;
 using RentLoop.API.DTOs.Auth;
+using RentLoop.API.Helpers;
 using RentLoop.API.Models;
 using System.Security.Cryptography;
 
@@ -35,7 +36,7 @@ namespace RentLoop.API.Controllers
                     u.FirstName,
                     u.LastName,
                     u.Role,
-                    RoleName = u.Role == 1 ? "Admin" : "Client",
+                    RoleName = u.Role == RoleIds.Admin ? "Admin" : "Client",
                     u.IsActive,
                     u.Phone,
                     u.Address,
@@ -68,7 +69,7 @@ namespace RentLoop.API.Controllers
             if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
                 return BadRequest("Password must be at least 6 characters.");
 
-            if (request.Role != 1 && request.Role != 2)
+            if (request.Role != RoleIds.Admin && request.Role != RoleIds.Client)
                 return BadRequest("Role must be 1 (Admin) or 2 (Client).");
 
             var usernameTaken = await _db.Users.AnyAsync(u => u.Username.ToLower() == request.Username.ToLower());
@@ -106,7 +107,7 @@ namespace RentLoop.API.Controllers
                     user.FirstName,
                     user.LastName,
                     user.Role,
-                    RoleName = user.Role == 1 ? "Admin" : "Client",
+                    RoleName = user.Role == RoleIds.Admin ? "Admin" : "Client",
                     user.IsActive
                 }
             });
@@ -120,7 +121,7 @@ namespace RentLoop.API.Controllers
             if (user == null)
                 return NotFound("User not found.");
 
-            if (user.Role == 1)
+            if (user.Role == RoleIds.Admin)
                 return BadRequest("Cannot deactivate admin via this endpoint.");
 
             user.IsActive = false;
@@ -151,7 +152,7 @@ namespace RentLoop.API.Controllers
             if (user == null)
                 return NotFound("User not found.");
 
-            if (user.Role == 1)
+            if (user.Role == RoleIds.Admin)
                 return BadRequest("Cannot delete admin via this endpoint.");
 
             _db.Users.Remove(user);

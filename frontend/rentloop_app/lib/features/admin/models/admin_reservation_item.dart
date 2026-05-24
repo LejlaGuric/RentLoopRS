@@ -38,6 +38,7 @@ class AdminReservationItem {
   final String approvedByAdmin;
   final DateTime? decisionAt;
   final String rejectReason;
+  final String cancelReason;
 
   final DateTime createdAt;
   final int guests;
@@ -75,6 +76,7 @@ class AdminReservationItem {
     required this.petsAllowed,
     required this.approvedByAdmin,
     required this.rejectReason,
+    required this.cancelReason,
     required this.createdAt,
     required this.guests,
     required this.isPaid,
@@ -120,6 +122,7 @@ class AdminReservationItem {
 
       approvedByAdmin: (json['approvedByAdmin'] ?? '') as String,
       rejectReason: (json['rejectReason'] ?? '') as String,
+      cancelReason: (json['cancelReason'] ?? '') as String,
       decisionAt: json['decisionAt'] != null
           ? DateTime.parse(json['decisionAt'])
           : null,

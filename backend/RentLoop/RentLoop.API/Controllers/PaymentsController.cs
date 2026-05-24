@@ -6,6 +6,8 @@ using RentLoop.API.Data;
 using RentLoop.API.Models;
 using RentLoop.API.Services.PayPal;
 using System.Security.Claims;
+using RentLoop.API.Helpers;
+using RentLoop.API.DTOs.Common;
 
 namespace RentLoop.API.Controllers
 {
@@ -38,7 +40,7 @@ namespace RentLoop.API.Controllers
             return userId;
         }
 
-        private static bool IsApproved(Reservation r) => r.StatusId == 2;
+        private static bool IsApproved(Reservation r) => r.StatusId == ReservationStatusIds.Approved;
 
         public record CreatePayPalOrderRequest(int ReservationId);
         public record CreatePayPalOrderResponse(string OrderId, string ApproveUrl);
@@ -67,6 +69,23 @@ namespace RentLoop.API.Controllers
 
             if (reservation.IsPaid)
                 return BadRequest("Reservation already paid.");
+
+            var existingPayment = await _db.Payments
+                .Where(p =>
+                    p.ReservationId == reservation.Id &&
+                    p.Provider == "PayPal" &&
+                    (p.Status == "CREATED" || p.Status == "CAPTURED"))
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (existingPayment != null)
+            {
+                if (existingPayment.Status == "CAPTURED")
+                    return BadRequest("Reservation already paid.");
+
+                if (existingPayment.Status == "CREATED")
+                    return BadRequest("Payment already started for this reservation. Please continue the existing payment flow.");
+            }
 
             var amount = reservation.TotalPrice;
             var currency = "EUR";
@@ -138,14 +157,15 @@ namespace RentLoop.API.Controllers
 
                 return Ok(new CapturePayPalResponse(status));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 payment.Status = "FAILED";
                 await _db.SaveChangesAsync();
 
-                return BadRequest(new
+                return BadRequest(new ApiErrorResponse
                 {
-                    message = ex.Message
+                    Message = "Payment could not be completed. Please try again.",
+                    Code = "PAYMENT_CAPTURE_FAILED"
                 });
             }
         }
@@ -183,72 +203,6 @@ namespace RentLoop.API.Controllers
                 "</body></html>";
 
             return Content(html, "text/html");
-        }
-
-        [HttpPost("paypal/refund/{reservationId}")]
-        public async Task<IActionResult> RefundPayPal(int reservationId)
-        {
-            var userId = GetUserId();
-            if (userId == 0)
-                return Unauthorized();
-
-            var payment = await _db.Payments
-                .Include(p => p.Reservation)
-                .Where(p =>
-                    p.ReservationId == reservationId &&
-                    p.Provider == "PayPal" &&
-                    p.Status == "CAPTURED" &&
-                    p.IsRefunded == false)
-                .OrderByDescending(p => p.CapturedAt)
-                .FirstOrDefaultAsync();
-
-            if (payment == null)
-                return NotFound("Payment not found.");
-
-            if (payment.Reservation == null)
-                return BadRequest("Reservation not found.");
-
-            // možeš ograničiti da samo admin ili vlasnik može refund
-            if (payment.Reservation.UserId != userId)
-                return Forbid();
-
-            if (payment.ProviderCaptureId == null)
-                return BadRequest("No captureId found for refund.");
-
-            if (payment.IsRefunded)
-                return BadRequest("Already refunded.");
-
-            try
-            {
-                var status = await _pp.RefundCapture(payment.ProviderCaptureId);
-
-                if (status == "COMPLETED")
-                {
-                    payment.IsRefunded = true;
-                    payment.RefundedAt = DateTime.UtcNow;
-                    payment.RefundStatus = "COMPLETED";
-                    payment.Status = "REFUNDED";
-
-                    payment.Reservation.IsPaid = false;
-                    payment.Reservation.PaidAt = null;
-
-                    await _db.SaveChangesAsync();
-
-                    return Ok("Refund successful.");
-                }
-
-                payment.RefundStatus = status;
-                await _db.SaveChangesAsync();
-
-                return Ok($"Refund status: {status}");
-            }
-            catch (Exception ex)
-            {
-                payment.RefundStatus = "FAILED";
-                await _db.SaveChangesAsync();
-
-                return BadRequest(new { message = ex.Message });
-            }
         }
     }
 }

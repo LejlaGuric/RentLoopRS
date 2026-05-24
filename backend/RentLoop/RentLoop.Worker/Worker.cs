@@ -1,6 +1,8 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RentLoop.API.Data;
+using RentLoop.API.Helpers;
 using RentLoop.API.Models;
 using System.Text;
 using System.Text.Json;
@@ -10,13 +12,15 @@ namespace RentLoop.Worker;
 public class Worker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<Worker> _logger;
 
     private IConnection? _connection;
     private IModel? _channel;
 
-    public Worker(IServiceScopeFactory scopeFactory)
+    public Worker(IServiceScopeFactory scopeFactory, ILogger<Worker> logger)
     {
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,7 +37,7 @@ public class Worker : BackgroundService
                 {
                     CleanupRabbit();
 
-                    Console.WriteLine("⏳ Connecting to RabbitMQ...");
+                    _logger.LogInformation("Connecting to RabbitMQ...");
 
                     var factory = new ConnectionFactory
                     {
@@ -53,34 +57,33 @@ public class Worker : BackgroundService
                     {
                         try
                         {
-                            Console.WriteLine($"⏳ Connecting to RabbitMQ ({host})... attempt {attempt}/30");
+                            _logger.LogInformation("Connecting to RabbitMQ ({Host}) attempt {Attempt}/30", host, attempt);
                             conn = factory.CreateConnection();
                             break;
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"❌ RabbitMQ connect failed: {ex.Message}");
+                            _logger.LogError(ex, "RabbitMQ connect failed on attempt {Attempt}/30", attempt);
                             await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
                         }
                     }
 
                     if (conn == null)
                     {
-                        Console.WriteLine("❌ RabbitMQ not reachable after retries. Worker will stop.");
+                        _logger.LogError("RabbitMQ not reachable after retries. Worker will stop.");
                         return;
                     }
 
                     _connection = conn;
 
                     _connection.ConnectionShutdown += (_, e) =>
-                        Console.WriteLine($"❌ Rabbit connection shutdown: {e.ReplyText}");
+                        _logger.LogWarning("RabbitMQ connection shutdown: {Reason}", e.ReplyText);
 
                     _channel = _connection.CreateModel();
 
                     _channel.ModelShutdown += (_, e) =>
-                        Console.WriteLine($"❌ Rabbit channel shutdown: {e.ReplyText}");
+                        _logger.LogWarning("RabbitMQ channel shutdown: {Reason}", e.ReplyText);
 
-                    // QUEUES
                     _channel.QueueDeclare(
                         queue: "reservation.approved",
                         durable: true,
@@ -97,10 +100,9 @@ public class Worker : BackgroundService
                         arguments: null
                     );
 
-                    // APPROVED CONSUMER
-                    var consumer = new AsyncEventingBasicConsumer(_channel);
+                    var approvedConsumer = new AsyncEventingBasicConsumer(_channel);
 
-                    consumer.Received += async (model, ea) =>
+                    approvedConsumer.Received += async (model, ea) =>
                     {
                         try
                         {
@@ -116,38 +118,54 @@ public class Worker : BackgroundService
                             using var scope = _scopeFactory.CreateScope();
                             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                            var notification = new Notification
-                            {
-                                UserId = data.UserId,
-                                TypeId = 2,
-                                Title = "Rezervacija odobrena",
-                                Body = "Vaša rezervacija je odobrena.",
-                                RelatedPropertyId = data.PropertyId,
-                                RelatedReservationId = data.ReservationId,
-                                CreatedAt = DateTime.UtcNow
-                            };
+                            var exists = await db.Notifications.AnyAsync(n =>
+                                n.UserId == data.UserId &&
+                                n.TypeId == NotificationTypeIds.ReservationApproved &&
+                                n.RelatedReservationId == data.ReservationId,
+                                stoppingToken);
 
-                            db.Notifications.Add(notification);
-                            await db.SaveChangesAsync(stoppingToken);
+                            if (!exists)
+                            {
+                                var notification = new Notification
+                                {
+                                    UserId = data.UserId,
+                                    TypeId = NotificationTypeIds.ReservationApproved,
+                                    Title = "Rezervacija odobrena",
+                                    Body = "Vaša rezervacija je odobrena.",
+                                    RelatedPropertyId = data.PropertyId,
+                                    RelatedReservationId = data.ReservationId,
+                                    CreatedAt = DateTime.UtcNow
+                                };
+
+                                db.Notifications.Add(notification);
+                                await db.SaveChangesAsync(stoppingToken);
+                            }
 
                             _channel.BasicAck(ea.DeliveryTag, false);
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            try { _channel.BasicNack(ea.DeliveryTag, false, true); } catch { }
+                            _logger.LogError(ex, "Error while processing reservation.approved message.");
+
+                            try
+                            {
+                                _channel?.BasicNack(ea.DeliveryTag, false, false);
+                            }
+                            catch (Exception nackEx)
+                            {
+                                _logger.LogError(nackEx, "Failed to nack reservation.approved message.");
+                            }
                         }
                     };
 
                     _channel.BasicConsume(
                         queue: "reservation.approved",
                         autoAck: false,
-                        consumer: consumer
+                        consumer: approvedConsumer
                     );
 
-                    Console.WriteLine("✅ CONSUMING reservation.approved");
+                    _logger.LogInformation("Consuming reservation.approved");
 
-
-                    // REJECTED CONSUMER
                     var rejectedConsumer = new AsyncEventingBasicConsumer(_channel);
 
                     rejectedConsumer.Received += async (model, ea) =>
@@ -166,25 +184,43 @@ public class Worker : BackgroundService
                             using var scope = _scopeFactory.CreateScope();
                             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                            var notification = new Notification
-                            {
-                                UserId = data.UserId,
-                                TypeId = 3,
-                                Title = "Rezervacija odbijena",
-                                Body = $"Vaša rezervacija je odbijena. Razlog: {data.RejectReason}",
-                                RelatedPropertyId = data.PropertyId,
-                                RelatedReservationId = data.ReservationId,
-                                CreatedAt = DateTime.UtcNow
-                            };
+                            var exists = await db.Notifications.AnyAsync(n =>
+                                n.UserId == data.UserId &&
+                                n.TypeId == NotificationTypeIds.ReservationRejected &&
+                                n.RelatedReservationId == data.ReservationId,
+                                stoppingToken);
 
-                            db.Notifications.Add(notification);
-                            await db.SaveChangesAsync(stoppingToken);
+                            if (!exists)
+                            {
+                                var notification = new Notification
+                                {
+                                    UserId = data.UserId,
+                                    TypeId = NotificationTypeIds.ReservationRejected,
+                                    Title = "Rezervacija odbijena",
+                                    Body = $"Vaša rezervacija je odbijena. Razlog: {data.RejectReason}",
+                                    RelatedPropertyId = data.PropertyId,
+                                    RelatedReservationId = data.ReservationId,
+                                    CreatedAt = DateTime.UtcNow
+                                };
+
+                                db.Notifications.Add(notification);
+                                await db.SaveChangesAsync(stoppingToken);
+                            }
 
                             _channel.BasicAck(ea.DeliveryTag, false);
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            try { _channel.BasicNack(ea.DeliveryTag, false, true); } catch { }
+                            _logger.LogError(ex, "Error while processing reservation.rejected message.");
+
+                            try
+                            {
+                                _channel?.BasicNack(ea.DeliveryTag, false, false);
+                            }
+                            catch (Exception nackEx)
+                            {
+                                _logger.LogError(nackEx, "Failed to nack reservation.rejected message.");
+                            }
                         }
                     };
 
@@ -194,7 +230,7 @@ public class Worker : BackgroundService
                         consumer: rejectedConsumer
                     );
 
-                    Console.WriteLine("✅ CONSUMING reservation.rejected");
+                    _logger.LogInformation("Consuming reservation.rejected");
                 }
 
                 await Task.Delay(1000, stoppingToken);
@@ -205,7 +241,7 @@ public class Worker : BackgroundService
             }
             catch (Exception ex)
             {
-                Console.WriteLine("❌ Worker loop error: " + ex);
+                _logger.LogError(ex, "Worker loop error.");
                 CleanupRabbit();
                 await Task.Delay(2000, stoppingToken);
             }

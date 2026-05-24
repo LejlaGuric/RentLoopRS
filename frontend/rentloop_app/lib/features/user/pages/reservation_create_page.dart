@@ -20,10 +20,12 @@ class ReservationCreatePage extends StatefulWidget {
   });
 
   @override
-  State<ReservationCreatePage> createState() => _ReservationCreatePageState();
+  State<ReservationCreatePage> createState() =>
+      _ReservationCreatePageState();
 }
 
-class _ReservationCreatePageState extends State<ReservationCreatePage> {
+class _ReservationCreatePageState
+    extends State<ReservationCreatePage> {
   final _availability = AvailabilityService();
   final _reservations = ReservationsService();
   final _formKey = GlobalKey<FormState>();
@@ -34,12 +36,15 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
   late DateTime _focusedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
-  RangeSelectionMode _rangeMode = RangeSelectionMode.toggledOn;
+
+  RangeSelectionMode _rangeMode =
+      RangeSelectionMode.toggledOn;
 
   Set<DateTime> _booked = {};
 
   final _guestsCtrl = TextEditingController(text: '1');
   final _noteCtrl = TextEditingController();
+
   final _df = DateFormat('dd.MM.yyyy');
 
   String? _guestsServerError;
@@ -58,9 +63,11 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
     super.dispose();
   }
 
-  DateTime _dOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+  DateTime _dOnly(DateTime d) =>
+      DateTime(d.year, d.month, d.day);
 
-  bool _isBooked(DateTime day) => _booked.contains(_dOnly(day));
+  bool _isBooked(DateTime day) =>
+      _booked.contains(_dOnly(day));
 
   bool _isPast(DateTime day) {
     final today = _dOnly(DateTime.now());
@@ -75,9 +82,11 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
 
     try {
       final from = _dOnly(DateTime.now());
-      final to = DateTime(from.year, from.month + 3, from.day);
+      final to =
+          DateTime(from.year, from.month + 3, from.day);
 
-      final booked = await _availability.getBookedDates(
+      final booked =
+          await _availability.getBookedDates(
         propertyId: widget.listingId,
         from: from,
         to: to,
@@ -89,13 +98,21 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
       });
     } catch (e) {
       setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
+        _error = e
+            .toString()
+            .replaceFirst('Exception: ', '')
+            .replaceAll('"', '')
+            .trim();
+
         _loading = false;
       });
     }
   }
 
-  bool _rangeCrossesBooked(DateTime start, DateTime endExclusive) {
+  bool _rangeCrossesBooked(
+    DateTime start,
+    DateTime endExclusive,
+  ) {
     for (
       var d = _dOnly(start);
       d.isBefore(_dOnly(endExclusive));
@@ -103,26 +120,44 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
     ) {
       if (_isBooked(d)) return true;
     }
+
     return false;
   }
 
   int _nights() {
-    if (_rangeStart == null || _rangeEnd == null) return 0;
-    final s = _dOnly(_rangeStart!);
-    final e = _dOnly(_rangeEnd!);
-    final n = e.difference(s).inDays;
-    return n > 0 ? n : 0;
+    if (_rangeStart == null || _rangeEnd == null) {
+      return 0;
+    }
+
+    final checkIn = _dOnly(_rangeStart!);
+    final checkOut = _dOnly(_rangeEnd!);
+
+    final nights =
+        checkOut.difference(checkIn).inDays;
+
+    return nights > 0 ? nights : 0;
   }
 
-  double _total() => _nights() * widget.pricePerNight;
+  double _total() =>
+      _nights() * widget.pricePerNight;
 
   Color? _dayColor(DateTime day) {
-    if (_isPast(day)) return Colors.grey.shade300;
-    if (_isBooked(day)) return Colors.red.shade300;
+    if (_isPast(day)) {
+      return Colors.grey.shade300;
+    }
+
+    if (_isBooked(day)) {
+      return Colors.red.shade300;
+    }
+
     return Colors.green.shade200;
   }
 
-  void _onRangeSelected(DateTime? start, DateTime? end, DateTime focusedDay) {
+  void _onRangeSelected(
+    DateTime? start,
+    DateTime? end,
+    DateTime focusedDay,
+  ) {
     setState(() {
       _focusedDay = focusedDay;
       _rangeStart = start;
@@ -130,17 +165,22 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
       _error = '';
     });
 
-    if (_rangeStart != null && _rangeEnd != null) {
-      final s = _dOnly(_rangeStart!);
-      final e = _dOnly(_rangeEnd!);
-      if (!e.isAfter(s)) return;
+    if (_rangeStart != null &&
+        _rangeEnd != null) {
+      final checkIn = _dOnly(_rangeStart!);
+      final checkOut = _dOnly(_rangeEnd!);
 
-      final endExclusive = e.add(const Duration(days: 1));
-      if (_rangeCrossesBooked(s, endExclusive)) {
+      if (!checkOut.isAfter(checkIn)) {
+        return;
+      }
+
+      if (_rangeCrossesBooked(
+          checkIn, checkOut)) {
         setState(() {
           _rangeStart = null;
           _rangeEnd = null;
-          _error = 'Odabrani period sadrži zauzete dane.';
+          _error =
+              'Odabrani period sadrži zauzete dane.';
         });
       }
     }
@@ -149,17 +189,28 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
   String? _validateGuests(String? value) {
     final raw = (value ?? '').trim();
 
-    if (raw.isEmpty) return 'Broj gostiju je obavezan';
+    if (raw.isEmpty) {
+      return 'Broj gostiju je obavezan';
+    }
 
     final guests = int.tryParse(raw);
-    if (guests == null) return 'Unesi cijeli broj';
-    if (guests <= 0) return 'Broj gostiju mora biti veći od 0';
 
-    if (widget.maxGuests != null && guests > widget.maxGuests!) {
+    if (guests == null) {
+      return 'Unesi cijeli broj';
+    }
+
+    if (guests <= 0) {
+      return 'Broj gostiju mora biti veći od 0';
+    }
+
+    if (widget.maxGuests != null &&
+        guests > widget.maxGuests!) {
       return 'Maksimalno gostiju: ${widget.maxGuests}';
     }
 
-    if (_guestsServerError != null) return _guestsServerError;
+    if (_guestsServerError != null) {
+      return _guestsServerError;
+    }
 
     return null;
   }
@@ -170,49 +221,74 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
       _guestsServerError = null;
     });
 
-    final ok = _formKey.currentState?.validate() ?? false;
+    final ok =
+        _formKey.currentState?.validate() ?? false;
+
     if (!ok) return;
 
-    if (_rangeStart == null || _rangeEnd == null) {
-      setState(() => _error = 'Odaberi check-in i check-out na kalendaru.');
+    if (_rangeStart == null ||
+        _rangeEnd == null) {
+      setState(() {
+        _error =
+            'Odaberi check-in i check-out na kalendaru.';
+      });
+
       return;
     }
 
-    final start = _dOnly(_rangeStart!);
-    final end = _dOnly(_rangeEnd!);
+    final checkIn = _dOnly(_rangeStart!);
+    final checkOut = _dOnly(_rangeEnd!);
 
-    if (!end.isAfter(start)) {
-      setState(() => _error = 'Check-out mora biti poslije check-in datuma.');
+    if (!checkOut.isAfter(checkIn)) {
+      setState(() {
+        _error =
+            'Check-out mora biti poslije check-in datuma.';
+      });
+
       return;
     }
 
-    final guests = int.parse(_guestsCtrl.text.trim());
+    final guests =
+        int.parse(_guestsCtrl.text.trim());
 
-    final checkOutExclusive = end.add(const Duration(days: 1));
+    if (_rangeCrossesBooked(
+        checkIn, checkOut)) {
+      setState(() {
+        _error = 'Period sadrži zauzete dane.';
+      });
 
-    if (_rangeCrossesBooked(start, checkOutExclusive)) {
-      setState(() => _error = 'Period sadrži zauzete dane.');
       return;
     }
 
     try {
       setState(() => _loading = true);
 
-      final msg = await _reservations.createReservation(
+      final msg =
+          await _reservations.createReservation(
         ReservationCreateRequest(
           listingId: widget.listingId,
-          checkIn: start,
-          checkOut: checkOutExclusive,
+          checkIn: checkIn,
+          checkOut: checkOut,
           guests: guests,
-          note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+          note: _noteCtrl.text.trim().isEmpty
+              ? null
+              : _noteCtrl.text.trim(),
         ),
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+
       Navigator.of(context).pop(true);
     } catch (e) {
-      final msg = e.toString().replaceFirst('Exception: ', '').replaceAll('"', '').trim();
+      final msg = e
+          .toString()
+          .replaceFirst('Exception: ', '')
+          .replaceAll('"', '')
+          .trim();
 
       if (msg.toLowerCase().contains('guests') ||
           msg.toLowerCase().contains('gost')) {
@@ -220,13 +296,17 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
           _loading = false;
           _guestsServerError = msg;
         });
+
         _formKey.currentState?.validate();
+
         return;
       }
 
       setState(() => _error = msg);
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -235,25 +315,41 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
     final nights = _nights();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Rezerviši • ${widget.listingName}')),
+      appBar: AppBar(
+        title:
+            Text('Rezerviši • ${widget.listingName}'),
+      ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child:
+                  CircularProgressIndicator(),
+            )
           : RefreshIndicator(
               onRefresh: _loadBooked,
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding:
+                    const EdgeInsets.all(16),
                 children: [
                   if (_error.isNotEmpty) ...[
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding:
+                          const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.red.shade200),
+                        borderRadius:
+                            BorderRadius.circular(
+                                12),
+                        border: Border.all(
+                          color:
+                              Colors.red.shade200,
+                        ),
                       ),
                       child: Text(
                         _error,
-                        style: TextStyle(color: Colors.red.shade800),
+                        style: TextStyle(
+                          color:
+                              Colors.red.shade800,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -262,59 +358,124 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
                     spacing: 12,
                     runSpacing: 8,
                     children: const [
-                      _Legend(color: Colors.green, text: 'Dostupno'),
-                      _Legend(color: Colors.red, text: 'Zauzeto'),
-                      _Legend(color: Colors.grey, text: 'Prošlo'),
-                      _Legend(color: Colors.blue, text: 'Odabrano'),
+                      _Legend(
+                        color: Colors.green,
+                        text: 'Dostupno',
+                      ),
+                      _Legend(
+                        color: Colors.red,
+                        text: 'Zauzeto',
+                      ),
+                      _Legend(
+                        color: Colors.grey,
+                        text: 'Prošlo',
+                      ),
+                      _Legend(
+                        color: Colors.blue,
+                        text: 'Odabrano',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding:
+                        const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius:
+                          BorderRadius.circular(
+                              16),
+                      border: Border.all(
+                        color:
+                            Colors.grey.shade300,
+                      ),
                     ),
                     child: TableCalendar(
-                      firstDay: DateTime.now().subtract(const Duration(days: 1)),
-                      lastDay: DateTime.now().add(const Duration(days: 365)),
+                      firstDay: DateTime.now()
+                          .subtract(
+                        const Duration(days: 1),
+                      ),
+                      lastDay: DateTime.now().add(
+                        const Duration(days: 365),
+                      ),
                       focusedDay: _focusedDay,
                       rangeStartDay: _rangeStart,
                       rangeEndDay: _rangeEnd,
-                      rangeSelectionMode: _rangeMode,
-                      onRangeSelected: _onRangeSelected,
-                      onPageChanged: (d) => _focusedDay = d,
-                      enabledDayPredicate: (day) {
-                        if (_isPast(day)) return false;
-                        if (_isBooked(day)) return false;
+                      rangeSelectionMode:
+                          _rangeMode,
+                      onRangeSelected:
+                          _onRangeSelected,
+                      onPageChanged: (d) =>
+                          _focusedDay = d,
+                      enabledDayPredicate:
+                          (day) {
+                        if (_isPast(day)) {
+                          return false;
+                        }
+
+                        if (_isBooked(day)) {
+                          return false;
+                        }
+
                         return true;
                       },
-                      calendarStyle: CalendarStyle(
-                        outsideDaysVisible: false,
-                        rangeHighlightColor: Colors.blue.withOpacity(0.2),
-                        rangeStartDecoration: const BoxDecoration(
+                      calendarStyle:
+                          CalendarStyle(
+                        outsideDaysVisible:
+                            false,
+                        rangeHighlightColor:
+                            Colors.blue
+                                .withOpacity(0.2),
+                        rangeStartDecoration:
+                            const BoxDecoration(
                           color: Colors.blue,
                           shape: BoxShape.circle,
                         ),
-                        rangeEndDecoration: const BoxDecoration(
+                        rangeEndDecoration:
+                            const BoxDecoration(
                           color: Colors.blue,
                           shape: BoxShape.circle,
                         ),
-                        withinRangeDecoration: BoxDecoration(
-                          color: Colors.blue.shade200,
-                          shape: BoxShape.circle,
+                        withinRangeDecoration:
+                            BoxDecoration(
+                          color:
+                              Colors.blue.shade200,
+                          shape:
+                              BoxShape.circle,
                         ),
                       ),
-                      calendarBuilders: CalendarBuilders(
-                        defaultBuilder: (context, day, focusedDay) =>
-                            _DayCell(day: day, color: _dayColor(day)),
-                        todayBuilder: (context, day, focusedDay) => _DayCell(
+                      calendarBuilders:
+                          CalendarBuilders(
+                        defaultBuilder:
+                            (context,
+                                    day,
+                                    focusedDay) =>
+                                _DayCell(
                           day: day,
-                          color: _dayColor(day),
-                          border: Border.all(color: Colors.black54),
+                          color:
+                              _dayColor(day),
                         ),
-                        disabledBuilder: (context, day, focusedDay) =>
-                            _DayCell(day: day, color: _dayColor(day)),
+                        todayBuilder:
+                            (context,
+                                    day,
+                                    focusedDay) =>
+                                _DayCell(
+                          day: day,
+                          color:
+                              _dayColor(day),
+                          border: Border.all(
+                            color:
+                                Colors.black54,
+                          ),
+                        ),
+                        disabledBuilder:
+                            (context,
+                                    day,
+                                    focusedDay) =>
+                                _DayCell(
+                          day: day,
+                          color:
+                              _dayColor(day),
+                        ),
                       ),
                     ),
                   ),
@@ -323,44 +484,75 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
                     rows: [
                       [
                         'Check-in',
-                        _rangeStart == null ? '—' : _df.format(_dOnly(_rangeStart!)),
+                        _rangeStart == null
+                            ? '—'
+                            : _df.format(
+                                _dOnly(
+                                    _rangeStart!),
+                              ),
                       ],
                       [
                         'Check-out',
                         _rangeEnd == null
                             ? '—'
-                            : _df.format(_dOnly(_rangeEnd!)),
+                            : _df.format(
+                                _dOnly(
+                                    _rangeEnd!),
+                              ),
                       ],
-                      ['Noćenja', nights == 0 ? '—' : nights.toString()],
+                      [
+                        'Noćenja',
+                        nights == 0
+                            ? '—'
+                            : nights.toString(),
+                      ],
                       [
                         'Cijena/noć',
                         '${widget.pricePerNight.toStringAsFixed(2)} KM',
                       ],
                       [
                         'Ukupno',
-                        nights == 0 ? '—' : '${_total().toStringAsFixed(2)} KM',
+                        nights == 0
+                            ? '—'
+                            : '${_total().toStringAsFixed(2)} KM',
                       ],
                     ],
                   ),
                   const SizedBox(height: 16),
                   Form(
                     key: _formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    autovalidateMode:
+                        AutovalidateMode
+                            .onUserInteraction,
                     child: Column(
                       children: [
                         TextFormField(
-                          controller: _guestsCtrl,
-                          keyboardType: TextInputType.number,
-                          validator: _validateGuests,
+                          controller:
+                              _guestsCtrl,
+                          keyboardType:
+                              TextInputType
+                                  .number,
+                          validator:
+                              _validateGuests,
                           onChanged: (_) {
-                            if (_guestsServerError != null) {
-                              setState(() => _guestsServerError = null);
+                            if (_guestsServerError !=
+                                null) {
+                              setState(() {
+                                _guestsServerError =
+                                    null;
+                              });
                             }
                           },
-                          decoration: InputDecoration(
-                            labelText: 'Broj gostiju',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                          decoration:
+                              InputDecoration(
+                            labelText:
+                                'Broj gostiju',
+                            border:
+                                OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          14),
                             ),
                           ),
                         ),
@@ -368,10 +560,16 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
                         TextField(
                           controller: _noteCtrl,
                           maxLines: 3,
-                          decoration: InputDecoration(
-                            labelText: 'Napomena (opcionalno)',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                          decoration:
+                              InputDecoration(
+                            labelText:
+                                'Napomena (opcionalno)',
+                            border:
+                                OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          14),
                             ),
                           ),
                         ),
@@ -382,8 +580,13 @@ class _ReservationCreatePageState extends State<ReservationCreatePage> {
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: _loading ? null : _submit,
-                      child: const Text('Kreiraj rezervaciju'),
+                      onPressed:
+                          _loading
+                              ? null
+                              : _submit,
+                      child: const Text(
+                        'Kreiraj rezervaciju',
+                      ),
                     ),
                   ),
                 ],
@@ -397,7 +600,10 @@ class _Legend extends StatelessWidget {
   final Color color;
   final String text;
 
-  const _Legend({required this.color, required this.text});
+  const _Legend({
+    required this.color,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -407,7 +613,10 @@ class _Legend extends StatelessWidget {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
         ),
         const SizedBox(width: 6),
         Text(text),
@@ -421,7 +630,11 @@ class _DayCell extends StatelessWidget {
   final Color? color;
   final BoxBorder? border;
 
-  const _DayCell({required this.day, this.color, this.border});
+  const _DayCell({
+    required this.day,
+    this.color,
+    this.border,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -435,7 +648,9 @@ class _DayCell extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         '${day.day}',
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -444,7 +659,9 @@ class _DayCell extends StatelessWidget {
 class _InfoCard extends StatelessWidget {
   final List<List<String>> rows;
 
-  const _InfoCard({required this.rows});
+  const _InfoCard({
+    required this.rows,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -452,25 +669,37 @@ class _InfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius:
+            BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade200,
+        ),
       ),
       child: Column(
         children: rows
             .map(
               (r) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         r[0],
-                        style: TextStyle(color: Colors.grey.shade700),
+                        style: TextStyle(
+                          color:
+                              Colors.grey.shade700,
+                        ),
                       ),
                     ),
                     Text(
                       r[1],
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontWeight:
+                            FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),

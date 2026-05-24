@@ -41,7 +41,7 @@ class PaymentsService {
     );
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body);
+      throw Exception(_readMessage(res.body));
     }
 
     final json = jsonDecode(res.body) as Map<String, dynamic>;
@@ -62,7 +62,7 @@ class PaymentsService {
     );
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body);
+      throw Exception(_readMessage(res.body));
     }
 
     final json = jsonDecode(res.body) as Map<String, dynamic>;
@@ -76,30 +76,15 @@ class PaymentsService {
     );
     return result.status;
   }
+  String _readMessage(String body) {
+  try {
+    final decoded = jsonDecode(body);
 
-  Future<void> devForcePaid(int reservationId) async {
-    final res = await _api.post(
-      '/api/payments/paypal/dev-force-paid',
-      {'reservationId': reservationId},
-      auth: true,
-    );
-
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw Exception(res.body);
+    if (decoded is Map && decoded['message'] is String) {
+      return decoded['message'] as String;
     }
-  }
+  } catch (_) {}
 
-  Future<String> refundPayPal(int reservationId) async {
-  final res = await _api.post(
-    '/api/payments/paypal/refund/$reservationId',
-    {},
-    auth: true,
-  );
-
-  if (res.statusCode < 200 || res.statusCode >= 300) {
-    throw Exception(res.body);
-  }
-
-  return res.body;
+  return body.isNotEmpty ? body : 'Došlo je do greške.';
 }
 }

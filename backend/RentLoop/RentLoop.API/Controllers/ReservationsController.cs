@@ -8,6 +8,7 @@ using System.Security.Claims;
 using RentLoop.API.Messaging;
 using RentLoop.API.Helpers;
 using RentLoop.API.Services.Reservations;
+using RentLoop.API.DTOs.Common;
 
 namespace RentLoop.API.Controllers
 {
@@ -64,26 +65,44 @@ namespace RentLoop.API.Controllers
                 return Unauthorized();
             }
 
+            var checkIn = request.CheckIn.Date;
+            var checkOut = request.CheckOut.Date;
+            var today = DateTime.UtcNow.Date;
+
             _logger.LogInformation(
                 "Reservation create attempt by user {UserId} for listing {ListingId}.",
                 userId,
                 request.ListingId);
 
-            if (request.CheckOut <= request.CheckIn)
+            if (checkIn < today)
+            {
+                _logger.LogWarning(
+                    "Create reservation failed for user {UserId} because check-in date {CheckIn} is in the past.",
+                    userId,
+                    checkIn);
+
+                return BadRequest("Check-in date cannot be in the past.");
+            }
+
+            if (checkOut <= checkIn)
             {
                 _logger.LogWarning(
                     "Create reservation failed for user {UserId} because check-out was not after check-in.",
                     userId);
+
                 return BadRequest("Check-out must be after check-in.");
             }
 
-            var listing = await _db.Listings.FirstOrDefaultAsync(l => l.Id == request.ListingId && l.IsActive);
+            var listing = await _db.Listings.FirstOrDefaultAsync(l =>
+                l.Id == request.ListingId && l.IsActive);
+
             if (listing == null)
             {
                 _logger.LogWarning(
                     "Create reservation failed for user {UserId} because listing {ListingId} was not found or inactive.",
                     userId,
                     request.ListingId);
+
                 return NotFound("Listing not found.");
             }
 
@@ -93,6 +112,7 @@ namespace RentLoop.API.Controllers
                     "Create reservation failed for user {UserId} because guests value {Guests} was invalid.",
                     userId,
                     request.Guests);
+
                 return BadRequest("Guests must be greater than 0.");
             }
 
@@ -104,25 +124,19 @@ namespace RentLoop.API.Controllers
                     request.Guests,
                     listing.MaxGuests,
                     listing.Id);
+
                 return BadRequest($"Maximum allowed guests for this listing is {listing.MaxGuests}.");
             }
 
-            var days = (request.CheckOut - request.CheckIn).Days;
-            if (days <= 0)
-            {
-                _logger.LogWarning(
-                    "Create reservation failed for user {UserId} because date range was invalid.",
-                    userId);
-                return BadRequest("Invalid date range.");
-            }
-
-            var totalPrice = (days - 1) * listing.PricePerNight;
+            var nights = (checkOut - checkIn).Days;
+            var totalPrice = nights * listing.PricePerNight;
 
             var overlap = await _db.Reservations.AnyAsync(r =>
                 r.PropertyId == listing.Id &&
-                (r.StatusId == ReservationStatusIds.Pending || r.StatusId == ReservationStatusIds.Approved) &&
-                request.CheckIn < r.CheckOut &&
-                request.CheckOut > r.CheckIn);
+                (r.StatusId == ReservationStatusIds.Pending ||
+                 r.StatusId == ReservationStatusIds.Approved) &&
+                checkIn < r.CheckOut &&
+                checkOut > r.CheckIn);
 
             if (overlap)
             {
@@ -130,6 +144,7 @@ namespace RentLoop.API.Controllers
                     "Create reservation failed for user {UserId} because selected dates overlap for listing {ListingId}.",
                     userId,
                     listing.Id);
+
                 return BadRequest("Selected dates are not available.");
             }
 
@@ -137,8 +152,8 @@ namespace RentLoop.API.Controllers
             {
                 UserId = userId,
                 PropertyId = listing.Id,
-                CheckIn = request.CheckIn,
-                CheckOut = request.CheckOut,
+                CheckIn = checkIn,
+                CheckOut = checkOut,
                 Guests = request.Guests,
                 TotalPrice = totalPrice,
                 StatusId = ReservationStatusIds.Pending,
@@ -150,12 +165,20 @@ namespace RentLoop.API.Controllers
             await _db.SaveChangesAsync();
 
             _logger.LogInformation(
-                "Reservation created successfully. ReservationId: {ReservationId}, UserId: {UserId}, ListingId: {ListingId}.",
+                "Reservation created successfully. ReservationId: {ReservationId}, UserId: {UserId}, ListingId: {ListingId}, Nights: {Nights}, TotalPrice: {TotalPrice}.",
                 reservation.Id,
                 userId,
-                listing.Id);
+                listing.Id,
+                nights,
+                totalPrice);
 
-            return Ok(new { message = "Reservation created (pending approval)." });
+            return Ok(new
+            {
+                message = "Reservation created (pending approval).",
+                reservationId = reservation.Id,
+                nights,
+                totalPrice
+            });
         }
 
         // CLIENT — my reservations
@@ -193,6 +216,7 @@ namespace RentLoop.API.Controllers
                     r.CreatedAt,
                     r.Note,
                     r.RejectReason,
+                    r.CancelReason,
 
                     IsPaid = r.IsPaid,
                     PaidAt = r.PaidAt,
@@ -228,12 +252,18 @@ namespace RentLoop.API.Controllers
                 data.Count,
                 userId);
 
-            return Ok(data);
+            return Ok(new PagedResponse<object>
+            {
+                Page = 1,
+                PageSize = data.Count,
+                TotalCount = data.Count,
+                Items = data.Cast<object>().ToList()
+            });
         }
 
         // CLIENT — cancel reservation
         [HttpPut("{id:int}/cancel")]
-        public async Task<IActionResult> Cancel(int id)
+        public async Task<IActionResult> Cancel(int id, [FromBody] CancelReservationRequest request)
         {
             var userId = GetUserId();
             if (userId == 0)
@@ -247,6 +277,18 @@ namespace RentLoop.API.Controllers
                 id,
                 userId);
 
+            if (string.IsNullOrWhiteSpace(request.Reason))
+            {
+                return BadRequest("Cancellation reason is required.");
+            }
+
+            var reason = request.Reason.Trim();
+
+            if (reason.Length > 500)
+            {
+                return BadRequest("Cancellation reason can have at most 500 characters.");
+            }
+
             var r = await _db.Reservations
                 .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
 
@@ -256,7 +298,13 @@ namespace RentLoop.API.Controllers
                     "Cancel reservation failed because reservation {ReservationId} was not found for user {UserId}.",
                     id,
                     userId);
+
                 return NotFound("Reservation not found.");
+            }
+
+            if (r.StatusId != ReservationStatusIds.Pending)
+            {
+                return BadRequest("Only pending reservations can be cancelled by the user.");
             }
 
             var result = await _reservationStateService.ChangeStatusAsync(
@@ -269,10 +317,12 @@ namespace RentLoop.API.Controllers
                     "Cancel reservation failed for reservation {ReservationId}. Reason: {Reason}",
                     id,
                     result.Message);
+
                 return BadRequest(result.Message);
             }
 
             r.DecisionAt = DateTime.UtcNow;
+            r.CancelReason = reason;
 
             await _db.SaveChangesAsync();
 
@@ -281,7 +331,7 @@ namespace RentLoop.API.Controllers
                 id,
                 userId);
 
-            return Ok(new { message = result.Message });
+            return Ok(new { message = "Reservation cancelled successfully." });
         }
 
         // ADMIN — pending reservations
@@ -349,6 +399,7 @@ namespace RentLoop.API.Controllers
                     r.Note,
                     r.DecisionAt,
                     r.RejectReason,
+                    r.CancelReason,
                     ApprovedByAdmin = r.ApprovedByAdmin != null
                         ? ((r.ApprovedByAdmin.FirstName ?? "") + " " + (r.ApprovedByAdmin.LastName ?? "")).Trim()
                         : ""
@@ -360,7 +411,13 @@ namespace RentLoop.API.Controllers
                 data.Count,
                 adminId);
 
-            return Ok(data);
+            return Ok(new PagedResponse<object>
+            {
+                Page = 1,
+                PageSize = data.Count,
+                TotalCount = data.Count,
+                Items = data.Cast<object>().ToList()
+            });
         }
 
         // ADMIN — approve
@@ -519,6 +576,7 @@ namespace RentLoop.API.Controllers
                 r.PaidAt,
                 r.DecisionAt,
                 r.RejectReason,
+                r.CancelReason,
                 ApprovedByAdmin = r.ApprovedByAdmin != null
                     ? ((r.ApprovedByAdmin.FirstName ?? "") + " " + (r.ApprovedByAdmin.LastName ?? "")).Trim()
                     : ""
@@ -529,7 +587,13 @@ namespace RentLoop.API.Controllers
                 data.Count,
                 adminId);
 
-            return Ok(data);
+            return Ok(new PagedResponse<object>
+            {
+                Page = 1,
+                PageSize = data.Count,
+                TotalCount = data.Count,
+                Items = data.Cast<object>().ToList()
+            });
         }
 
         // ADMIN — reject

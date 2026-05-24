@@ -268,6 +268,10 @@ class _AdminReservationsPageState extends State<AdminReservationsPage> {
                         'Komentar / razlog',
                         item.rejectReason.trim().isEmpty ? '—' : item.rejectReason,
                       ),
+                      _kv(
+  'Razlog otkazivanja',
+  item.cancelReason.trim().isEmpty ? '—' : item.cancelReason,
+),
                     ],
                   ),
                 ),

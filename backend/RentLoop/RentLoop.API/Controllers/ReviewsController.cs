@@ -5,6 +5,7 @@ using RentLoop.API.Data;
 using RentLoop.API.DTOs.Reviews;
 using RentLoop.API.Models;
 using System.Security.Claims;
+using RentLoop.API.Helpers;
 
 namespace RentLoop.API.Controllers
 {
@@ -57,13 +58,17 @@ namespace RentLoop.API.Controllers
             if (reservation.UserId != userId)
                 return Forbid("You can review only your reservation.");
 
-            if (reservation.StatusId != 2)
+            if (reservation.StatusId != ReservationStatusIds.Approved)
                 return BadRequest("You can review only approved reservations.");
+
+            if (!reservation.IsPaid)
+                return BadRequest("You can review only paid reservations.");
 
             if (reservation.CheckOut.Date > DateTime.UtcNow.Date)
                 return BadRequest("Review can be left only after the stay has ended.");
 
             var already = await _db.Reviews.AnyAsync(rv => rv.ReservationId == request.ReservationId);
+
             if (already)
                 return BadRequest("Review already exists for this reservation.");
 
@@ -73,7 +78,9 @@ namespace RentLoop.API.Controllers
                 PropertyId = reservation.PropertyId,
                 UserId = userId,
                 Rating = request.Rating,
-                Comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim(),
+                Comment = string.IsNullOrWhiteSpace(request.Comment)
+                    ? null
+                    : request.Comment.Trim(),
                 CreatedAt = DateTime.UtcNow
             };
 

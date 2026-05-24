@@ -19,12 +19,6 @@ if (File.Exists(envPath))
 
 var builder = WebApplication.CreateBuilder(args);
 
-Console.WriteLine("PayPal Mode = " + builder.Configuration["PayPal:Mode"]);
-Console.WriteLine("PayPal ClientId = " + builder.Configuration["PayPal:ClientId"]);
-Console.WriteLine("PayPal Secret exists = " + (!string.IsNullOrWhiteSpace(builder.Configuration["PayPal:Secret"])));
-Console.WriteLine("PayPal ReturnUrl = " + builder.Configuration["PayPal:ReturnUrl"]);
-Console.WriteLine("PayPal CancelUrl = " + builder.Configuration["PayPal:CancelUrl"]);
-
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"]!;
 var jwtIssuer = jwtSection["Issuer"]!;
@@ -48,7 +42,6 @@ builder.Services.AddScoped<IReservationStateService, ReservationStateService>();
 
 builder.Services.AddSingleton<RentLoop.API.Messaging.RabbitMqPublisher>();
 
-Console.WriteLine("DB = " + builder.Configuration.GetConnectionString("DefaultConnection"));
 
 // CORS
 builder.Services.AddCors(options =>

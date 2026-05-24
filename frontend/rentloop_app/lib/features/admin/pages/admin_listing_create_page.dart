@@ -34,6 +34,7 @@ class _AdminListingCreatePageState extends State<AdminListingCreatePage> {
 
   bool _loading = false;
   String _error = '';
+  String? _descriptionServerError;
 
   bool _lookupsLoading = true;
   List<LookupItem> _cities = [];
@@ -158,10 +159,17 @@ class _AdminListingCreatePageState extends State<AdminListingCreatePage> {
   }
 
   String? _validateDescription(String? value) {
-    final v = value?.trim() ?? '';
-    if (v.length > 1000) return 'Opis može imati najviše 1000 karaktera';
-    return null;
+  final v = value?.trim() ?? '';
+
+  if (v.isEmpty) return 'Opis je obavezan';
+
+  if (_descriptionServerError != null) {
+    return _descriptionServerError;
   }
+
+  if (v.length > 1000) return 'Opis može imati najviše 1000 karaktera';
+  return null;
+}
 
   String? _validateAddress(String? value) {
     final v = value?.trim() ?? '';
@@ -215,61 +223,76 @@ class _AdminListingCreatePageState extends State<AdminListingCreatePage> {
   }
 
   Future<void> _submit() async {
-    setState(() {
-      _error = '';
-    });
+  setState(() {
+    _error = '';
+    _descriptionServerError = null;
+  });
 
-    final ok = _formKey.currentState?.validate() ?? false;
-    if (!ok) return;
+  final ok = _formKey.currentState?.validate() ?? false;
+  if (!ok) return;
 
-    setState(() {
-      _loading = true;
-    });
+  setState(() {
+    _loading = true;
+  });
 
-    try {
-      if (_lookupsLoading) {
-        throw Exception('Sačekaj da se učitaju gradovi i tipovi najma.');
-      }
-      if (_cityId == null) throw Exception('Nema dostupnih gradova.');
-      if (_rentTypeId == null) throw Exception('Nema dostupnih tipova najma.');
-      if (_images.isEmpty) throw Exception('Dodaj bar jednu sliku.');
-
-      final name = _nameCtrl.text.trim();
-      final price = double.parse(_priceCtrl.text.trim().replaceAll(',', '.'));
-      final rooms = int.parse(_roomsCtrl.text.trim());
-      final guests = int.parse(_guestsCtrl.text.trim());
-      final distance = _distanceCtrl.text.trim().isEmpty
-          ? 0.0
-          : double.parse(_distanceCtrl.text.trim().replaceAll(',', '.'));
-
-      final amenityIdsJson = jsonEncode(_selectedAmenityIds.toList());
-
-      await _listings.createListingMultipart(
-        name: name,
-        description: _descCtrl.text.trim(),
-        address: _addressCtrl.text.trim(),
-        cityId: _cityId!,
-        rentTypeId: _rentTypeId!,
-        pricePerNight: price,
-        roomsCount: rooms,
-        maxGuests: guests,
-        distanceToCenterKm: distance,
-        hasWifi: _hasWifi,
-        hasAirConditioning: _hasAirConditioning,
-        petsAllowed: _petsAllowed,
-        amenityIds: amenityIdsJson,
-        coverIndex: _coverIndex,
-        imagePaths: _images.map((e) => e.path!).toList(),
-      );
-
-      if (!mounted) return;
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
-    } finally {
-      if (mounted) setState(() => _loading = false);
+  try {
+    if (_lookupsLoading) {
+      throw Exception('Sačekaj da se učitaju gradovi i tipovi najma.');
     }
+    if (_cityId == null) throw Exception('Nema dostupnih gradova.');
+    if (_rentTypeId == null) throw Exception('Nema dostupnih tipova najma.');
+    if (_images.isEmpty) throw Exception('Dodaj bar jednu sliku.');
+
+    final name = _nameCtrl.text.trim();
+    final price = double.parse(_priceCtrl.text.trim().replaceAll(',', '.'));
+    final rooms = int.parse(_roomsCtrl.text.trim());
+    final guests = int.parse(_guestsCtrl.text.trim());
+    final distance = _distanceCtrl.text.trim().isEmpty
+        ? 0.0
+        : double.parse(_distanceCtrl.text.trim().replaceAll(',', '.'));
+
+    final amenityIdsJson = jsonEncode(_selectedAmenityIds.toList());
+
+    await _listings.createListingMultipart(
+      name: name,
+      description: _descCtrl.text.trim(),
+      address: _addressCtrl.text.trim(),
+      cityId: _cityId!,
+      rentTypeId: _rentTypeId!,
+      pricePerNight: price,
+      roomsCount: rooms,
+      maxGuests: guests,
+      distanceToCenterKm: distance,
+      hasWifi: _hasWifi,
+      hasAirConditioning: _hasAirConditioning,
+      petsAllowed: _petsAllowed,
+      amenityIds: amenityIdsJson,
+      coverIndex: _coverIndex,
+      imagePaths: _images.map((e) => e.path!).toList(),
+    );
+
+    if (!mounted) return;
+    Navigator.of(context).pop(true);
+  } catch (e) {
+    final message = e.toString().replaceFirst('Exception: ', '');
+
+    if (message.toLowerCase().contains('description') &&
+        message.toLowerCase().contains('required')) {
+      setState(() {
+        _descriptionServerError = 'Opis je obavezan';
+        _error = '';
+      });
+
+      _formKey.currentState?.validate();
+    } else {
+      setState(() {
+        _error = message;
+      });
+    }
+  } finally {
+    if (mounted) setState(() => _loading = false);
   }
+}
 
   @override
   Widget build(BuildContext context) {

@@ -17,10 +17,23 @@ class AdminReservationsService {
       throw Exception(_extractError(res.body) ?? 'Greška pri učitavanju rezervacija.');
     }
 
-    final list = jsonDecode(res.body) as List;
-    return list
-        .map((e) => AdminReservationItem.fromJson(e as Map<String, dynamic>))
-        .toList();
+    final decoded = jsonDecode(res.body);
+
+final List list;
+
+if (decoded is List) {
+  list = decoded;
+} else if (decoded is Map<String, dynamic> && decoded['items'] is List) {
+  list = decoded['items'] as List;
+} else if (decoded is Map && decoded['Items'] is List) {
+  list = decoded['Items'] as List;
+} else {
+  throw Exception('Neispravan format podataka za rezervacije.');
+}
+
+return list
+    .map((e) => AdminReservationItem.fromJson(e as Map<String, dynamic>))
+    .toList();
   }
 
   /// (opcionalno) Pending shortcut

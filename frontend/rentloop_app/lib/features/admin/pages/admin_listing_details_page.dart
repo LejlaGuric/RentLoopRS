@@ -101,6 +101,217 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
     }
   }
 
+  Future<void> _openEditDialog() async {
+    final d = _data;
+    if (d == null) return;
+
+    final nameCtrl = TextEditingController(text: d.name);
+    final descriptionCtrl = TextEditingController(text: d.description);
+    final addressCtrl = TextEditingController(text: d.address);
+    final priceCtrl = TextEditingController(text: d.pricePerNight.toString());
+    final roomsCtrl = TextEditingController(text: d.roomsCount.toString());
+    final guestsCtrl = TextEditingController(text: d.maxGuests.toString());
+    final distanceCtrl = TextEditingController(text: d.distanceToCenterKm.toString());
+
+    bool hasWifi = d.hasWifi;
+    bool hasAirConditioning = d.hasAirConditioning;
+    bool petsAllowed = d.petsAllowed;
+    bool saving = false;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            Future<void> save() async {
+              final name = nameCtrl.text.trim();
+              final description = descriptionCtrl.text.trim();
+              final address = addressCtrl.text.trim();
+
+              final price = double.tryParse(priceCtrl.text.trim().replaceAll(',', '.')) ?? 0;
+              final rooms = int.tryParse(roomsCtrl.text.trim()) ?? 0;
+              final guests = int.tryParse(guestsCtrl.text.trim()) ?? 0;
+              final distance = double.tryParse(distanceCtrl.text.trim().replaceAll(',', '.')) ?? 0;
+
+              if (name.isEmpty ||
+                  description.isEmpty ||
+                  address.isEmpty ||
+                  price <= 0 ||
+                  rooms <= 0 ||
+                  guests <= 0 ||
+                  distance < 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Provjeri unesene podatke. Sva obavezna polja moraju biti validna.'),
+                  ),
+                );
+                return;
+              }
+
+              setDialogState(() => saving = true);
+
+              try {
+                await _service.updateListing(
+                  id: d.id,
+                  name: name,
+                  description: description,
+                  address: address,
+                  cityId: d.cityId,
+                  rentTypeId: d.rentTypeId,
+                  pricePerNight: price,
+                  roomsCount: rooms,
+                  maxGuests: guests,
+                  distanceToCenterKm: distance,
+                  hasWifi: hasWifi,
+                  hasAirConditioning: hasAirConditioning,
+                  petsAllowed: petsAllowed,
+                );
+
+                if (!mounted) return;
+
+                Navigator.pop(ctx);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Listing je uspješno izmijenjen.')),
+                );
+
+                await _load();
+              } catch (e) {
+                if (!mounted) return;
+
+                setDialogState(() => saving = false);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.toString().replaceFirst('Exception: ', '')),
+                  ),
+                );
+              }
+            }
+
+            return AlertDialog(
+              title: const Text('Uredi listing'),
+              content: SizedBox(
+                width: 620,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: nameCtrl,
+                        decoration: const InputDecoration(labelText: 'Naziv'),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: descriptionCtrl,
+                        maxLines: 3,
+                        decoration: const InputDecoration(labelText: 'Opis'),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: addressCtrl,
+                        decoration: const InputDecoration(labelText: 'Adresa'),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: priceCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(labelText: 'Cijena/noć'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: distanceCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(labelText: 'Udaljenost do centra'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: roomsCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(labelText: 'Broj soba'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: guestsCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(labelText: 'Max gosti'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      CheckboxListTile(
+                        value: hasWifi,
+                        onChanged: saving ? null : (v) => setDialogState(() => hasWifi = v ?? false),
+                        title: const Text('WiFi'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      CheckboxListTile(
+                        value: hasAirConditioning,
+                        onChanged: saving ? null : (v) => setDialogState(() => hasAirConditioning = v ?? false),
+                        title: const Text('Klima'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      CheckboxListTile(
+                        value: petsAllowed,
+                        onChanged: saving ? null : (v) => setDialogState(() => petsAllowed = v ?? false),
+                        title: const Text('Ljubimci dozvoljeni'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Grad i tip najma ostaju isti: ${d.city} • ${d.rentType}.',
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving ? null : () => Navigator.pop(ctx),
+                  child: const Text('Odustani'),
+                ),
+                ElevatedButton(
+                  onPressed: saving ? null : save,
+                  child: saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Sačuvaj'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    nameCtrl.dispose();
+    descriptionCtrl.dispose();
+    addressCtrl.dispose();
+    priceCtrl.dispose();
+    roomsCtrl.dispose();
+    guestsCtrl.dispose();
+    distanceCtrl.dispose();
+  }
+
   void _selectImage(int i) {
     setState(() => _selectedImageIndex = i);
     _ensureThumbVisible(i);
@@ -179,8 +390,8 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
 
     final badgeText = d.isActive ? 'Aktivan' : 'Neaktivan';
 
-    final all = (d.allAmenities ?? <String>[]);
-    final selected = (d.selectedAmenities ?? <String>[]);
+    final all = d.allAmenities;
+    final selected = d.selectedAmenities;
 
     final selectedSet = selected.map((e) => e.toLowerCase().trim()).toSet();
     final hasList = all.where((x) => selectedSet.contains(x.toLowerCase().trim())).toList();
@@ -189,6 +400,14 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Stan #${d.id}'),
+        actions: [
+          TextButton.icon(
+            onPressed: _openEditDialog,
+            icon: const Icon(Icons.edit),
+            label: const Text('Uredi'),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(18),
@@ -368,16 +587,13 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                           children: [
                             const Text('Informacije', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
                             const SizedBox(height: 14),
-
                             _sectionTitle('Osnovni podaci'),
                             const SizedBox(height: 10),
                             _kv('Cijena/noć', '${d.pricePerNight.toStringAsFixed(2)} KM'),
                             _kv('Sobe', d.roomsCount.toString()),
                             _kv('Max gosti', d.maxGuests.toString()),
                             _kv('Udaljenost do centra', '${d.distanceToCenterKm.toStringAsFixed(2)} km'),
-
                             const SizedBox(height: 18),
-
                             _sectionTitle('Osnovne pogodnosti'),
                             const SizedBox(height: 10),
                             Wrap(
@@ -389,12 +605,9 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                                 _boolTag('Ljubimci dozvoljeni', d.petsAllowed),
                               ],
                             ),
-
                             const SizedBox(height: 18),
-
                             _sectionTitle('Amenities'),
                             const SizedBox(height: 10),
-
                             if (all.isEmpty)
                               Text(
                                 'Nema dostupnih amenities (backend još ne šalje listu).',
@@ -405,24 +618,17 @@ class _AdminListingDetailsPageState extends State<AdminListingDetailsPage> {
                               const SizedBox(height: 12),
                               _amenitiesBlock(title: '❌ Nema', items: noList),
                             ],
-
                             const SizedBox(height: 18),
-
                             _sectionTitle('Adresa'),
                             const SizedBox(height: 8),
                             _textBox(d.address.isEmpty ? '-' : d.address),
-
                             const SizedBox(height: 18),
-
                             _sectionTitle('Opis'),
                             const SizedBox(height: 8),
                             _textBox(d.description.isEmpty ? '-' : d.description),
-
                             const SizedBox(height: 18),
-
                             _sectionTitle('Recenzije korisnika'),
                             const SizedBox(height: 10),
-
                             if (_reviewsLoading)
                               const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 10),
